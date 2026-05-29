@@ -8,13 +8,13 @@ CRITICAL REQUIREMENTS:
 3. Replace any hidden non-breaking spaces with standard spaces or tabs for indentation.
 4. Provide multiple search/replace blocks in the 'diff' parameter for multiple changes. Use 'read_file' first if unsure.`
 
-const DIFF_PARAMETER_DESCRIPTION = `One or more search/replace blocks defining the changes. The ':start_line:' prefix is required in SEARCH blocks. Format:
+const DIFF_PARAMETER_DESCRIPTION = `One or more search/replace blocks defining the changes. The ':start_line:' prefix followed by the 1-based line number (without brackets) is required. Format:
 <<<<<<< SEARCH
-:start_line:[line_number]
+:start_line:10
 -------
-[exact content to find]
+const x = 1;
 =======
-[new content to replace with]
+const x = 2;
 >>>>>>> REPLACE`
 
 export const apply_diff = {

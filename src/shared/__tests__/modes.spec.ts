@@ -611,12 +611,11 @@ describe("FileRestrictionError", () => {
 			expect(debugMode).toMatchObject({
 				slug: "debug",
 				name: "🪲 Debug",
-				roleDefinition:
-					"You are Zoo, an expert software debugger specializing in systematic problem diagnosis and resolution.",
+				roleDefinition: "You are Zoo, a systematic debugger specializing in problem diagnosis and resolution.",
 				groups: ["read", "edit", "command", "mcp"],
 			})
 			expect(debugMode?.customInstructions).toContain(
-				"Reflect on 5-7 different possible sources of the problem, distill those down to 1-2 most likely sources, and then add logs to validate your assumptions. Explicitly ask the user to confirm the diagnosis before fixing the problem.",
+				"Reflect on 5-7 possible sources of the issue, narrow them to the 1-2 most likely, and add logs to validate. Confirm the diagnosis with the user before applying fixes.",
 			)
 		})
 	})
@@ -632,8 +631,7 @@ describe("FileRestrictionError", () => {
 			expect(result).toMatchObject({
 				slug: "debug",
 				name: "🪲 Debug",
-				roleDefinition:
-					"You are Zoo, an expert software debugger specializing in systematic problem diagnosis and resolution.",
+				roleDefinition: "You are Zoo, a systematic debugger specializing in problem diagnosis and resolution.",
 			})
 		})
 

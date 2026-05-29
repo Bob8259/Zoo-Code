@@ -62,7 +62,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 
 	// Build description based on capabilities
 	const descriptionIntro =
-		"Read a single file with line numbers. For multiple files, issue multiple parallel read_file calls."
+		"Read a file and return its contents with line numbers. IMPORTANT: This tool reads exactly one file per call. For multiple files, issue multiple parallel read_file calls."
 
 	const modeDescription = ` Modes: 'slice' (default) reads sequentially with offset/limit (ideal for general exploration); 'indentation' extracts complete code blocks containing an anchor line (preferred when you have a specific line number to guarantee valid blocks). anchor_line is REQUIRED for indentation mode.`
 
