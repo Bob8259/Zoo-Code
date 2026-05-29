@@ -1,6 +1,37 @@
 import type OpenAI from "openai"
 
-const EDIT_FILE_DESCRIPTION = `Replace text in an existing file, or create a new file. old_string should match the file contents exactly, including whitespace and indentation; use empty string "" to create a new file. For single replacements, include enough surrounding context to uniquely identify the target. Use expected_replacements only when intentionally replacing multiple occurrences.`
+const EDIT_FILE_DESCRIPTION = `Use this tool to replace text in an existing file, or create a new file.
+
+This tool performs literal string replacement with support for multiple occurrences.
+
+To be resilient to minor formatting drift, the tool normalizes line endings (CRLF/LF) for matching and may fall back to deterministic matching strategies when an exact literal match fails (exact → whitespace-tolerant match → token-based match). The original file's line endings are preserved when writing.
+
+USAGE PATTERNS:
+
+1. MODIFY EXISTING FILE (default):
+   - Provide file_path, old_string (text to find), and new_string (replacement)
+   - By default, expects exactly 1 occurrence of old_string
+   - Use expected_replacements to replace multiple occurrences
+
+2. CREATE NEW FILE:
+   - Set old_string to empty string ""
+   - new_string becomes the entire file content
+   - File must not already exist
+
+CRITICAL REQUIREMENTS:
+
+1. EXACT MATCHING (BEST): The old_string should match the file contents EXACTLY, including:
+    - All whitespace (spaces, tabs, newlines)
+    - All indentation
+    - All punctuation and special characters
+
+2. CONTEXT FOR UNIQUENESS: For single replacements (default), include at least 3 lines of context BEFORE and AFTER the target text to ensure uniqueness.
+
+3. MULTIPLE REPLACEMENTS: If you need to replace multiple identical occurrences:
+   - Set expected_replacements to the exact count you expect to replace
+   - ALL occurrences will be replaced
+
+4. NO ESCAPING: Provide the literal text - do not escape special characters.`
 
 const edit_file = {
 	type: "function",
@@ -12,21 +43,23 @@ const edit_file = {
 			properties: {
 				file_path: {
 					type: "string",
-					description: "Path to the file to modify or create, relative or absolute",
+					description:
+						"The path to the file to modify or create. You can use either a relative path in the workspace or an absolute path. If an absolute path is provided, it will be preserved as is.",
 				},
 				old_string: {
 					type: "string",
 					description:
-						'Exact literal text to replace, including whitespace and indentation. Include 3+ lines of context for uniqueness; use empty string "" to create a new file.',
+						"The exact literal text to replace (must match the file contents exactly, including all whitespace and indentation). For single replacements (default), include at least 3 lines of context BEFORE and AFTER the target text. Use empty string to create a new file.",
 				},
 				new_string: {
 					type: "string",
-					description: "Replacement text, or complete new file content when old_string is empty",
+					description:
+						"The exact literal text to replace old_string with. When creating a new file (old_string is empty), this becomes the file content.",
 				},
 				expected_replacements: {
 					type: "number",
 					description:
-						"Number of occurrences expected to be replaced. Defaults to 1; set only for intentional multi-replacement edits.",
+						"Number of replacements expected. Defaults to 1 if not specified. Use when you want to replace multiple occurrences of the same text.",
 					minimum: 1,
 				},
 			},
