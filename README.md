@@ -16,6 +16,7 @@ The core concept driving **Q Code** is **"less is more"**. Rather than overloadi
 4. **Structured Markdown Context Compaction**: Replaced the verbose legacy XML-wrapped context summarization format with a concise, highly structured 7-section Markdown compaction format. This drastically reduces prompt overhead and keeps goals, constraints, progress, key decisions, and next steps perfectly synchronized. This compaction design is credited to and adapted from the elegant compaction methodology in [OpenCode](https://github.com/anomalyco/opencode).
 5. **Gemini-Optimized Escape Parser**: Modified the escape parser to make it fully compatible and suitable for Gemini models.
 6. **Enriched Debug API History**: Clicking "Open API History" in task debug options now displays a comprehensive view including the full system prompt, tool definitions array, and conversation history, rather than just raw user/assistant messages.
+7. **Optimized `apply_diff` Tool Instructions**: Streamlined tool prompts and parameter descriptions with explicit guidelines for prefix stripping (removing line-number prefixes like `:130 | `), indentation normalization (converting hidden non-breaking spaces), literal matching, and concrete examples (replacing confusing placeholders) to ensure extremely reliable search/replace applications.
 
 ---
 
