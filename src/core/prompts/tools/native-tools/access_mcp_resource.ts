@@ -1,20 +1,10 @@
 import type OpenAI from "openai"
 
-const ACCESS_MCP_RESOURCE_DESCRIPTION = `Request to access a resource provided by a connected MCP server. Resources represent data sources that can be used as context, such as files, API responses, or system information.
+const ACCESS_MCP_RESOURCE_DESCRIPTION = `Access a resource provided by a connected MCP server (e.g. files, API responses, system info).`
 
-Parameters:
-- server_name: (required) The name of the MCP server providing the resource
-- uri: (required) The URI identifying the specific resource to access
+const SERVER_NAME_PARAMETER_DESCRIPTION = `Name of the MCP server`
 
-Example: Accessing a weather resource
-{ "server_name": "weather-server", "uri": "weather://san-francisco/current" }
-
-Example: Accessing a file resource from an MCP server
-{ "server_name": "filesystem-server", "uri": "file:///path/to/data.json" }`
-
-const SERVER_NAME_PARAMETER_DESCRIPTION = `The name of the MCP server providing the resource`
-
-const URI_PARAMETER_DESCRIPTION = `The URI identifying the specific resource to access`
+const URI_PARAMETER_DESCRIPTION = `URI identifying the resource`
 
 export default {
 	type: "function",

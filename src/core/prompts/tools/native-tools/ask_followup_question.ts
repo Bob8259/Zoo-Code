@@ -1,24 +1,14 @@
 import type OpenAI from "openai"
 
-const ASK_FOLLOWUP_QUESTION_DESCRIPTION = `Ask the user a question to gather additional information needed to complete the task. Use when you need clarification or more details to proceed effectively.
+const ASK_FOLLOWUP_QUESTION_DESCRIPTION = `Ask the user a question with 2-4 suggested responses to clarify requirements.`
 
-Parameters:
-- question: (required) A clear, specific question addressing the information needed
-- follow_up: (required) A list of 2-4 suggested answers. Suggestions must be complete, actionable answers without placeholders. Optionally include mode to switch modes (code/architect/etc.)
+const QUESTION_PARAMETER_DESCRIPTION = `Question to ask the user`
 
-Example: Asking for file path
-{ "question": "What is the path to the frontend-config.json file?", "follow_up": [{ "text": "./src/frontend-config.json", "mode": null }, { "text": "./config/frontend-config.json", "mode": null }, { "text": "./frontend-config.json", "mode": null }] }
+const FOLLOW_UP_PARAMETER_DESCRIPTION = `2-4 complete suggested responses`
 
-Example: Asking with mode switch
-{ "question": "Would you like me to implement this feature?", "follow_up": [{ "text": "Yes, implement it now", "mode": "code" }, { "text": "No, just plan it out", "mode": "architect" }] }`
+const FOLLOW_UP_TEXT_DESCRIPTION = `Suggested answer text`
 
-const QUESTION_PARAMETER_DESCRIPTION = `Clear, specific question that captures the missing information you need`
-
-const FOLLOW_UP_PARAMETER_DESCRIPTION = `Required list of 2-4 suggested responses; each suggestion must be a complete, actionable answer and may include a mode switch`
-
-const FOLLOW_UP_TEXT_DESCRIPTION = `Suggested answer the user can pick`
-
-const FOLLOW_UP_MODE_DESCRIPTION = `Optional mode slug to switch to if this suggestion is chosen (e.g., code, architect)`
+const FOLLOW_UP_MODE_DESCRIPTION = `Optional mode to switch to (e.g. code, architect)`
 
 export default {
 	type: "function",
