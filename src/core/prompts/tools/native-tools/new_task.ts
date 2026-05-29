@@ -1,14 +1,14 @@
 import type OpenAI from "openai"
 
-const NEW_TASK_DESCRIPTION = `Create a new task instance in the chosen mode using your provided message and initial todo list (if required).
+const NEW_TASK_DESCRIPTION = `Create a new task instance in a chosen mode with a message and initial todo list.
 
-CRITICAL: This tool MUST be called alone. Do NOT call this tool alongside other tools in the same message turn. If you need to gather information before delegating, use other tools in a separate turn first, then call new_task by itself in the next turn.`
+CRITICAL: Call this tool alone. Do NOT call it alongside other tools in the same turn. Gather necessary information in preceding turns first.`
 
-const MODE_PARAMETER_DESCRIPTION = `Slug of the mode to begin the new task in (e.g., code, debug, architect)`
+const MODE_PARAMETER_DESCRIPTION = `Mode slug to begin the new task in (e.g. code, debug, architect)`
 
-const MESSAGE_PARAMETER_DESCRIPTION = `Initial user instructions or context for the new task`
+const MESSAGE_PARAMETER_DESCRIPTION = `Initial instructions or context`
 
-const TODOS_PARAMETER_DESCRIPTION = `Optional initial todo list written as a markdown checklist; required when the workspace mandates todos`
+const TODOS_PARAMETER_DESCRIPTION = `Optional initial todo markdown checklist`
 
 export default {
 	type: "function",

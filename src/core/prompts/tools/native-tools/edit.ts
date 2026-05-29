@@ -1,14 +1,13 @@
 import type OpenAI from "openai"
 
-const EDIT_DESCRIPTION = `Performs exact string replacements in files.
+const EDIT_DESCRIPTION = `Perform exact string replacements in files.
 
-Usage:
-- You must use your \`Read\` tool at least once in the conversation before editing. This tool will error if you attempt an edit without reading the file.
-- When editing text from Read tool output, ensure you preserve the exact indentation (tabs/spaces) as it appears AFTER the line number prefix. The line number prefix format is: spaces + line number + tab. Everything after that tab is the actual file content to match. Never include any part of the line number prefix in the old_string or new_string.
-- ALWAYS prefer editing existing files in the codebase. NEVER write new files unless explicitly required.
-- Only use emojis if the user explicitly requests it. Avoid adding emojis to files unless asked.
-- The edit will FAIL if \`old_string\` is not unique in the file. Either provide a larger string with more surrounding context to make it unique or use \`replace_all\` to change every instance of \`old_string\`.
-- Use \`replace_all\` for replacing and renaming strings across the file. This parameter is useful if you want to rename a variable for instance.`
+Usage Requirements:
+1. You MUST read the file first using a Read tool in the conversation.
+2. Match exact indentation (tabs/spaces) as it appears AFTER the line number prefix (spaces + line number + tab). Never include the line number prefix in old_string or new_string.
+3. Prefer editing existing files.
+4. Do not add emojis unless explicitly requested.
+5. The edit will fail if old_string is not unique. Provide more surrounding context to make it unique, or set replace_all to true to replace all instances.`
 
 const edit = {
 	type: "function",

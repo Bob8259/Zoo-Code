@@ -1,10 +1,10 @@
 import type OpenAI from "openai"
 
-const SWITCH_MODE_DESCRIPTION = `Request to switch to a different mode. This tool allows modes to request switching to another mode when needed, such as switching to Code mode to make code changes. The user must approve the mode switch.`
+const SWITCH_MODE_DESCRIPTION = `Request a switch to a different mode (e.g. Code mode to make edits). Requires user approval.`
 
-const MODE_SLUG_PARAMETER_DESCRIPTION = `Slug of the mode to switch to (e.g., code, ask, architect)`
+const MODE_SLUG_PARAMETER_DESCRIPTION = `Mode slug to switch to (e.g. code, ask, architect)`
 
-const REASON_PARAMETER_DESCRIPTION = `Explanation for why the mode switch is needed`
+const REASON_PARAMETER_DESCRIPTION = `Reason for the mode switch`
 
 export default {
 	type: "function",
