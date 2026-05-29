@@ -14,22 +14,6 @@ import { listFiles } from "../../services/glob/list-files"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { arePathsEqual } from "../../utils/path"
-import path from "path"
-import os from "os"
-
-import * as vscode from "vscode"
-import pWaitFor from "p-wait-for"
-import delay from "delay"
-
-import type { ExperimentId } from "@roo-code/types"
-
-import { formatLanguage } from "../../shared/language"
-import { defaultModeSlug, getFullModeDetails } from "../../shared/modes"
-import { getApiMetrics } from "../../shared/getApiMetrics"
-import { listFiles } from "../../services/glob/list-files"
-import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
-import { Terminal } from "../../integrations/terminal/Terminal"
-import { arePathsEqual } from "../../utils/path"
 import { formatResponse } from "../prompts/responses"
 import { getGitStatus } from "../../utils/git"
 
