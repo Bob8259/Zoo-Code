@@ -1690,8 +1690,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 				: {}),
 		}
-		// Generate environment details to include in the condensed summary
-		const environmentDetails = await getEnvironmentDetails(this, true)
+		// Generate environment details to include in the condensed summary (skipped by user request)
+		const environmentDetails = ""
 
 		const filesReadByRoo = await this.getFilesReadByRooSafely("condenseContext")
 
@@ -2429,9 +2429,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.apiConversationHistory = await this.getSavedApiConversationHistory()
 		}
 
-		// Add environment details to the existing last user message (which contains the tool_result)
-		// This avoids creating a new user message which would cause consecutive user messages
-		const environmentDetails = await getEnvironmentDetails(this, true)
 		let lastUserMsgIndex = -1
 		for (let i = this.apiConversationHistory.length - 1; i >= 0; i--) {
 			if (this.apiConversationHistory[i].role === "user") {
@@ -2442,7 +2439,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (lastUserMsgIndex >= 0) {
 			const lastUserMsg = this.apiConversationHistory[lastUserMsgIndex]
 			if (Array.isArray(lastUserMsg.content)) {
-				// Remove any existing environment_details blocks before adding fresh ones
+				// Remove any existing environment_details blocks (completely skipped environment details by user request)
 				const contentWithoutEnvDetails = lastUserMsg.content.filter(
 					(block: Anthropic.Messages.ContentBlockParam) => {
 						if (block.type === "text" && typeof block.text === "string") {
@@ -2454,8 +2451,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						return true
 					},
 				)
-				// Add fresh environment details
-				lastUserMsg.content = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+				lastUserMsg.content = contentWithoutEnvDetails
 			}
 		}
 
@@ -2577,7 +2573,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Respect user-configured provider rate limiting BEFORE we emit api_req_started.
 			// This prevents the UI from showing an "API Request..." spinner while we are
 			// intentionally waiting due to the rate limit slider.
-			//
 			// NOTE: We also set Task.lastGlobalApiRequestTime here to reserve this slot
 			// before we build environment details (which can take time).
 			// This ensures subsequent requests (including subtasks) still honour the
@@ -2624,13 +2619,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 			}
 
-			const environmentDetails = await getEnvironmentDetails(this, currentIncludeFileDetails)
-
-			// Remove any existing environment_details blocks before adding fresh ones.
-			// This prevents duplicate environment details when resuming tasks,
-			// where the old user message content may already contain environment details from the previous session.
-			// We check for both opening and closing tags to ensure we're matching complete environment detail blocks,
-			// not just mentions of the tag in regular content.
+			// Remove any existing environment_details blocks (completely skipped environment details by user request)
 			const contentWithoutEnvDetails = parsedUserContent.filter((block) => {
 				if (block.type === "text" && typeof block.text === "string") {
 					// Check if this text block is a complete environment_details block
@@ -2643,9 +2632,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				return true
 			})
 
-			// Add environment details as its own text block, separate from tool
-			// results.
-			let finalUserContent = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+			let finalUserContent = contentWithoutEnvDetails
 			// Only add user message to conversation history if:
 			// 1. This is the first attempt (retryAttempt === 0), AND
 			// 2. The original userContent was not empty (empty signals delegation resume where
@@ -3915,8 +3902,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		try {
-			// Generate environment details to include in the condensed summary
-			const environmentDetails = await getEnvironmentDetails(this, true)
+			// Generate environment details to include in the condensed summary (skipped by user request)
+			const environmentDetails = ""
 
 			// Force aggressive truncation by keeping only 75% of the conversation history
 			const truncateResult = await manageContext({
@@ -4129,12 +4116,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					: {}),
 			}
 
-			// Only generate environment details when context management will actually run.
-			// getEnvironmentDetails(this, true) triggers a recursive workspace listing which
-			// adds overhead - avoid this for the common case where context is below threshold.
-			const contextMgmtEnvironmentDetails = contextManagementWillRun
-				? await getEnvironmentDetails(this, true)
-				: undefined
+			// Only generate environment details when context management will actually run (skipped by user request)
+			const contextMgmtEnvironmentDetails = undefined
 
 			// Get files read by Roo for code folding - only when context management will run
 			const contextMgmtFilesReadByRoo =
@@ -4304,8 +4287,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const abortSignal = this.currentRequestAbortController.signal
 		// Reset the flag after using it
 		this.skipPrevResponseIdOnce = false
-
-		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
 		const stream = this.api.createMessage(
 			systemPrompt,
 			cleanConversationHistory as unknown as Anthropic.Messages.MessageParam[],

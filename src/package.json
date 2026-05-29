@@ -2,7 +2,7 @@
 	"name": "zoo-code-alt",
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
-	"publisher": "ZooCodeOrganization",
+	"publisher": "QCodeOrganization",
 	"version": "3.54.1",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
@@ -14,7 +14,7 @@
 		"node": "20.20.2"
 	},
 	"author": {
-		"name": "Zoo Code"
+		"name": "Q Code"
 	},
 	"repository": {
 		"type": "git",
@@ -42,8 +42,8 @@
 		"sonnet",
 		"ai",
 		"llama",
-		"zoo code",
-		"zoocode"
+		"q code",
+		"qcode"
 	],
 	"activationEvents": [
 		"onLanguage",

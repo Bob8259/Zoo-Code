@@ -63,7 +63,7 @@ export default defineConfig(({ mode }) => {
 		"process.env.VSCODE_TEXTMATE_DEBUG": JSON.stringify(process.env.VSCODE_TEXTMATE_DEBUG),
 		"process.env.PKG_NAME": JSON.stringify(pkg.name),
 		"process.env.PKG_VERSION": JSON.stringify(pkg.version),
-		"process.env.PKG_OUTPUT_CHANNEL": JSON.stringify("Zoo-Code"),
+		"process.env.PKG_OUTPUT_CHANNEL": JSON.stringify("Q-Code"),
 		"process.env.PKG_RELEASE_CHANNEL": JSON.stringify(process.env.PKG_RELEASE_CHANNEL || "stable"),
 		...(gitSha ? { "process.env.PKG_SHA": JSON.stringify(gitSha) } : {}),
 	}
@@ -79,7 +79,7 @@ export default defineConfig(({ mode }) => {
 
 		define["process.env.PKG_NAME"] = JSON.stringify(nightlyPkg.name)
 		define["process.env.PKG_VERSION"] = JSON.stringify(nightlyPkg.version)
-		define["process.env.PKG_OUTPUT_CHANNEL"] = JSON.stringify("Zoo-Code-Nightly")
+		define["process.env.PKG_OUTPUT_CHANNEL"] = JSON.stringify("Q-Code-Nightly")
 		define["process.env.PKG_RELEASE_CHANNEL"] = JSON.stringify("prerelease")
 	}
 
@@ -190,10 +190,9 @@ export default defineConfig(({ mode }) => {
 		optimizeDeps: {
 			include: [
 				"mermaid",
-				"dagre", // Explicitly include dagre for pre-bundling
 				// Add other known large mermaid dependencies if identified
 			],
-			exclude: ["@vscode/codicons", "vscode-oniguruma", "shiki"],
+			exclude: ["@vscode/codicons", "vscode-oniguruma", "shiki", "vscode"],
 		},
 		assetsInclude: ["**/*.wasm", "**/*.wav"],
 	}
