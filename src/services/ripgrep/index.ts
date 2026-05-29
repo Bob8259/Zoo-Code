@@ -83,11 +83,9 @@ export function truncateLine(line: string, maxLength: number = MAX_LINE_LENGTH):
  * Get the path to the ripgrep binary within the VSCode installation
  */
 export async function getBinPath(vscodeAppRoot: string): Promise<string | undefined> {
-	console.log(`[DEBUG RIPGREP] getBinPath: vscodeAppRoot = ${vscodeAppRoot}`)
 	const checkPath = async (absoluteFolder: string) => {
 		const fullPath = path.join(absoluteFolder, binName)
 		const exists = await fileExistsAtPath(fullPath)
-		console.log(`[DEBUG RIPGREP] checking path: ${fullPath} - exists: ${exists}`)
 		return exists ? fullPath : undefined
 	}
 
@@ -102,13 +100,11 @@ export async function getBinPath(vscodeAppRoot: string): Promise<string | undefi
 	for (const folder of vscodePaths) {
 		const pathFound = await checkPath(folder)
 		if (pathFound) {
-			console.log(`[DEBUG RIPGREP] Found ripgrep in VS Code App Root: ${pathFound}`)
 			return pathFound
 		}
 	}
 
 	// 2. Fallback to workspace/monorepo node_modules (useful in dev/extension host mode)
-	console.log("[DEBUG RIPGREP] Ripgrep not found in VS Code App Root, attempting project node_modules fallback...")
 	const devPaths = [
 		path.join(__dirname, "..", "..", "..", "node_modules", "@vscode", "ripgrep", "bin"),
 		path.join(__dirname, "..", "..", "..", "node_modules", "vscode-ripgrep", "bin"),
@@ -120,12 +116,10 @@ export async function getBinPath(vscodeAppRoot: string): Promise<string | undefi
 	for (const folder of devPaths) {
 		const pathFound = await checkPath(folder)
 		if (pathFound) {
-			console.log(`[DEBUG RIPGREP] Found ripgrep via dev/workspace fallback: ${pathFound}`)
 			return pathFound
 		}
 	}
 
-	console.error("[DEBUG RIPGREP] Ripgrep could not be found anywhere!")
 	return undefined
 }
 

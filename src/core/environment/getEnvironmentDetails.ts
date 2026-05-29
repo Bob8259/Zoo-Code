@@ -25,13 +25,11 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	try {
 		let details = ""
 
-		clineProvider?.log("[DEBUG ENV DETAILS] getEnvironmentDetails function entry")
 		const state = await clineProvider?.getState()
 		const { maxWorkspaceFiles = 200 } = state ?? {}
 
 		// It could be useful for cline to know if the user went from one or no
 		// file to another between messages, so we always include this context.
-		clineProvider?.log("[DEBUG ENV DETAILS] visibleTextEditors check starting")
 		const visibleFilePaths = vscode.window.visibleTextEditors
 			?.map((editor) => editor.document?.uri?.fsPath)
 			.filter(Boolean)
@@ -48,7 +46,6 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 			details += `\n${allowedVisibleFiles}`
 		}
 
-		clineProvider?.log("[DEBUG ENV DETAILS] tabGroups scanning starting")
 		const { maxOpenTabsContext } = state ?? {}
 		const maxTabs = maxOpenTabsContext ?? 20
 		const openTabPaths = vscode.window.tabGroups.all
@@ -70,7 +67,6 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		}
 
 		// Get task-specific and background terminals.
-		clineProvider?.log("[DEBUG ENV DETAILS] TerminalRegistry check starting")
 		const busyTerminals = [
 			...TerminalRegistry.getTerminals(true, cline.taskId),
 			...TerminalRegistry.getBackgroundTerminals(true),
@@ -87,12 +83,10 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 			}
 
 			// Wait for terminals to cool down.
-			clineProvider?.log("[DEBUG ENV DETAILS] busyTerminals wait starting")
 			await pWaitFor(() => busyTerminals.every((t) => !TerminalRegistry.isProcessHot(t.id)), {
 				interval: 100,
 				timeout: 5_000,
 			}).catch(() => {})
-			clineProvider?.log("[DEBUG ENV DETAILS] busyTerminals wait completed")
 		}
 
 		// Reset, this lets us know when to wait for saved files to update terminals.
@@ -122,7 +116,6 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 
 		// First check if any inactive terminals in this task have completed
 		// processes with output.
-		clineProvider?.log("[DEBUG ENV DETAILS] completed process output starting")
 		const terminalsWithOutput = inactiveTerminals.filter((terminal) => {
 			const completedProcesses = terminal.getProcessesWithOutput()
 			return completedProcesses.length > 0
@@ -164,7 +157,6 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		}
 
 		// Add recently modified files section.
-		clineProvider?.log("[DEBUG ENV DETAILS] fileContextTracker recently modified files check starting")
 		const recentlyModifiedFiles = cline.fileContextTracker.getAndClearRecentlyModifiedFiles()
 
 		if (recentlyModifiedFiles.length > 0) {
@@ -184,7 +176,6 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 
 		// Add current time information with timezone (if enabled).
 		if (includeCurrentTime) {
-			clineProvider?.log("[DEBUG ENV DETAILS] includeCurrentTime starting")
 			const now = new Date()
 
 			const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -197,7 +188,6 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 
 		// Add git status information (if enabled with maxGitStatusFiles > 0).
 		if (maxGitStatusFiles > 0) {
-			clineProvider?.log("[DEBUG ENV DETAILS] includeGitStatus starting")
 			const gitStatus = await getGitStatus(cline.cwd, maxGitStatusFiles)
 			if (gitStatus) {
 				details += `\n\n# Git Status\n${gitStatus}`
@@ -224,7 +214,6 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 
 		const currentMode = mode ?? defaultModeSlug
 
-		clineProvider?.log("[DEBUG ENV DETAILS] getFullModeDetails starting")
 		const modeDetails = await getFullModeDetails(currentMode, customModes, customModePrompts, {
 			cwd: cline.cwd,
 			globalCustomInstructions,
@@ -236,9 +225,6 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		details += `<name>${modeDetails.name}</name>\n`
 		details += `<model>${modelId}</model>\n`
 
-		clineProvider?.log(
-			`[DEBUG ENV DETAILS] includeFileDetails check starting (includeFileDetails=${includeFileDetails})`,
-		)
 		if (includeFileDetails) {
 			details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files\n`
 			const isDesktop = arePathsEqual(cline.cwd, path.join(os.homedir(), "Desktop"))
@@ -254,9 +240,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 				if (maxFiles === 0) {
 					details += "(Workspace files context disabled. Use list_files to explore if needed.)"
 				} else {
-					clineProvider?.log(`[DEBUG ENV DETAILS] calling listFiles (maxFiles=${maxFiles})`)
 					const [files, didHitLimit] = await listFiles(cline.cwd, true, maxFiles)
-					clineProvider?.log("[DEBUG ENV DETAILS] listFiles completed successfully!")
 					const { showRooIgnoredFiles = false } = state ?? {}
 
 					const result = formatResponse.formatFilesList(
@@ -277,13 +261,9 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 				? state.apiConfiguration.todoListEnabled
 				: true
 		const reminderSection = todoListEnabled ? formatReminderSection(cline.todoList) : ""
-		clineProvider?.log("[DEBUG ENV DETAILS] getEnvironmentDetails completed successfully!")
 		return `<environment_details>\n${details.trim()}\n${reminderSection}\n</environment_details>`
 	} catch (error) {
 		console.error("Error in getEnvironmentDetails:", error)
-		clineProvider?.log(
-			`[ERROR ZOO-CODE] getEnvironmentDetails failed: ${error instanceof Error ? error.message : String(error)}`,
-		)
 		const reminderSection = formatReminderSection(cline.todoList)
 		return `<environment_details>\n(Error loading environment details)\n${reminderSection}\n</environment_details>`
 	}
