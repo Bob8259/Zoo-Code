@@ -3347,6 +3347,30 @@ export const webviewMessageHandler = async (
 					break
 				}
 
+				if (message.type === "openDebugApiHistory") {
+					const state = await provider.getState()
+					const systemPrompt = await (currentTask as any).getSystemPrompt()
+					const { buildNativeToolsArrayWithRestrictions } = await import("../task/build-tools")
+					const toolsResult = await buildNativeToolsArrayWithRestrictions({
+						provider,
+						cwd: currentTask.cwd,
+						mode: await currentTask.getTaskMode(),
+						customModes: state?.customModes,
+						experiments: state?.experiments,
+						apiConfiguration: currentTask.apiConfiguration,
+						disabledTools: state?.disabledTools,
+						modelInfo: currentTask.api.getModel().info,
+						includeAllToolsWithRestrictions: currentTask.apiConfiguration?.apiProvider === "gemini",
+					})
+
+					jsonContent = {
+						systemPrompt,
+						tools: toolsResult.tools,
+						allowedFunctionNames: toolsResult.allowedFunctionNames,
+						messages: jsonContent,
+					}
+				}
+
 				// Prettify the JSON
 				const prettifiedContent = JSON.stringify(jsonContent, null, 2)
 

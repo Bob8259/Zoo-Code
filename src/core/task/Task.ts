@@ -2436,7 +2436,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				break
 			}
 		}
-		if (lastUserMsgIndex >= 0) {
+		if (lastUserMsgIndex > 0) {
 			const lastUserMsg = this.apiConversationHistory[lastUserMsgIndex]
 			if (Array.isArray(lastUserMsg.content)) {
 				// Remove any existing environment_details blocks (completely skipped environment details by user request)
@@ -2633,6 +2633,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			})
 
 			let finalUserContent = contentWithoutEnvDetails
+			if (currentIncludeFileDetails && this.apiConversationHistory.length === 0) {
+				const environmentDetails = await getEnvironmentDetails(this)
+				finalUserContent = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+			}
 			// Only add user message to conversation history if:
 			// 1. This is the first attempt (retryAttempt === 0), AND
 			// 2. The original userContent was not empty (empty signals delegation resume where

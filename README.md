@@ -12,9 +12,10 @@ The core concept driving **Q Code** is **"less is more"**. Rather than overloadi
 
 1. **Quick Mode Switch Shortcut (`Alt+Q`)**: Fast transition between **Code mode** and **Architecture mode** using a simple keyboard shortcut.
 2. **Simplified Prompts**: Highly optimized and simplified system prompts for tools and modes, giving the agent clear guidance and removing prompt clutter.
-3. **Removed Environment Details Context**: Completely stripped out the automated `<environment_details>` XML block (open tabs, terminal output checks, file listing trees, etc.) from the conversation loop. This avoids initial latency, saves substantial API tokens, and keeps the agent focused entirely on the relevant task workspace files.
+3. **Focused Environment Details Context**: Re-added a highly optimized `<environment_details>` XML block that ONLY includes the path to the currently active focused editor, injected exactly once at the start of each new conversation. This maintains minimal latency and saves API tokens while ensuring the agent always knows your starting active file.
 4. **Structured Markdown Context Compaction**: Replaced the verbose legacy XML-wrapped context summarization format with a concise, highly structured 7-section Markdown compaction format. This drastically reduces prompt overhead and keeps goals, constraints, progress, key decisions, and next steps perfectly synchronized. This compaction design is credited to and adapted from the elegant compaction methodology in [OpenCode](https://github.com/anomalyco/opencode).
 5. **Gemini-Optimized Escape Parser**: Modified the escape parser to make it fully compatible and suitable for Gemini models.
+6. **Enriched Debug API History**: Clicking "Open API History" in task debug options now displays a comprehensive view including the full system prompt, tool definitions array, and conversation history, rather than just raw user/assistant messages.
 
 ---
 
