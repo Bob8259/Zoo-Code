@@ -1,6 +1,6 @@
 import type OpenAI from "openai"
 
-const apply_patch_DESCRIPTION = `Apply patches (create, delete, update, rename files). Format:
+const apply_patch_DESCRIPTION = `Apply patches to create, delete, update, or rename files. For updates, use @@ hunks with enough surrounding context to locate each change; use ' ' for unchanged context lines, '-' for removals, and '+' for additions. Format:
 *** Begin Patch
 *** Add File: hello.txt
 +Hello world

@@ -1,10 +1,10 @@
 import type OpenAI from "openai"
 
-const SKILL_DESCRIPTION = `Load and execute a skill by name to follow documented procedures.`
+const SKILL_DESCRIPTION = `Load and execute a skill by name to follow documented procedures. Use only for skills listed in the available skills section, and pass any task-relevant context as args.`
 
-const SKILL_PARAMETER_DESCRIPTION = `Name of the skill to load`
+const SKILL_PARAMETER_DESCRIPTION = `Name of the skill to load; must match an available skill name`
 
-const ARGS_PARAMETER_DESCRIPTION = `Optional arguments for the skill`
+const ARGS_PARAMETER_DESCRIPTION = `Optional context or arguments to pass to the skill`
 
 export default {
 	type: "function",

@@ -1,12 +1,12 @@
 import type OpenAI from "openai"
 
-const EXECUTE_COMMAND_DESCRIPTION = `Execute a CLI command on the system.`
+const EXECUTE_COMMAND_DESCRIPTION = `Execute a CLI command on the system. Use for system operations, scripts, builds, tests, and other commands needed to complete the task. Tailor commands to the user's OS and shell; use an explicit cwd when location matters, and set a timeout for long-running processes such as dev servers, watchers, or commands that may not exit on their own.`
 
-const COMMAND_PARAMETER_DESCRIPTION = `Shell command to execute`
+const COMMAND_PARAMETER_DESCRIPTION = `Shell command to execute. It should be valid for the current operating system and shell.`
 
-const CWD_PARAMETER_DESCRIPTION = `Optional working directory`
+const CWD_PARAMETER_DESCRIPTION = `Optional working directory for the command, relative or absolute`
 
-const TIMEOUT_PARAMETER_DESCRIPTION = `Timeout in seconds. If exceeded, the command runs in background.`
+const TIMEOUT_PARAMETER_DESCRIPTION = `Timeout in seconds. If exceeded, the command continues running in the background and returns output collected so far.`
 
 export default {
 	type: "function",

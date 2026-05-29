@@ -9,13 +9,13 @@ import type OpenAI from "openai"
  * LLM can then use this tool to read the full content or search within it.
  */
 
-const READ_COMMAND_OUTPUT_DESCRIPTION = `Retrieve full command output that was truncated during execute_command.`
+const READ_COMMAND_OUTPUT_DESCRIPTION = `Retrieve full command output that was truncated during execute_command. Use this when the preview omits needed output, when paging through a large artifact, or when searching within command output.`
 
-const ARTIFACT_ID_DESCRIPTION = `The artifact filename (e.g., "cmd-XXXX.txt")`
+const ARTIFACT_ID_DESCRIPTION = `The artifact filename from the truncated command output (e.g., "cmd-XXXX.txt")`
 
-const SEARCH_DESCRIPTION = `Optional regex or literal pattern to filter lines (case-insensitive)`
+const SEARCH_DESCRIPTION = `Optional regex or literal pattern to filter lines, case-insensitive. Omit when not searching.`
 
-const OFFSET_DESCRIPTION = `Byte offset to start reading from`
+const OFFSET_DESCRIPTION = `Byte offset to start reading from, useful for pagination`
 
 const LIMIT_DESCRIPTION = `Maximum bytes to return`
 

@@ -1,12 +1,12 @@
 import type OpenAI from "openai"
 
-const GENERATE_IMAGE_DESCRIPTION = `Generate or edit an image using AI models. Can create new images or modify existing ones.`
+const GENERATE_IMAGE_DESCRIPTION = `Generate or edit an image using AI models. Provide a prompt describing the desired image or edit, a workspace-relative output path, and optionally an existing image path to transform.`
 
-const PROMPT_PARAMETER_DESCRIPTION = `Text prompt describing what to generate or edit`
+const PROMPT_PARAMETER_DESCRIPTION = `Text prompt describing what to generate or what edits to apply`
 
-const PATH_PARAMETER_DESCRIPTION = `Path (relative to workspace) to save the resulting image`
+const PATH_PARAMETER_DESCRIPTION = `Filesystem path, relative to the workspace, where the resulting image should be saved`
 
-const IMAGE_PARAMETER_DESCRIPTION = `Optional relative path to an existing image to edit (PNG, JPG, JPEG, GIF, WEBP)`
+const IMAGE_PARAMETER_DESCRIPTION = `Optional path, relative to the workspace, to an existing image to edit (PNG, JPG, JPEG, GIF, WEBP)`
 
 export default {
 	type: "function",

@@ -50,6 +50,7 @@ rel/path/to/helper.ts
 
 const isWindows = process.platform.startsWith("win")
 const binName = isWindows ? "rg.exe" : "rg"
+const platformArch = `${process.platform}-${process.arch}`
 
 interface SearchFileResult {
 	file: string
@@ -95,6 +96,8 @@ export async function getBinPath(vscodeAppRoot: string): Promise<string | undefi
 		path.join(vscodeAppRoot, "node_modules/vscode-ripgrep/bin"),
 		path.join(vscodeAppRoot, "node_modules.asar.unpacked/vscode-ripgrep/bin/"),
 		path.join(vscodeAppRoot, "node_modules.asar.unpacked/@vscode/ripgrep/bin/"),
+		path.join(vscodeAppRoot, "node_modules/@vscode/ripgrep-universal/bin", platformArch),
+		path.join(vscodeAppRoot, "node_modules.asar.unpacked/@vscode/ripgrep-universal/bin", platformArch),
 	]
 
 	for (const folder of vscodePaths) {
@@ -108,9 +111,11 @@ export async function getBinPath(vscodeAppRoot: string): Promise<string | undefi
 	const devPaths = [
 		path.join(__dirname, "..", "..", "..", "node_modules", "@vscode", "ripgrep", "bin"),
 		path.join(__dirname, "..", "..", "..", "node_modules", "vscode-ripgrep", "bin"),
+		path.join(__dirname, "..", "..", "..", "node_modules", "@vscode", "ripgrep-universal", "bin", platformArch),
 		// If compiled and running in dist
 		path.join(__dirname, "..", "..", "node_modules", "@vscode", "ripgrep", "bin"),
 		path.join(__dirname, "..", "..", "node_modules", "vscode-ripgrep", "bin"),
+		path.join(__dirname, "..", "..", "node_modules", "@vscode", "ripgrep-universal", "bin", platformArch),
 	]
 
 	for (const folder of devPaths) {

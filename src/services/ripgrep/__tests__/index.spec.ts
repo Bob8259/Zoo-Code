@@ -1,6 +1,14 @@
 // npx vitest run src/services/ripgrep/__tests__/index.spec.ts
 
-import { truncateLine } from "../index"
+import * as path from "path"
+
+import { fileExistsAtPath } from "../../../utils/fs"
+
+import { getBinPath, truncateLine } from "../index"
+
+vi.mock("../../../utils/fs", () => ({
+	fileExistsAtPath: vi.fn(),
+}))
 
 describe("Ripgrep line truncation", () => {
 	// The default MAX_LINE_LENGTH is 500 in the implementation
@@ -46,5 +54,31 @@ describe("Ripgrep line truncation", () => {
 
 		expect(truncated.length).toEqual(customLength + " [truncated...]".length)
 		expect(truncated).toContain("[truncated...]")
+	})
+})
+
+describe("getBinPath", () => {
+	const binName = process.platform.startsWith("win") ? "rg.exe" : "rg"
+	const platformArch = `${process.platform}-${process.arch}`
+
+	beforeEach(() => {
+		vi.mocked(fileExistsAtPath).mockReset()
+	})
+
+	it("should find ripgrep in VS Code ripgrep-universal layout", async () => {
+		const appRoot = path.join(path.sep, "mock", "vscode", "resources", "app")
+		const expectedPath = path.join(
+			appRoot,
+			"node_modules",
+			"@vscode",
+			"ripgrep-universal",
+			"bin",
+			platformArch,
+			binName,
+		)
+
+		vi.mocked(fileExistsAtPath).mockImplementation(async (candidatePath) => candidatePath === expectedPath)
+
+		await expect(getBinPath(appRoot)).resolves.toBe(expectedPath)
 	})
 })

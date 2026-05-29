@@ -1,6 +1,6 @@
 import type OpenAI from "openai"
 
-const EDIT_FILE_DESCRIPTION = `Replace text in an existing file, or create a new file. old_string must match exactly (use empty string "" to create a new file). For uniqueness, include surrounding context in old_string.`
+const EDIT_FILE_DESCRIPTION = `Replace text in an existing file, or create a new file. old_string should match the file contents exactly, including whitespace and indentation; use empty string "" to create a new file. For single replacements, include enough surrounding context to uniquely identify the target. Use expected_replacements only when intentionally replacing multiple occurrences.`
 
 const edit_file = {
 	type: "function",
@@ -12,20 +12,21 @@ const edit_file = {
 			properties: {
 				file_path: {
 					type: "string",
-					description: "Path to the file to modify or create",
+					description: "Path to the file to modify or create, relative or absolute",
 				},
 				old_string: {
 					type: "string",
 					description:
-						'Exact text to replace (provide 3+ lines of context around it for uniqueness). Use empty string "" to create a new file.',
+						'Exact literal text to replace, including whitespace and indentation. Include 3+ lines of context for uniqueness; use empty string "" to create a new file.',
 				},
 				new_string: {
 					type: "string",
-					description: "Replacement text or new file content",
+					description: "Replacement text, or complete new file content when old_string is empty",
 				},
 				expected_replacements: {
 					type: "number",
-					description: "Number of occurrences expected to be replaced (defaults to 1)",
+					description:
+						"Number of occurrences expected to be replaced. Defaults to 1; set only for intentional multi-replacement edits.",
 					minimum: 1,
 				},
 			},

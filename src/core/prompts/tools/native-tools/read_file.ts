@@ -62,31 +62,33 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 
 	// Build description based on capabilities
 	const description =
-		`Read exactly one file per call (use multiple parallel read_file calls for multiple files). ` +
-		`Supports 'slice' (sequential) or 'indentation' (semantic code blocks) modes. ` +
-		`Returns up to ${DEFAULT_LINE_LIMIT} lines per file. ` +
+		`Read exactly one file per call; use multiple parallel read_file calls for multiple files. ` +
+		`Supports 'slice' mode for sequential offset/limit reads and 'indentation' mode for complete semantic code blocks around an anchor line. ` +
+		`Prefer indentation mode when you have a target line number from search results, stack traces, or definition lookups; provide indentation.anchor_line or the result will not target the intended block. ` +
+		`Returns up to ${DEFAULT_LINE_LIMIT} lines per file, and lines longer than ${MAX_LINE_LENGTH} characters are truncated. ` +
 		getReadFileSupportsNote(supportsImages)
 
 	const indentationProperties: Record<string, unknown> = {
 		anchor_line: {
 			type: "integer",
-			description: "1-based line number to anchor block extraction",
+			description:
+				"1-based line number to anchor block extraction. Required for useful indentation mode results; use the line number from search results, errors, or definition lookups.",
 		},
 		max_levels: {
 			type: "integer",
-			description: "Max levels of parent context to include (0 for unlimited)",
+			description: "Max levels of parent context to include in indentation mode (0 for unlimited)",
 		},
 		include_siblings: {
 			type: "boolean",
-			description: "Include sibling blocks at the same level",
+			description: "Include sibling blocks at the same indentation level as the anchor block",
 		},
 		include_header: {
 			type: "boolean",
-			description: "Include file header/imports",
+			description: "Include file header content such as imports and module-level comments",
 		},
 		max_lines: {
 			type: "integer",
-			description: "Hard cap on returned lines in indentation mode",
+			description: "Hard cap on lines returned for indentation mode, separate from the top-level limit",
 		},
 	}
 
@@ -98,19 +100,21 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		mode: {
 			type: "string",
 			enum: ["slice", "indentation"],
-			description: "'slice' (sequential) or 'indentation' (semantic code blocks)",
+			description:
+				"'slice' reads sequential lines with offset/limit; 'indentation' extracts the complete semantic block containing indentation.anchor_line and avoids mid-function truncation.",
 		},
 		offset: {
 			type: "integer",
-			description: "1-based line offset to start reading from (slice mode)",
+			description: "1-based line offset to start reading from in slice mode",
 		},
 		limit: {
 			type: "integer",
-			description: "Maximum number of lines to return (slice mode)",
+			description: `Maximum number of lines to return in slice mode (default: ${DEFAULT_LINE_LIMIT})`,
 		},
 		indentation: {
 			type: "object",
-			description: "Options for indentation mode. You MUST specify anchor_line to extract a semantic block.",
+			description:
+				"Options for indentation mode. You MUST specify anchor_line to extract the intended semantic block.",
 			properties: indentationProperties,
 			required: [],
 			additionalProperties: false,

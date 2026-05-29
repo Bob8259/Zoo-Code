@@ -1,10 +1,10 @@
 import type OpenAI from "openai"
 
-const RUN_SLASH_COMMAND_DESCRIPTION = `Execute a slash command to get instructions or content.`
+const RUN_SLASH_COMMAND_DESCRIPTION = `Execute a slash command to get predefined instructions or content for a common task.`
 
-const COMMAND_PARAMETER_DESCRIPTION = `Name of the slash command`
+const COMMAND_PARAMETER_DESCRIPTION = `Name of the slash command to run`
 
-const ARGS_PARAMETER_DESCRIPTION = `Optional command arguments`
+const ARGS_PARAMETER_DESCRIPTION = `Optional additional context or arguments for the command`
 
 export default {
 	type: "function",

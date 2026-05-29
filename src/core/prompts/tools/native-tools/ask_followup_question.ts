@@ -1,14 +1,14 @@
 import type OpenAI from "openai"
 
-const ASK_FOLLOWUP_QUESTION_DESCRIPTION = `Ask the user a question with 2-4 suggested responses to clarify requirements.`
+const ASK_FOLLOWUP_QUESTION_DESCRIPTION = `Ask the user a question only when additional information is needed to complete the task. Provide 2-4 suggested responses that are complete, actionable answers the user can select.`
 
-const QUESTION_PARAMETER_DESCRIPTION = `Question to ask the user`
+const QUESTION_PARAMETER_DESCRIPTION = `Clear, specific question addressing the missing information`
 
-const FOLLOW_UP_PARAMETER_DESCRIPTION = `2-4 complete suggested responses`
+const FOLLOW_UP_PARAMETER_DESCRIPTION = `2-4 complete suggested responses; each should be actionable and may include a mode switch`
 
-const FOLLOW_UP_TEXT_DESCRIPTION = `Suggested answer text`
+const FOLLOW_UP_TEXT_DESCRIPTION = `Suggested answer text the user can pick`
 
-const FOLLOW_UP_MODE_DESCRIPTION = `Optional mode to switch to (e.g. code, architect)`
+const FOLLOW_UP_MODE_DESCRIPTION = `Optional mode slug to switch to if this suggestion is chosen (e.g. code, architect)`
 
 export default {
 	type: "function",
