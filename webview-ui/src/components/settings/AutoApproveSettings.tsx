@@ -4,9 +4,9 @@ import { Trans } from "react-i18next"
 import { Package } from "@roo/package"
 
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeCheckbox, VSCodeTextArea } from "@vscode/webview-ui-toolkit/react"
 import { vscode } from "@/utils/vscode"
-import { Button, Input, Slider } from "@/components/ui"
+import { Button, Input, Slider, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -28,6 +28,10 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	alwaysAllowModeSwitch?: boolean
 	alwaysAllowSubtasks?: boolean
 	alwaysAllowExecute?: boolean
+	enableCommandAutoReview?: boolean
+	commandAutoReviewProfileId?: string
+	commandAutoReviewPrompt?: string
+	listApiConfigMeta?: any[]
 	alwaysAllowFollowupQuestions?: boolean
 	followupAutoApproveTimeoutMs?: number
 	allowedCommands?: string[]
@@ -44,6 +48,9 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "alwaysAllowModeSwitch"
 		| "alwaysAllowSubtasks"
 		| "alwaysAllowExecute"
+		| "enableCommandAutoReview"
+		| "commandAutoReviewProfileId"
+		| "commandAutoReviewPrompt"
 		| "alwaysAllowFollowupQuestions"
 		| "followupAutoApproveTimeoutMs"
 		| "allowedCommands"
@@ -63,6 +70,10 @@ export const AutoApproveSettings = ({
 	alwaysAllowModeSwitch,
 	alwaysAllowSubtasks,
 	alwaysAllowExecute,
+	enableCommandAutoReview,
+	commandAutoReviewProfileId,
+	commandAutoReviewPrompt,
+	listApiConfigMeta,
 	alwaysAllowFollowupQuestions,
 	followupAutoApproveTimeoutMs = 60000,
 	allowedCommands,
@@ -388,6 +399,86 @@ export const AutoApproveSettings = ({
 									</div>
 								</Button>
 							))}
+						</div>
+
+						{/* Command Auto-Review Section */}
+						<div className="border-t border-vscode-settings-sectionBorder pt-4 mt-4">
+							<SearchableSetting
+								settingId="enable-command-auto-review"
+								section="autoApprove"
+								label="Enable AI Command Auto-Review">
+								<VSCodeCheckbox
+									checked={enableCommandAutoReview}
+									onChange={(e: any) =>
+										setCachedStateField("enableCommandAutoReview", e.target.checked)
+									}
+									data-testid="enable-command-auto-review-checkbox">
+									<span className="font-medium">Enable AI Command Auto-Review</span>
+								</VSCodeCheckbox>
+								<div className="text-vscode-descriptionForeground text-sm mt-1">
+									Let a secondary AI model review terminal commands for safety and correctness before
+									they are auto-executed. If rejected or unsure, you will be prompted to approve
+									manually.
+								</div>
+							</SearchableSetting>
+
+							{enableCommandAutoReview && (
+								<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background mt-3">
+									<SearchableSetting
+										settingId="command-auto-review-profile"
+										section="autoApprove"
+										label="Review API Configuration">
+										<label className="block font-medium mb-1">Review API Configuration</label>
+										<Select
+											value={commandAutoReviewProfileId || "default"}
+											onValueChange={(value) =>
+												setCachedStateField("commandAutoReviewProfileId", value)
+											}
+											data-testid="command-auto-review-profile-select">
+											<SelectTrigger className="w-full">
+												<SelectValue placeholder="Select profile for review" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="default">
+													Default (Use current active profile)
+												</SelectItem>
+												{(listApiConfigMeta || []).map((config) => (
+													<SelectItem key={config.id} value={config.id}>
+														{config.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<div className="text-vscode-descriptionForeground text-sm mt-1">
+											Select which saved Configuration Profile to use for reviewing commands.
+										</div>
+									</SearchableSetting>
+
+									<SearchableSetting
+										settingId="command-auto-review-prompt"
+										section="autoApprove"
+										label="Custom Review Prompt">
+										<label className="block font-medium mb-1">Custom Review Prompt</label>
+										<VSCodeTextArea
+											resize="vertical"
+											value={commandAutoReviewPrompt || ""}
+											onInput={(e) => {
+												const value =
+													(e as unknown as CustomEvent)?.detail?.target?.value ??
+													((e as any).target as HTMLTextAreaElement).value
+												setCachedStateField("commandAutoReviewPrompt", value)
+											}}
+											rows={6}
+											className="w-full"
+											placeholder="Leave empty to use the default safety-focused prompt..."
+											data-testid="command-auto-review-prompt-textarea"
+										/>
+										<div className="text-vscode-descriptionForeground text-sm mt-1">
+											Optional: Override the default prompt sent to the Review AI.
+										</div>
+									</SearchableSetting>
+								</div>
+							)}
 						</div>
 					</div>
 				)}

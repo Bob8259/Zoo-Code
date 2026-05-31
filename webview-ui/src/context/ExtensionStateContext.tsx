@@ -55,6 +55,12 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setAlwaysAllowFollowupQuestions: (value: boolean) => void // Setter for the new property
 	followupAutoApproveTimeoutMs: number | undefined // Timeout in ms for auto-approving follow-up questions
 	setFollowupAutoApproveTimeoutMs: (value: number) => void // Setter for the timeout
+	enableCommandAutoReview?: boolean
+	setEnableCommandAutoReview: (value: boolean) => void
+	commandAutoReviewProfileId?: string
+	setCommandAutoReviewProfileId: (value: string | undefined) => void
+	commandAutoReviewPrompt?: string
+	setCommandAutoReviewPrompt: (value: string | undefined) => void
 	marketplaceItems?: any[]
 	marketplaceInstalledMetadata?: MarketplaceInstalledMetadata
 	profileThresholds: Record<string, number>
@@ -218,6 +224,9 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		enhancementApiConfigId: "",
 		hasOpenedModeSelector: false, // Default to false (not opened yet)
 		autoApprovalEnabled: false,
+		enableCommandAutoReview: false,
+		commandAutoReviewProfileId: "default",
+		commandAutoReviewPrompt: "",
 		customModes: [],
 		maxOpenTabsContext: 20,
 		maxWorkspaceFiles: 200,
@@ -508,6 +517,12 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setAlwaysAllowWriteOutsideWorkspace: (value) =>
 			setState((prevState) => ({ ...prevState, alwaysAllowWriteOutsideWorkspace: value })),
 		setAlwaysAllowExecute: (value) => setState((prevState) => ({ ...prevState, alwaysAllowExecute: value })),
+		setEnableCommandAutoReview: (value) =>
+			setState((prevState) => ({ ...prevState, enableCommandAutoReview: value })),
+		setCommandAutoReviewProfileId: (value) =>
+			setState((prevState) => ({ ...prevState, commandAutoReviewProfileId: value })),
+		setCommandAutoReviewPrompt: (value) =>
+			setState((prevState) => ({ ...prevState, commandAutoReviewPrompt: value })),
 		setAlwaysAllowMcp: (value) => setState((prevState) => ({ ...prevState, alwaysAllowMcp: value })),
 		setAlwaysAllowModeSwitch: (value) => setState((prevState) => ({ ...prevState, alwaysAllowModeSwitch: value })),
 		setAlwaysAllowSubtasks: (value) => setState((prevState) => ({ ...prevState, alwaysAllowSubtasks: value })),

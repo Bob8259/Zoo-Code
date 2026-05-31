@@ -303,4 +303,83 @@ describe("executeCommandTool", () => {
 			expect(executeCommandModule.resolveAgentTimeoutMs(30)).toBe(30_000)
 		})
 	})
+
+	describe("Command Auto-Review (Three-Level Filter)", () => {
+		it("should auto-approve via Level 1 explicit allowedCommands list", async () => {
+			mockCline.providerRef.deref = vitest.fn().mockResolvedValue({
+				getState: vitest.fn().mockResolvedValue({
+					alwaysAllowExecute: true,
+					allowedCommands: ["git status"],
+					deniedCommands: [],
+					enableCommandAutoReview: true,
+				}),
+				postMessageToWebview: vitest.fn(),
+			})
+			mockToolUse.params.command = "git status"
+			mockToolUse.nativeArgs = { command: "git status" }
+
+			await executeCommandTool.handle(mockCline as unknown as Task, mockToolUse, {
+				askApproval: mockAskApproval as unknown as AskApproval,
+				handleError: mockHandleError as unknown as HandleError,
+				pushToolResult: mockPushToolResult as unknown as PushToolResult,
+			})
+
+			expect(mockAskApproval).not.toHaveBeenCalled()
+			expect(mockPushToolResult).toHaveBeenCalled()
+		})
+
+		it("should auto-reject via Level 1 explicit deniedCommands list", async () => {
+			mockCline.providerRef.deref = vitest.fn().mockResolvedValue({
+				getState: vitest.fn().mockResolvedValue({
+					alwaysAllowExecute: true,
+					allowedCommands: [],
+					deniedCommands: ["rm -rf"],
+					enableCommandAutoReview: true,
+				}),
+				postMessageToWebview: vitest.fn(),
+			})
+			mockToolUse.params.command = "rm -rf /test"
+			mockToolUse.nativeArgs = { command: "rm -rf /test" }
+
+			await executeCommandTool.handle(mockCline as unknown as Task, mockToolUse, {
+				askApproval: mockAskApproval as unknown as AskApproval,
+				handleError: mockHandleError as unknown as HandleError,
+				pushToolResult: mockPushToolResult as unknown as PushToolResult,
+			})
+
+			expect(mockAskApproval).not.toHaveBeenCalled()
+			expect(mockCline.didRejectTool).toBe(true)
+			expect(mockPushToolResult).toHaveBeenCalled()
+		})
+
+		it("should auto-approve when AI Command Auto-Review approves", async () => {
+			const mockReview = vitest.fn().mockResolvedValue({ approved: "Yes", reason: "Safe to run" })
+			vitest.doMock("../../../services/command/CommandReviewService", () => ({
+				CommandReviewService: {
+					reviewCommand: mockReview,
+				},
+			}))
+
+			mockCline.providerRef.deref = vitest.fn().mockResolvedValue({
+				getState: vitest.fn().mockResolvedValue({
+					alwaysAllowExecute: true,
+					allowedCommands: [],
+					deniedCommands: [],
+					enableCommandAutoReview: true,
+				}),
+				postMessageToWebview: vitest.fn(),
+			})
+			mockToolUse.params.command = "git log"
+			mockToolUse.nativeArgs = { command: "git log" }
+
+			await executeCommandTool.handle(mockCline as unknown as Task, mockToolUse, {
+				askApproval: mockAskApproval as unknown as AskApproval,
+				handleError: mockHandleError as unknown as HandleError,
+				pushToolResult: mockPushToolResult as unknown as PushToolResult,
+			})
+
+			expect(mockAskApproval).not.toHaveBeenCalled()
+			expect(mockPushToolResult).toHaveBeenCalled()
+		})
+	})
 })

@@ -65,15 +65,78 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 
 			task.consecutiveMistakeCount = 0
 
-			const didApprove = await askApproval("command", canonicalCommand)
+			const provider = await task.providerRef.deref()
+			const providerState = await provider?.getState()
+			const {
+				alwaysAllowExecute = false,
+				allowedCommands = [],
+				deniedCommands = [],
+				enableCommandAutoReview = false,
+			} = providerState ?? {}
+
+			// Level 1: Explicit Pattern Match Filter (Allowed / Denied Lists)
+			let level1Approved = false
+			let level1Denied = false
+
+			if (alwaysAllowExecute) {
+				const { getCommandDecision } = await import("../../core/auto-approval/commands")
+				const decision = getCommandDecision(canonicalCommand, allowedCommands, deniedCommands)
+				if (decision === "auto_approve") {
+					level1Approved = true
+				} else if (decision === "auto_deny") {
+					level1Denied = true
+				}
+			}
+
+			let didApprove = false
+
+			if (level1Approved) {
+				didApprove = true
+			} else if (level1Denied) {
+				task.didRejectTool = true
+				pushToolResult(formatResponse.toolDenied())
+				return
+			} else if (alwaysAllowExecute && enableCommandAutoReview) {
+				// Level 2 & 3: Invoke AI Auto-Review
+				await task.say("command_output", "Reviewing command safety using AI Command Auto-Review...")
+				const { CommandReviewService } = await import("../../services/command/CommandReviewService")
+
+				let workingDir: string
+				if (!customCwd) {
+					workingDir = task.cwd
+				} else if (path.isAbsolute(customCwd)) {
+					workingDir = customCwd
+				} else {
+					workingDir = path.resolve(task.cwd, customCwd)
+				}
+
+				const reviewResult = await CommandReviewService.reviewCommand(canonicalCommand, workingDir, task)
+
+				if (reviewResult.approved === "Yes") {
+					await task.say(
+						"command_output",
+						`AI Command Auto-Review: Approved.\nReason: ${reviewResult.reason}`,
+					)
+					didApprove = true
+				} else {
+					// Level 3: Rejected ("No") or "Unsure" -> Ask user, passing the AI's reason.
+					const warningPrefix =
+						reviewResult.approved === "No"
+							? "🚨 AI Command Auto-Review REJECTED:"
+							: "⚠️ AI Command Auto-Review UNSURE:"
+					const approvalMessage = `${canonicalCommand}\n\n${warningPrefix}\n${reviewResult.reason}`
+					didApprove = await askApproval("command", approvalMessage)
+				}
+			} else {
+				// Standard flow
+				didApprove = await askApproval("command", canonicalCommand)
+			}
 
 			if (!didApprove) {
 				return
 			}
 
 			const executionId = task.lastMessageTs?.toString() ?? Date.now().toString()
-			const provider = await task.providerRef.deref()
-			const providerState = await provider?.getState()
 
 			const { terminalShellIntegrationDisabled = true } = providerState ?? {}
 
