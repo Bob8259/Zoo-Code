@@ -269,7 +269,18 @@
 			"commandPlaceholder": "Komut öneki girin (örn. 'git ')",
 			"deniedCommandPlaceholder": "Reddetmek için komut öneki girin (örn. 'rm -rf')",
 			"addButton": "Ekle",
-			"autoDenied": "`{{prefix}}` önekli komutlar kullanıcı tarafından yasaklandı. Başka bir komut çalıştırarak bu kısıtlamayı aşma."
+			"autoDenied": "`{{prefix}}` önekli komutlar kullanıcı tarafından yasaklandı. Başka bir komut çalıştırarak bu kısıtlamayı aşma.",
+			"autoReview": {
+				"label": "Yapay Zeka Komut Otomatik İncelemesini Etkinleştir",
+				"description": "İkincil bir yapay zeka modelinin terminal komutlarını otomatik yürütmeden önce güvenlik ve doğruluk açısından incelemesine izin verir. Reddedilirse veya emin olunmazsa, manuel olarak onaylamanız istenecektir.",
+				"profileLabel": "İnceleme API Yapılandırması",
+				"profileDescription": "Komut inceleme için kullanılacak kaydedilmiş Yapılandırma Profilini seçin.",
+				"profilePlaceholder": "İnceleme için profil seçin",
+				"profileDefault": "Varsayılan (Mevcut aktif profili kullan)",
+				"promptLabel": "Özel İnceleme Yönergesi",
+				"promptDescription": "İsteğe bağlı: İnceleme yapay zekasına gönderilen varsayılan yönergeyi geçersiz kılın.",
+				"promptPlaceholder": "Varsayılan güvenlik odaklı yönergeyi kullanmak için boş bırakın..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "Maksimum İstek",

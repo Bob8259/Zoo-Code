@@ -269,7 +269,18 @@
 			"commandPlaceholder": "コマンドプレフィックスを入力（例：'git '）",
 			"deniedCommandPlaceholder": "拒否するコマンドプレフィックスを入力（例：'rm -rf'）",
 			"addButton": "追加",
-			"autoDenied": "プレフィックス `{{prefix}}` を持つコマンドはユーザーによって禁止されています。別のコマンドを実行してこの制限を回避しないでください。"
+			"autoDenied": "プレフィックス `{{prefix}}` を持つコマンドはユーザーによって禁止されています。別のコマンドを実行してこの制限を回避しないでください。",
+			"autoReview": {
+				"label": "AI コマンド自動レビューを有効化",
+				"description": "サブ AI モデルがターミナルコマンドを自動実行する前に安全性と正確性をレビューします。拒否または不確実な場合は、手動で承認するよう求められます。",
+				"profileLabel": "レビュー API 設定",
+				"profileDescription": "コマンドのレビューに使用する保存済み設定プロファイルを選択します。",
+				"profilePlaceholder": "レビュー用プロファイルを選択",
+				"profileDefault": "デフォルト（現在のアクティブプロファイルを使用）",
+				"promptLabel": "カスタムレビュープロンプト",
+				"promptDescription": "オプション: レビュー AI に送信するデフォルトプロンプトを上書きします。",
+				"promptPlaceholder": "デフォルトの安全重視プロンプトを使用するには空のままにしてください..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "最大リクエスト数",

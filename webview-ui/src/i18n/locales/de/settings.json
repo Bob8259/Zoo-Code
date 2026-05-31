@@ -269,7 +269,18 @@
 			"commandPlaceholder": "Befehlspräfix eingeben (z.B. 'git ')",
 			"deniedCommandPlaceholder": "Befehlspräfix zum Verweigern eingeben (z.B. 'rm -rf')",
 			"addButton": "Hinzufügen",
-			"autoDenied": "Befehle mit dem Präfix `{{prefix}}` wurden vom Benutzer verboten. Umgehe diese Beschränkung nicht durch das Ausführen eines anderen Befehls."
+			"autoDenied": "Befehle mit dem Präfix `{{prefix}}` wurden vom Benutzer verboten. Umgehe diese Beschränkung nicht durch das Ausführen eines anderen Befehls.",
+			"autoReview": {
+				"label": "KI-Befehlsüberprüfung aktivieren",
+				"description": "Lässt ein sekundäres KI-Modell Terminalbefehle vor der automatischen Ausführung auf Sicherheit und Korrektheit prüfen. Bei Ablehnung oder Unsicherheit werden Sie zur manuellen Genehmigung aufgefordert.",
+				"profileLabel": "Überprüfungs-API-Konfiguration",
+				"profileDescription": "Wählen Sie das gespeicherte Konfigurationsprofil für die Befehlsüberprüfung.",
+				"profilePlaceholder": "Profil für Überprüfung auswählen",
+				"profileDefault": "Standard (Aktuelles aktives Profil verwenden)",
+				"promptLabel": "Benutzerdefinierter Überprüfungs-Prompt",
+				"promptDescription": "Optional: Überschreibt den Standard-Prompt, der an die Überprüfungs-KI gesendet wird.",
+				"promptPlaceholder": "Leer lassen, um den Standard-Sicherheits-Prompt zu verwenden..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "Maximale Anfragen",

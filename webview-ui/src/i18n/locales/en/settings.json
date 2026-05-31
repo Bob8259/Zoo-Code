@@ -330,7 +330,18 @@
 			"commandPlaceholder": "Enter command prefix (e.g., 'git ')",
 			"deniedCommandPlaceholder": "Enter command prefix to deny (e.g., 'rm -rf')",
 			"addButton": "Add",
-			"autoDenied": "Commands with the prefix `{{prefix}}` have been forbidden by the user. Do not bypass this restriction by running another command."
+			"autoDenied": "Commands with the prefix `{{prefix}}` have been forbidden by the user. Do not bypass this restriction by running another command.",
+			"autoReview": {
+				"label": "Enable AI Command Auto-Review",
+				"description": "Let a secondary AI model review terminal commands for safety and correctness before they are auto-executed. If rejected or unsure, you will be prompted to approve manually.",
+				"profileLabel": "Review API Configuration",
+				"profileDescription": "Select which saved Configuration Profile to use for reviewing commands.",
+				"profilePlaceholder": "Select profile for review",
+				"profileDefault": "Default (Use current active profile)",
+				"promptLabel": "Custom Review Prompt",
+				"promptDescription": "Optional: Override the default prompt sent to the Review AI.",
+				"promptPlaceholder": "Leave empty to use the default safety-focused prompt..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "Max Count",

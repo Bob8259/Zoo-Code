@@ -406,19 +406,19 @@ export const AutoApproveSettings = ({
 							<SearchableSetting
 								settingId="enable-command-auto-review"
 								section="autoApprove"
-								label="Enable AI Command Auto-Review">
+								label={t("settings:autoApprove.execute.autoReview.label")}>
 								<VSCodeCheckbox
 									checked={enableCommandAutoReview}
 									onChange={(e: any) =>
 										setCachedStateField("enableCommandAutoReview", e.target.checked)
 									}
 									data-testid="enable-command-auto-review-checkbox">
-									<span className="font-medium">Enable AI Command Auto-Review</span>
+									<span className="font-medium">
+										{t("settings:autoApprove.execute.autoReview.label")}
+									</span>
 								</VSCodeCheckbox>
 								<div className="text-vscode-descriptionForeground text-sm mt-1">
-									Let a secondary AI model review terminal commands for safety and correctness before
-									they are auto-executed. If rejected or unsure, you will be prompted to approve
-									manually.
+									{t("settings:autoApprove.execute.autoReview.description")}
 								</div>
 							</SearchableSetting>
 
@@ -427,8 +427,10 @@ export const AutoApproveSettings = ({
 									<SearchableSetting
 										settingId="command-auto-review-profile"
 										section="autoApprove"
-										label="Review API Configuration">
-										<label className="block font-medium mb-1">Review API Configuration</label>
+										label={t("settings:autoApprove.execute.autoReview.profileLabel")}>
+										<label className="block font-medium mb-1">
+											{t("settings:autoApprove.execute.autoReview.profileLabel")}
+										</label>
 										<Select
 											value={commandAutoReviewProfileId || "default"}
 											onValueChange={(value) =>
@@ -436,11 +438,15 @@ export const AutoApproveSettings = ({
 											}
 											data-testid="command-auto-review-profile-select">
 											<SelectTrigger className="w-full">
-												<SelectValue placeholder="Select profile for review" />
+												<SelectValue
+													placeholder={t(
+														"settings:autoApprove.execute.autoReview.profilePlaceholder",
+													)}
+												/>
 											</SelectTrigger>
 											<SelectContent>
 												<SelectItem value="default">
-													Default (Use current active profile)
+													{t("settings:autoApprove.execute.autoReview.profileDefault")}
 												</SelectItem>
 												{(listApiConfigMeta || []).map((config) => (
 													<SelectItem key={config.id} value={config.id}>
@@ -450,15 +456,17 @@ export const AutoApproveSettings = ({
 											</SelectContent>
 										</Select>
 										<div className="text-vscode-descriptionForeground text-sm mt-1">
-											Select which saved Configuration Profile to use for reviewing commands.
+											{t("settings:autoApprove.execute.autoReview.profileDescription")}
 										</div>
 									</SearchableSetting>
 
 									<SearchableSetting
 										settingId="command-auto-review-prompt"
 										section="autoApprove"
-										label="Custom Review Prompt">
-										<label className="block font-medium mb-1">Custom Review Prompt</label>
+										label={t("settings:autoApprove.execute.autoReview.promptLabel")}>
+										<label className="block font-medium mb-1">
+											{t("settings:autoApprove.execute.autoReview.promptLabel")}
+										</label>
 										<VSCodeTextArea
 											resize="vertical"
 											value={commandAutoReviewPrompt || ""}
@@ -470,11 +478,11 @@ export const AutoApproveSettings = ({
 											}}
 											rows={6}
 											className="w-full"
-											placeholder="Leave empty to use the default safety-focused prompt..."
+											placeholder={t("settings:autoApprove.execute.autoReview.promptPlaceholder")}
 											data-testid="command-auto-review-prompt-textarea"
 										/>
 										<div className="text-vscode-descriptionForeground text-sm mt-1">
-											Optional: Override the default prompt sent to the Review AI.
+											{t("settings:autoApprove.execute.autoReview.promptDescription")}
 										</div>
 									</SearchableSetting>
 								</div>

@@ -17,6 +17,10 @@ The core concept driving **Q Code** is **"less is more"**. Rather than overloadi
 5. **Gemini-Optimized Escape Parser**: Modified the escape parser to make it fully compatible and suitable for Gemini models.
 6. **Enriched Debug API History**: Clicking "Open API History" in task debug options now displays a comprehensive view including the full system prompt, tool definitions array, and conversation history, rather than just raw user/assistant messages.
 7. **Optimized `apply_diff` Tool Instructions**: Streamlined tool prompts and parameter descriptions with explicit guidelines for prefix stripping (removing line-number prefixes like `:130 | `), indentation normalization (converting hidden non-breaking spaces), literal matching, and concrete examples (replacing confusing placeholders) to ensure extremely reliable search/replace applications.
+8. **AI Command Auto-Review Guardrails**: Adds an intelligent, three-level safety filter for terminal commands before they are automatically executed:
+    - **Level 1 (Explicit Lists):** Matches command prefixes against Allowed/Denied lists to bypass or reject execution instantly.
+    - **Level 2 (Context-Aware Safety Review):** Gathers comprehensive environment state (User Intent, OS, CWD directory tree, referenced script contents, active TODOs, and recent chat history as a structured JSON array) and invokes a safety review LLM.
+    - **Level 3 (Action Routing):** Automatically executes approved commands, or prompts the user with a manual approval dialog showing the detailed safety reasoning if rejected or unsure. Includes a developer debug action (shield icon) to inspect the fully-resolved LLM parameters and multiline prompt JSON arrays natively in VS Code.
 
 ---
 

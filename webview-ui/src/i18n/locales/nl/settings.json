@@ -269,7 +269,18 @@
 			"commandPlaceholder": "Voer commando-prefix in (bijv. 'git ')",
 			"deniedCommandPlaceholder": "Voer te weigeren commando-prefix in (bijv. 'rm -rf')",
 			"addButton": "Toevoegen",
-			"autoDenied": "Commando's met het prefix `{{prefix}}` zijn verboden door de gebruiker. Omzeil deze beperking niet door een ander commando uit te voeren."
+			"autoDenied": "Commando's met het prefix `{{prefix}}` zijn verboden door de gebruiker. Omzeil deze beperking niet door een ander commando uit te voeren.",
+			"autoReview": {
+				"label": "AI-opdrachten automatisch controleren inschakelen",
+				"description": "Laat een secundair AI-model terminalopdrachten controleren op veiligheid en juistheid voordat ze automatisch worden uitgevoerd. Indien afgewezen of onzeker, wordt u gevraagd handmatig goed te keuren.",
+				"profileLabel": "Controleer API-configuratie",
+				"profileDescription": "Selecteer welk opgeslagen configuratieprofiel u wilt gebruiken voor het controleren van opdrachten.",
+				"profilePlaceholder": "Selecteer profiel voor controle",
+				"profileDefault": "Standaard (Gebruik huidig actief profiel)",
+				"promptLabel": "Aangepaste controleopdracht",
+				"promptDescription": "Optioneel: Overschrijf de standaard opdracht die naar de controle-AI wordt gestuurd.",
+				"promptPlaceholder": "Laat leeg om de standaard veiligheidsprompt te gebruiken..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "Maximale verzoeken",

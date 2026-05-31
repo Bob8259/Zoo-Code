@@ -269,7 +269,18 @@
 			"commandPlaceholder": "Wprowadź prefiks polecenia (np. 'git ')",
 			"deniedCommandPlaceholder": "Wprowadź prefiks polecenia do odrzucenia (np. 'rm -rf')",
 			"addButton": "Dodaj",
-			"autoDenied": "Polecenia z prefiksem `{{prefix}}` zostały zabronione przez użytkownika. Nie obchodź tego ograniczenia uruchamiając inne polecenie."
+			"autoDenied": "Polecenia z prefiksem `{{prefix}}` zostały zabronione przez użytkownika. Nie obchodź tego ograniczenia uruchamiając inne polecenie.",
+			"autoReview": {
+				"label": "Włącz automatyczne sprawdzanie poleceń przez AI",
+				"description": "Pozwala drugorzędnemu modelowi AI sprawdzić polecenia terminala pod kątem bezpieczeństwa i poprawności przed automatycznym wykonaniem. W przypadku odrzucenia lub wątpliwości zostaniesz poproszony o ręczne zatwierdzenie.",
+				"profileLabel": "Konfiguracja API sprawdzania",
+				"profileDescription": "Wybierz zapisany profil konfiguracji do sprawdzania poleceń.",
+				"profilePlaceholder": "Wybierz profil do sprawdzania",
+				"profileDefault": "Domyślny (Użyj bieżącego aktywnego profilu)",
+				"promptLabel": "Niestandardowy monit sprawdzania",
+				"promptDescription": "Opcjonalnie: Zastąp domyślny monit wysyłany do AI sprawdzającego.",
+				"promptPlaceholder": "Pozostaw puste, aby użyć domyślnego monitu bezpieczeństwa..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "Maksymalna liczba żądań",

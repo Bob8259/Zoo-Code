@@ -270,7 +270,18 @@
 			"commandPlaceholder": "Entrez le préfixe de commande (ex. 'git ')",
 			"deniedCommandPlaceholder": "Entrez le préfixe de commande à refuser (ex. 'rm -rf')",
 			"addButton": "Ajouter",
-			"autoDenied": "Les commandes avec le préfixe `{{prefix}}` ont été interdites par l'utilisateur. Ne contourne pas cette restriction en exécutant une autre commande."
+			"autoDenied": "Les commandes avec le préfixe `{{prefix}}` ont été interdites par l'utilisateur. Ne contourne pas cette restriction en exécutant une autre commande.",
+			"autoReview": {
+				"label": "Activer la révision automatique des commandes par IA",
+				"description": "Permet à un modèle IA secondaire de vérifier la sécurité et la pertinence des commandes de terminal avant leur exécution automatique. En cas de rejet ou de doute, vous serez invité à approuver manuellement.",
+				"profileLabel": "Configuration API de révision",
+				"profileDescription": "Sélectionnez le profil de configuration enregistré à utiliser pour la révision des commandes.",
+				"profilePlaceholder": "Sélectionner un profil pour la révision",
+				"profileDefault": "Par défaut (utiliser le profil actif actuel)",
+				"promptLabel": "Invite de révision personnalisée",
+				"promptDescription": "Facultatif : remplace l'invite par défaut envoyée à l'IA de révision.",
+				"promptPlaceholder": "Laisser vide pour utiliser l'invite de sécurité par défaut..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "Requêtes maximales",

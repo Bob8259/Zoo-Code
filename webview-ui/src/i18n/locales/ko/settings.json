@@ -269,7 +269,18 @@
 			"commandPlaceholder": "명령 접두사 입력(예: 'git ')",
 			"deniedCommandPlaceholder": "거부할 명령 접두사 입력(예: 'rm -rf')",
 			"addButton": "추가",
-			"autoDenied": "접두사 `{{prefix}}`를 가진 명령어는 사용자에 의해 금지되었습니다. 다른 명령어를 실행하여 이 제한을 우회하지 마세요."
+			"autoDenied": "접두사 `{{prefix}}`를 가진 명령어는 사용자에 의해 금지되었습니다. 다른 명령어를 실행하여 이 제한을 우회하지 마세요.",
+			"autoReview": {
+				"label": "AI 명령 자동 검토 활성화",
+				"description": "보조 AI 모델이 터미널 명령을 자동 실행 전에 안전성과 정확성을 검토합니다. 거부되거나 불확실한 경우 수동으로 승인하도록 안내됩니다.",
+				"profileLabel": "검토 API 구성",
+				"profileDescription": "명령 검토에 사용할 저장된 구성 프로필을 선택합니다.",
+				"profilePlaceholder": "검토용 프로필 선택",
+				"profileDefault": "기본값 (현재 활성 프로필 사용)",
+				"promptLabel": "사용자 지정 검토 프롬프트",
+				"promptDescription": "선택 사항: 검토 AI에 전송되는 기본 프롬프트를 재정의합니다.",
+				"promptPlaceholder": "기본 안전 중심 프롬프트를 사용하려면 비워 두세요..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "최대 요청 수",

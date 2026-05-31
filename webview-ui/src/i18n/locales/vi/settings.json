@@ -269,7 +269,18 @@
 			"commandPlaceholder": "Nhập tiền tố lệnh (ví dụ: 'git ')",
 			"deniedCommandPlaceholder": "Nhập tiền tố lệnh để từ chối (ví dụ: 'rm -rf')",
 			"addButton": "Thêm",
-			"autoDenied": "Các lệnh có tiền tố `{{prefix}}` đã bị người dùng cấm. Đừng vượt qua hạn chế này bằng cách chạy lệnh khác."
+			"autoDenied": "Các lệnh có tiền tố `{{prefix}}` đã bị người dùng cấm. Đừng vượt qua hạn chế này bằng cách chạy lệnh khác.",
+			"autoReview": {
+				"label": "Bật tự động xem xét lệnh AI",
+				"description": "Cho phép mô hình AI phụ xem xét các lệnh terminal về tính an toàn và đúng đắn trước khi tự động thực thi. Nếu bị từ chối hoặc không chắc chắn, bạn sẽ được nhắc phê duyệt thủ công.",
+				"profileLabel": "Cấu hình API xem xét",
+				"profileDescription": "Chọn Hồ sơ Cấu hình đã lưu để sử dụng cho việc xem xét lệnh.",
+				"profilePlaceholder": "Chọn hồ sơ để xem xét",
+				"profileDefault": "Mặc định (Sử dụng hồ sơ đang hoạt động hiện tại)",
+				"promptLabel": "Lời nhắc xem xét tùy chỉnh",
+				"promptDescription": "Tùy chọn: Ghi đè lời nhắc mặc định được gửi đến AI xem xét.",
+				"promptPlaceholder": "Để trống để sử dụng lời nhắc an toàn mặc định..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "Số lượng yêu cầu tối đa",

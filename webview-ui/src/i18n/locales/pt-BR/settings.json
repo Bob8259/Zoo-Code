@@ -269,7 +269,18 @@
 			"commandPlaceholder": "Digite o prefixo do comando (ex. 'git ')",
 			"deniedCommandPlaceholder": "Digite o prefixo do comando para negar (ex. 'rm -rf')",
 			"addButton": "Adicionar",
-			"autoDenied": "Comandos com o prefixo `{{prefix}}` foram proibidos pelo usuário. Não contorne esta restrição executando outro comando."
+			"autoDenied": "Comandos com o prefixo `{{prefix}}` foram proibidos pelo usuário. Não contorne esta restrição executando outro comando.",
+			"autoReview": {
+				"label": "Ativar revisão automática de comandos por IA",
+				"description": "Permite que um modelo de IA secundário revise comandos do terminal quanto à segurança e correção antes de serem executados automaticamente. Se rejeitado ou incerto, você será solicitado a aprovar manualmente.",
+				"profileLabel": "Configuração de API de revisão",
+				"profileDescription": "Selecione qual Perfil de Configuração salvo usar para revisar comandos.",
+				"profilePlaceholder": "Selecionar perfil para revisão",
+				"profileDefault": "Padrão (Usar perfil ativo atual)",
+				"promptLabel": "Prompt de revisão personalizado",
+				"promptDescription": "Opcional: substituir o prompt padrão enviado à IA de revisão.",
+				"promptPlaceholder": "Deixe em branco para usar o prompt de segurança padrão..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "Máximo de Solicitações",

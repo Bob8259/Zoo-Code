@@ -269,7 +269,18 @@
 			"commandPlaceholder": "Masukkan prefix perintah (misalnya, 'git ')",
 			"deniedCommandPlaceholder": "Masukkan prefix perintah untuk ditolak (misalnya, 'rm -rf')",
 			"addButton": "Tambah",
-			"autoDenied": "Perintah dengan awalan `{{prefix}}` telah dilarang oleh pengguna. Jangan menghindari pembatasan ini dengan menjalankan perintah lain."
+			"autoDenied": "Perintah dengan awalan `{{prefix}}` telah dilarang oleh pengguna. Jangan menghindari pembatasan ini dengan menjalankan perintah lain.",
+			"autoReview": {
+				"label": "Aktifkan Tinjauan Otomatis Perintah AI",
+				"description": "Memungkinkan model AI sekunder meninjau perintah terminal untuk keamanan dan kebenaran sebelum dieksekusi secara otomatis. Jika ditolak atau tidak yakin, Anda akan diminta untuk menyetujui secara manual.",
+				"profileLabel": "Konfigurasi API Tinjauan",
+				"profileDescription": "Pilih Profil Konfigurasi tersimpan yang akan digunakan untuk meninjau perintah.",
+				"profilePlaceholder": "Pilih profil untuk tinjauan",
+				"profileDefault": "Default (Gunakan profil aktif saat ini)",
+				"promptLabel": "Prompt Tinjauan Kustom",
+				"promptDescription": "Opsional: Ganti prompt default yang dikirim ke AI Tinjauan.",
+				"promptPlaceholder": "Biarkan kosong untuk menggunakan prompt keamanan default..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "Permintaan Maks",

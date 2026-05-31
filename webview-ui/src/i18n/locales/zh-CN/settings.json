@@ -269,7 +269,18 @@
 			"commandPlaceholder": "输入命令前缀（例如 'git '）",
 			"deniedCommandPlaceholder": "输入要拒绝的命令前缀（例如 'rm -rf'）",
 			"addButton": "添加",
-			"autoDenied": "前缀为 `{{prefix}}` 的命令已被用户禁止。不要通过运行其他命令来绕过此限制。"
+			"autoDenied": "前缀为 `{{prefix}}` 的命令已被用户禁止。不要通过运行其他命令来绕过此限制。",
+			"autoReview": {
+				"label": "启用 AI 命令自动审查",
+				"description": "让辅助 AI 模型在命令自动执行前对终端命令进行安全性和正确性审查。若被拒绝或存疑，将提示您手动批准。",
+				"profileLabel": "审查 API 配置",
+				"profileDescription": "选择用于审查命令的已保存配置文件。",
+				"profilePlaceholder": "选择审查配置文件",
+				"profileDefault": "默认（使用当前活动配置文件）",
+				"promptLabel": "自定义审查提示词",
+				"promptDescription": "可选：覆盖发送给审查 AI 的默认提示词。",
+				"promptPlaceholder": "留空以使用默认的安全审查提示词..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "最大请求数",

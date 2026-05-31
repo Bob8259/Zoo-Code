@@ -269,7 +269,18 @@
 			"commandPlaceholder": "Introduïu prefix de comanda (ex. 'git ')",
 			"deniedCommandPlaceholder": "Introduïu prefix de comanda a denegar (ex. 'rm -rf')",
 			"addButton": "Afegir",
-			"autoDenied": "Les comandes amb el prefix `{{prefix}}` han estat prohibides per l'usuari. No eludeixis aquesta restricció executant una altra comanda."
+			"autoDenied": "Les comandes amb el prefix `{{prefix}}` han estat prohibides per l'usuari. No eludeixis aquesta restricció executant una altra comanda.",
+			"autoReview": {
+				"label": "Activa la revisió automàtica de comandes per IA",
+				"description": "Permet que un model d'IA secundari revisi les comandes del terminal per seguretat i correcció abans de l'execució automàtica. Si es rebutja o hi ha dubtes, se us demanarà que aproveu manualment.",
+				"profileLabel": "Configuració d'API de revisió",
+				"profileDescription": "Seleccioneu el perfil de configuració guardat per revisar les comandes.",
+				"profilePlaceholder": "Seleccioneu el perfil per a la revisió",
+				"profileDefault": "Per defecte (Usa el perfil actiu actual)",
+				"promptLabel": "Indicació de revisió personalitzada",
+				"promptDescription": "Opcional: substituïu la indicació predeterminada enviada a la IA de revisió.",
+				"promptPlaceholder": "Deixeu buit per usar la indicació de seguretat predeterminada..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "Màximes Sol·licituds",

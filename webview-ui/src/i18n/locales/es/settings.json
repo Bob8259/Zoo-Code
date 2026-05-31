@@ -269,7 +269,18 @@
 			"commandPlaceholder": "Ingrese prefijo de comando (ej. 'git ')",
 			"deniedCommandPlaceholder": "Ingrese prefijo de comando a denegar (ej. 'rm -rf')",
 			"addButton": "Añadir",
-			"autoDenied": "Los comandos con el prefijo `{{prefix}}` han sido prohibidos por el usuario. No eludes esta restricción ejecutando otro comando."
+			"autoDenied": "Los comandos con el prefijo `{{prefix}}` han sido prohibidos por el usuario. No eludes esta restricción ejecutando otro comando.",
+			"autoReview": {
+				"label": "Activar revisión automática de comandos por IA",
+				"description": "Permite que un modelo de IA secundario revise los comandos del terminal para garantizar su seguridad y corrección antes de la ejecución automática. Si es rechazado o incierto, se le pedirá que apruebe manualmente.",
+				"profileLabel": "Configuración de API de revisión",
+				"profileDescription": "Selecciona el perfil de configuración guardado para revisar comandos.",
+				"profilePlaceholder": "Seleccionar perfil para revisión",
+				"profileDefault": "Predeterminado (Usar perfil activo actual)",
+				"promptLabel": "Prompt de revisión personalizado",
+				"promptDescription": "Opcional: Anula el prompt predeterminado enviado a la IA de revisión.",
+				"promptPlaceholder": "Dejar vacío para usar el prompt de seguridad predeterminado..."
+			}
 		},
 		"apiRequestLimit": {
 			"title": "Solicitudes máximas",
