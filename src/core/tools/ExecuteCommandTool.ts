@@ -98,7 +98,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 				return
 			} else if (alwaysAllowExecute && enableCommandAutoReview) {
 				// Level 2 & 3: Invoke AI Auto-Review
-				await task.say("command_output", "Reviewing command safety using AI Command Auto-Review...")
+				await task.say("reasoning", "Reviewing command safety using AI Command Auto-Review...", undefined, true)
 				const { CommandReviewService } = await import("../../services/command/CommandReviewService")
 
 				let workingDir: string
@@ -114,11 +114,19 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 
 				if (reviewResult.approved === "Yes") {
 					await task.say(
-						"command_output",
-						`AI Command Auto-Review: Approved.\nReason: ${reviewResult.reason}`,
+						"reasoning",
+						`Reviewing command safety using AI Command Auto-Review...\n\nAI Command Auto-Review: Approved.\nReason: ${reviewResult.reason}`,
+						undefined,
+						false,
 					)
 					didApprove = true
 				} else {
+					await task.say(
+						"reasoning",
+						`Reviewing command safety using AI Command Auto-Review...\n\nAI Command Auto-Review: ${reviewResult.approved === "No" ? "Rejected" : "Unsure"}.\nReason: ${reviewResult.reason}`,
+						undefined,
+						false,
+					)
 					// Level 3: Rejected ("No") or "Unsure" -> Ask user, passing the AI's reason.
 					const warningPrefix =
 						reviewResult.approved === "No"

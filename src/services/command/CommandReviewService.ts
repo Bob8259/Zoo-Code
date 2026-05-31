@@ -7,6 +7,8 @@ import { ProviderSettings } from "@roo-code/types"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
 
 export class CommandReviewService {
+	static lastReviewPrompt?: string
+
 	static readonly DEFAULT_SAFETY_PROMPT = `You are a command-line safety and security review agent. Your role is to analyze a proposed shell command and determine if it is safe and correct to execute.
 
 Proposed Command:
@@ -131,6 +133,9 @@ Respond strictly in the following JSON format:
 				fileContents,
 				chatHistory,
 			})
+
+			// Save the prompt for debug inspection
+			CommandReviewService.lastReviewPrompt = promptText
 
 			// 9. Call LLM
 			const handler = buildApiHandler(apiConfig)

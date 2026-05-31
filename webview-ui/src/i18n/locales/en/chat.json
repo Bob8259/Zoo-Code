@@ -17,6 +17,7 @@
 		"delete": "Delete Task (Shift + Click to skip confirmation)",
 		"openApiHistory": "Open API History",
 		"openUiHistory": "Open UI History",
+		"openCommandReviewPrompt": "Open Last AI Review Prompt",
 		"backToParentTask": "Parent task"
 	},
 	"unpin": "Unpin",

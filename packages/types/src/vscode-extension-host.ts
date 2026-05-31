@@ -564,6 +564,7 @@ export interface WebviewMessage {
 		| "deniedCommands"
 		| "openDebugApiHistory"
 		| "openDebugUiHistory"
+		| "openDebugCommandReviewPrompt"
 		| "downloadErrorDiagnostics"
 		| "requestOpenAiCodexRateLimits"
 		| "refreshCustomTools"

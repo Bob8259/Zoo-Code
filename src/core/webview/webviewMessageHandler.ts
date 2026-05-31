@@ -3313,6 +3313,32 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "openDebugCommandReviewPrompt": {
+			try {
+				const { CommandReviewService } = await import("../../services/command/CommandReviewService")
+				const lastPrompt = CommandReviewService.lastReviewPrompt
+				if (!lastPrompt) {
+					vscode.window.showWarningMessage("No command auto-review has run yet in this session.")
+					break
+				}
+
+				const tmpDir = os.tmpdir()
+				const timestamp = Date.now()
+				const tempFileName = `roo-debug-command-review-prompt-${timestamp}.txt`
+				const tempFilePath = path.join(tmpDir, tempFileName)
+
+				await fs.writeFile(tempFilePath, lastPrompt, "utf8")
+
+				const doc = await vscode.workspace.openTextDocument(tempFilePath)
+				await vscode.window.showTextDocument(doc, { preview: true })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error opening debug command review prompt: ${errorMessage}`)
+				vscode.window.showErrorMessage(`Failed to open debug command review prompt: ${errorMessage}`)
+			}
+			break
+		}
+
 		case "openDebugApiHistory":
 		case "openDebugUiHistory": {
 			const currentTask = provider.getCurrentTask()
