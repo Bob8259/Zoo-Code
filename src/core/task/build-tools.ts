@@ -24,6 +24,8 @@ interface BuildToolsOptions {
 	apiConfiguration: ProviderSettings | undefined
 	disabledTools?: string[]
 	modelInfo?: ModelInfo
+	/** When true, excludes new_task to prevent nested subtask delegation */
+	isSubtask?: boolean
 	/**
 	 * If true, returns all tools without mode filtering, but also includes
 	 * the list of allowed tool names for use with allowedFunctionNames.
@@ -89,6 +91,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 		apiConfiguration,
 		disabledTools,
 		modelInfo,
+		isSubtask,
 		includeAllToolsWithRestrictions,
 	} = options
 
@@ -103,6 +106,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 		todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 		disabledTools,
 		modelInfo,
+		isSubtask,
 	}
 
 	// Check if the model supports images for read_file tool description.

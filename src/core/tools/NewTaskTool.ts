@@ -25,6 +25,18 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
+			if (task.parentTaskId) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("new_task")
+				task.didToolFailInCurrentTurn = true
+				pushToolResult(
+					formatResponse.toolError(
+						"new_task is not available in delegated subtasks. Complete the work directly and use task_completion.",
+					),
+				)
+				return
+			}
+
 			// Validate required parameters.
 			if (!mode) {
 				task.consecutiveMistakeCount++

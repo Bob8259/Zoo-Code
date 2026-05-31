@@ -3,7 +3,7 @@ import * as fs from "fs/promises"
 import * as path from "path"
 import { Task } from "../../core/task/Task"
 import { buildApiHandler } from "../../api"
-import { ProviderSettings, getModelId } from "@roo-code/types"
+import { ClineMessage, ProviderSettings, getModelId } from "@roo-code/types"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
 
 export class CommandReviewService {
@@ -64,10 +64,7 @@ Respond strictly in the following JSON format:
 			const osInfo = `${os.platform()} ${os.release()} (${os.arch()})`
 
 			// 2. Gather User Intent (use the most recent user message)
-			const userQuery =
-				task.clineMessages.filter((m) => m.type === "say" && m.say === "user_feedback").at(-1)?.text ||
-				task.clineMessages[task.clineMessages.length - 1]?.text ||
-				""
+			const userQuery = this.getMostRecentUserQuery(task.clineMessages)
 
 			// 3. Gather TODO list
 			const todoList =
@@ -266,6 +263,22 @@ Respond strictly in the following JSON format:
 				reason: `Command Auto-Review failed with error: ${error instanceof Error ? error.message : String(error)}`,
 			}
 		}
+	}
+
+	static getMostRecentUserQuery(clineMessages: ClineMessage[]): string {
+		for (let i = clineMessages.length - 1; i >= 0; i--) {
+			const msg = clineMessages[i]
+			if (msg.type === "say" && msg.say === "user_feedback" && msg.text) {
+				return msg.text
+			}
+		}
+
+		const initialTask = clineMessages[0]
+		if (initialTask?.type === "say" && initialTask.say === "text" && initialTask.text) {
+			return initialTask.text
+		}
+
+		return ""
 	}
 
 	private static fillPromptTemplate(template: string, replacements: Record<string, string>): string {

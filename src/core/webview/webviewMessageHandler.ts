@@ -3386,6 +3386,7 @@ export const webviewMessageHandler = async (
 						apiConfiguration: currentTask.apiConfiguration,
 						disabledTools: state?.disabledTools,
 						modelInfo: currentTask.api.getModel().info,
+						isSubtask: !!currentTask.parentTaskId,
 						includeAllToolsWithRestrictions: currentTask.apiConfiguration?.apiProvider === "gemini",
 					})
 

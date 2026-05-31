@@ -1,7 +1,7 @@
 import { getToolUseGuidelinesSection } from "../tool-use-guidelines"
 
 describe("getToolUseGuidelinesSection", () => {
-	it("should include proper numbered guidelines", () => {
+	it("should include proper numbered guidelines for root tasks", () => {
 		const guidelines = getToolUseGuidelinesSection()
 
 		expect(guidelines).toContain("1. Assess what information")
@@ -12,6 +12,14 @@ describe("getToolUseGuidelinesSection", () => {
 		expect(guidelines).toContain("new_task")
 		expect(guidelines).toContain("ask")
 		expect(guidelines).toContain("task_completion")
+	})
+
+	it("should include subtask-specific guideline 5 when isSubtask is true", () => {
+		const guidelines = getToolUseGuidelinesSection({ isSubtask: true })
+
+		expect(guidelines).toContain("5. You are a delegated subtask")
+		expect(guidelines).toContain("Do not call `new_task`")
+		expect(guidelines).not.toContain("5. For simple, self-contained exploration")
 	})
 
 	it("should include multiple-tools-per-message guidance", () => {

@@ -143,6 +143,33 @@ describe("newTaskTool", () => {
 		} as any)
 	})
 
+	it("should reject new_task when running as a delegated subtask", async () => {
+		const block: ToolUse<"new_task"> = {
+			type: "tool_use",
+			name: "new_task",
+			params: {
+				mode: "ask",
+				message: "Find files",
+				todos: null,
+			},
+			partial: false,
+		}
+
+		const subtaskCline = { ...mockCline, parentTaskId: "parent-task-id" }
+
+		await newTaskTool.handle(subtaskCline as any, withNativeArgs(block), {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+		})
+
+		expect(mockAskApproval).not.toHaveBeenCalled()
+		expect(mockDelegateParentAndOpenChild).not.toHaveBeenCalled()
+		expect(mockPushToolResult).toHaveBeenCalledWith(
+			expect.stringContaining("new_task is not available in delegated subtasks"),
+		)
+	})
+
 	it("should correctly un-escape \\\\@ to \\@ in the message passed to the new task", async () => {
 		const block: ToolUse<"new_task"> = {
 			type: "tool_use", // Add required 'type' property

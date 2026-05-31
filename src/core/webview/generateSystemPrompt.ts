@@ -64,6 +64,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		undefined, // todoList
 		undefined, // modelId
 		provider.getSkillsManager(),
+		!!provider.getCurrentTask()?.parentTaskId,
 	)
 
 	return systemPrompt

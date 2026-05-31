@@ -297,13 +297,18 @@ describe("CommandReviewService", () => {
 			expect(contentStr).not.toContain("User message 4")
 		})
 
-		it("should fallback to last message if no user_feedback exists", async () => {
+		it("should use initial task text when no user_feedback exists", async () => {
 			mockTask.clineMessages = [
-				{ type: "say", say: "text", text: "Some assistant message." },
-				{ type: "say", say: "completion_result", text: "Task completed." },
+				{ type: "say", say: "text", text: "Help me commit and push my code to both remotes." },
+				{ type: "say", say: "text", text: "I'll help you commit and push your changes." },
+				{ type: "say", say: "reasoning", text: "Reviewing command safety using AI Command Auto-Review..." },
 			]
 
-			const result = await CommandReviewService.reviewCommand("git status", "/mock/workspace", mockTask as Task)
+			const result = await CommandReviewService.reviewCommand(
+				"git config branch.main.remote",
+				"/mock/workspace",
+				mockTask as Task,
+			)
 			expect(result.approved).toBe("Yes")
 
 			const lastPrompt = CommandReviewService.lastReviewPrompt
@@ -311,8 +316,47 @@ describe("CommandReviewService", () => {
 			const parsed = JSON.parse(lastPrompt!)
 			const contentStr = parsed.messages[0].content.join("\n")
 
-			// The fallback should use the last message in clineMessages
-			expect(contentStr).toContain("Task completed.")
+			const intentSection = contentStr.split("User Intent (Most Recent Query):")[1]?.split("\n")[1] || ""
+			expect(intentSection).toContain("Help me commit and push my code to both remotes.")
+			expect(intentSection).not.toContain("Reviewing command safety using AI Command Auto-Review")
+		})
+
+		it("should not use reasoning message as user intent", async () => {
+			mockTask.clineMessages = [
+				{ type: "say", say: "text", text: "Run git status in the workspace." },
+				{ type: "say", say: "text", text: "Checking git status now." },
+				{
+					type: "say",
+					say: "reasoning",
+					text: "Reviewing command safety using AI Command Auto-Review...",
+				},
+			]
+
+			const userQuery = CommandReviewService.getMostRecentUserQuery(mockTask.clineMessages)
+			expect(userQuery).toBe("Run git status in the workspace.")
+			expect(userQuery).not.toContain("Reviewing command safety")
+		})
+
+		it("should return empty string when no user messages exist", async () => {
+			mockTask.clineMessages = [
+				{ type: "say", say: "completion_result", text: "Task completed." },
+				{ type: "say", say: "reasoning", text: "Some internal reasoning." },
+			]
+
+			const result = await CommandReviewService.reviewCommand("git status", "/mock/workspace", mockTask as Task)
+			expect(result.approved).toBe("Yes")
+
+			const userQuery = CommandReviewService.getMostRecentUserQuery(mockTask.clineMessages)
+			expect(userQuery).toBe("")
+
+			const lastPrompt = CommandReviewService.lastReviewPrompt
+			expect(lastPrompt).toBeDefined()
+			const parsed = JSON.parse(lastPrompt!)
+			const contentStr = parsed.messages[0].content.join("\n")
+
+			const intentSection = contentStr.split("User Intent (Most Recent Query):")[1]?.split("\n")[1] || ""
+			expect(intentSection).toContain('""')
+			expect(intentSection).not.toContain("Task completed.")
 		})
 	})
 })

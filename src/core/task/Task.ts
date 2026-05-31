@@ -1673,6 +1673,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				apiConfiguration,
 				disabledTools: state?.disabledTools,
 				modelInfo,
+				isSubtask: !!this.parentTaskId,
 				includeAllToolsWithRestrictions: false,
 			})
 			allTools = toolsResult.tools
@@ -3836,6 +3837,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				undefined, // todoList
 				this.api.getModel().id,
 				provider.getSkillsManager(),
+				!!this.parentTaskId,
 			)
 		})()
 	}
@@ -3887,6 +3889,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				apiConfiguration,
 				disabledTools: state?.disabledTools,
 				modelInfo,
+				isSubtask: !!this.parentTaskId,
 				includeAllToolsWithRestrictions: false,
 			})
 			allTools = toolsResult.tools
@@ -4101,6 +4104,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						apiConfiguration,
 						disabledTools: state?.disabledTools,
 						modelInfo,
+						isSubtask: !!this.parentTaskId,
 						includeAllToolsWithRestrictions: false,
 					})
 					contextMgmtTools = toolsResult.tools
@@ -4261,6 +4265,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				apiConfiguration,
 				disabledTools: state?.disabledTools,
 				modelInfo,
+				isSubtask: !!this.parentTaskId,
 				includeAllToolsWithRestrictions: supportsAllowedFunctionNames,
 			})
 			allTools = toolsResult.tools

@@ -306,6 +306,11 @@ export function filterNativeToolsForMode(
 		allowedToolNames.delete("access_mcp_resource")
 	}
 
+	// Subtasks must not delegate further via new_task
+	if (settings?.isSubtask) {
+		allowedToolNames.delete("new_task")
+	}
+
 	// Filter native tools based on allowed tool names and apply alias renames
 	const filteredTools: OpenAI.Chat.ChatCompletionTool[] = []
 
