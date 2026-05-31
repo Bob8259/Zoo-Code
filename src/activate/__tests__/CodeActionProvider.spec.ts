@@ -110,7 +110,7 @@ describe("CodeActionProvider", () => {
 			const actions = provider.provideCodeActions(mockDocument, mockRange, mockContext)
 
 			expect(actions).toEqual([])
-			expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("zoo-code-alt")
+			expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("q-code")
 			expect(mockGet).toHaveBeenCalledWith("enableCodeActions", true)
 		})
 

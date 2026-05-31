@@ -196,7 +196,7 @@ vi.mock("../core/webview/ClineProvider", async () => {
 			{
 				// Static method used by extension.ts
 				getVisibleInstance: vi.fn().mockReturnValue(mockInstance),
-				sideBarId: "zoo-code-alt.SidebarProvider",
+				sideBarId: "q-code.SidebarProvider",
 			},
 		),
 	}

@@ -28,7 +28,7 @@ describe("getApiRequestTimeout", () => {
 
 		const timeout = getApiRequestTimeout()
 
-		expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("zoo-code-alt")
+		expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("q-code")
 		expect(mockGetConfig).toHaveBeenCalledWith("apiRequestTimeout", 600)
 		expect(timeout).toBe(600000) // 600 seconds in milliseconds
 	})
