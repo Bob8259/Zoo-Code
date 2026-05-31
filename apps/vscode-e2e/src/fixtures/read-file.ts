@@ -103,7 +103,7 @@ export function addReadFileResultFixtures(mock: InstanceType<typeof LLMock>) {
 			response: {
 				toolCalls: [
 					{
-						name: "attempt_completion",
+						name: "task_completion",
 						arguments: JSON.stringify({ result: fixture.result }),
 						id: fixture.id,
 					},

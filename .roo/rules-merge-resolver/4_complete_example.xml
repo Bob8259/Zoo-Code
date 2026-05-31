@@ -290,7 +290,7 @@ nothing to commit, working tree clean
   </workflow>
 
   <completion><![CDATA[
-<attempt_completion>
+<task_completion>
 <result>
 Successfully resolved merge conflicts for PR #123 "Fix memory leak in data processor".
 
@@ -300,7 +300,7 @@ Resolution Summary:
 
 Both the feature refactor and the critical bugfix have been preserved in the resolution. The rebase has been completed successfully and the branch is ready to be pushed.
 </result>
-</attempt_completion>
+</task_completion>
   ]]></completion>
 
   <key_takeaways>

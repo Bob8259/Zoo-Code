@@ -100,8 +100,8 @@ describe("webviewMessageHandler delete functionality", () => {
 				{
 					ts: 1002,
 					role: "assistant",
-					content: { type: "text", text: "attempt_completion" },
-					name: "attempt_completion",
+					content: { type: "text", text: "task_completion" },
+					name: "task_completion",
 				},
 			]
 
@@ -170,26 +170,26 @@ describe("webviewMessageHandler delete functionality", () => {
 			expect(getCurrentTaskMock.overwriteApiConversationHistory).not.toHaveBeenCalled()
 		})
 
-		it("should handle deletion with attempt_completion in API history", async () => {
-			// Setup test data with attempt_completion
+		it("should handle deletion with task_completion in API history", async () => {
+			// Setup test data with task_completion
 			const userMessageTs = 1000
-			const attemptCompletionTs = 1001
+			const taskCompletionTs = 1001
 
 			getCurrentTaskMock.clineMessages = [
 				{ ts: userMessageTs, say: "user", text: "Fix the bug" },
-				{ ts: attemptCompletionTs, say: "assistant", text: "I've fixed the bug" },
+				{ ts: taskCompletionTs, say: "assistant", text: "I've fixed the bug" },
 			]
 
-			// API history has attempt_completion but user message is missing
+			// API history has task_completion but user message is missing
 			getCurrentTaskMock.apiConversationHistory = [
 				{
-					ts: attemptCompletionTs,
+					ts: taskCompletionTs,
 					role: "assistant",
 					content: {
 						type: "text",
 						text: "I've fixed the bug in the code",
 					},
-					name: "attempt_completion",
+					name: "task_completion",
 				},
 				{
 					ts: 1002,

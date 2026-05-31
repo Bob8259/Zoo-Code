@@ -3489,7 +3489,7 @@ items:
         - edit
       source: project
       customInstructions: |
-        Scan for exposed secrets, env leaks, and monoliths. Recommend mitigations or refactors to reduce risk. Flag files > 500 lines or direct environment coupling. Use `new_task` to assign sub-audits. Finalize findings with `attempt_completion`.
+        Scan for exposed secrets, env leaks, and monoliths. Recommend mitigations or refactors to reduce risk. Flag files > 500 lines or direct environment coupling. Use `new_task` to assign sub-audits. Finalize findings with `task_completion`.
   - type: mode
     id: devops
     name: DevOps
@@ -3534,7 +3534,7 @@ items:
         - Request logs or metrics triage
         - Coordinate post-deployment verification
 
-        Return `attempt_completion` with:
+        Return `task_completion` with:
         - Deployment status
         - Environment details
         - CLI output summaries

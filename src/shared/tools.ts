@@ -93,7 +93,7 @@ export type NativeToolArgs = {
 	access_mcp_resource: { server_name: string; uri: string }
 	read_file: import("@roo-code/types").ReadFileToolParams
 	read_command_output: { artifact_id: string; search?: string; offset?: number; limit?: number }
-	attempt_completion: { result: string }
+	task_completion: { result: string }
 	execute_command: { command: string; cwd?: string; timeout?: number | null }
 	apply_diff: { path: string; diff: string }
 	edit: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
@@ -228,8 +228,8 @@ export interface AskFollowupQuestionToolUse extends ToolUse<"ask_followup_questi
 	params: Partial<Pick<Record<ToolParamName, string>, "question" | "follow_up">>
 }
 
-export interface AttemptCompletionToolUse extends ToolUse<"attempt_completion"> {
-	name: "attempt_completion"
+export interface TaskCompletionToolUse extends ToolUse<"task_completion"> {
+	name: "task_completion"
 	params: Partial<Pick<Record<ToolParamName, string>, "result">>
 }
 
@@ -281,7 +281,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	use_mcp_tool: "use mcp tools",
 	access_mcp_resource: "access mcp resources",
 	ask_followup_question: "ask questions",
-	attempt_completion: "complete tasks",
+	task_completion: "complete tasks",
 	switch_mode: "switch modes",
 	new_task: "create new task",
 	codebase_search: "codebase search",
@@ -316,7 +316,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 // Tools that are always available to all modes.
 export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"ask_followup_question",
-	"attempt_completion",
+	"task_completion",
 	"switch_mode",
 	"new_task",
 	"update_todo_list",

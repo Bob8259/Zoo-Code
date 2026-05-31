@@ -49,7 +49,7 @@ describe("Native Tools Filtering by Mode", () => {
 
 			// Architect SHOULD have always-available tools
 			expect(architectAllowedTools.has("ask_followup_question")).toBe(true)
-			expect(architectAllowedTools.has("attempt_completion")).toBe(true)
+			expect(architectAllowedTools.has("task_completion")).toBe(true)
 
 			// Test code mode - SHOULD have edit tools
 			const codeAllowedTools = new Set<string>()

@@ -3259,7 +3259,7 @@ export class ClineProvider
 		// 4) Create child as sole active (parent reference preserved for lineage)
 		// Pass initialStatus: "active" to ensure the child task's historyItem is created
 		// with status from the start, avoiding race conditions where the task might
-		// call attempt_completion before status is persisted separately.
+		// call task_completion before status is persisted separately.
 		//
 		// Pass startTask: false to prevent the child from beginning its task loop
 		// (and writing to globalState via saveClineMessages → updateTaskHistory)

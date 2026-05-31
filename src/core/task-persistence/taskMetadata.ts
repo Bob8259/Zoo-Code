@@ -92,7 +92,7 @@ export async function taskMetadata({
 	// Create historyItem once with pre-calculated values.
 	// initialStatus is included when provided (e.g., "active" for child tasks)
 	// to ensure the status is set from the very first save, avoiding race conditions
-	// where attempt_completion might run before a separate status update.
+	// where task_completion might run before a separate status update.
 	const historyItem: HistoryItem = {
 		id,
 		rootTaskId,

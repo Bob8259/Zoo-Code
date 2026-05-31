@@ -7,7 +7,7 @@
 			"response": {
 				"toolCalls": [
 					{
-						"name": "attempt_completion",
+						"name": "task_completion",
 						"arguments": "{\"result\": \"4\"}",
 						"id": "toolu_014MmgmKQV9c2DmffmF8bKm3"
 					}
@@ -21,7 +21,7 @@
 			"response": {
 				"toolCalls": [
 					{
-						"name": "attempt_completion",
+						"name": "task_completion",
 						"arguments": "{\"result\": \"4\"}",
 						"id": "toolu_014MmgmKQV9c2DmffmF8bKm3"
 					}

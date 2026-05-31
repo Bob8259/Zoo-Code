@@ -154,7 +154,7 @@ export function formatToolOutput(toolInfo: Record<string, unknown>): string {
 			return `📁 ${listPath || "."}${recursive ? " (recursive)" : ""}`
 		}
 
-		case "attempt_completion": {
+		case "task_completion": {
 			const result = toolInfo.result as string
 			if (result) {
 				const truncated = result.length > 100 ? result.substring(0, 100) + "..." : result

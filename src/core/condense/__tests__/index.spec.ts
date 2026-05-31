@@ -131,7 +131,7 @@ describe("injectSyntheticToolResults", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+					{ type: "tool_use", id: "tool-orphan", name: "task_completion", input: { result: "Done" } },
 				],
 				ts: 2,
 			},
@@ -180,7 +180,7 @@ describe("injectSyntheticToolResults", () => {
 				role: "assistant",
 				content: [
 					{ type: "tool_use", id: "matched-tool", name: "read_file", input: { path: "test.ts" } },
-					{ type: "tool_use", id: "orphan-tool", name: "attempt_completion", input: { result: "Done" } },
+					{ type: "tool_use", id: "orphan-tool", name: "task_completion", input: { result: "Done" } },
 				],
 				ts: 2,
 			},
@@ -416,7 +416,7 @@ describe("getEffectiveApiHistory", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+					{ type: "tool_use", id: "tool-orphan", name: "task_completion", input: { result: "Done" } },
 				],
 				condenseParent: condenseId,
 			},
@@ -479,7 +479,7 @@ describe("getEffectiveApiHistory", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+					{ type: "tool_use", id: "tool-orphan", name: "task_completion", input: { result: "Done" } },
 				],
 				condenseParent: condenseId,
 			},
@@ -555,7 +555,7 @@ describe("getEffectiveApiHistory", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+					{ type: "tool_use", id: "tool-orphan", name: "task_completion", input: { result: "Done" } },
 				],
 				condenseParent: condenseId,
 			},

@@ -63,7 +63,7 @@ Record mode uses **record-on-miss**: if an existing fixture already matches a re
     			"match": { "userMessage": "your unique prompt text" },
     			"response": {
     				"toolCalls": [
-    					{ "name": "attempt_completion", "arguments": "{\"result\":\"...\"}", "id": "call_001" }
+    					{ "name": "task_completion", "arguments": "{\"result\":\"...\"}", "id": "call_001" }
     				]
     			}
     		}
@@ -82,16 +82,16 @@ Record mode uses **record-on-miss**: if an existing fixture already matches a re
 
 ## Multi-turn tests
 
-If the LLM calls a tool first (e.g. `read_file`) and then calls `attempt_completion` after seeing the result, you need two fixtures:
+If the LLM calls a tool first (e.g. `read_file`) and then calls `task_completion` after seeing the result, you need two fixtures:
 
 - **Turn 1**: match on the task prompt (with `sequenceIndex: 0` so it fires only once) → respond with the tool call, giving the tool call a unique `id`
-- **Turn 2**: match on `toolCallId` → respond with `attempt_completion`
+- **Turn 2**: match on `toolCallId` → respond with `task_completion`
 
 Using `toolCallId` (the `id` of the tool call emitted in turn 1) is the recommended approach for turn-2 matching. It is:
 
 - **Precise**: fires only when that exact tool call's result is in the conversation
 - **Cross-test safe**: each test's tool call ids are unique, so accumulated match counts from previous tests can't interfere
-- **Stateless**: no `sequenceIndex` needed on turn-2 fixtures — if the task makes extra API calls they'll keep getting the same `attempt_completion`
+- **Stateless**: no `sequenceIndex` needed on turn-2 fixtures — if the task makes extra API calls they'll keep getting the same `task_completion`
 
 Example:
 
@@ -111,7 +111,7 @@ Example:
 			"match": { "toolCallId": "call_my_read" },
 			"response": {
 				"toolCalls": [
-					{ "name": "attempt_completion", "arguments": "{\"result\":\"MY_MARKER\"}", "id": "call_my_done" }
+					{ "name": "task_completion", "arguments": "{\"result\":\"MY_MARKER\"}", "id": "call_my_done" }
 				]
 			}
 		}

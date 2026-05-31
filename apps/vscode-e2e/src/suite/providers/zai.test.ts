@@ -92,7 +92,7 @@ function makeZAiSSEResponse(result: string): Response {
 								index: 0,
 								id: "call_zai_001",
 								type: "function",
-								function: { name: "attempt_completion", arguments: "" },
+								function: { name: "task_completion", arguments: "" },
 							},
 						],
 					},

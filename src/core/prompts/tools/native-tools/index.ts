@@ -3,7 +3,7 @@ import accessMcpResource from "./access_mcp_resource"
 import { apply_diff } from "./apply_diff"
 import applyPatch from "./apply_patch"
 import askFollowupQuestion from "./ask_followup_question"
-import attemptCompletion from "./attempt_completion"
+import taskCompletion from "./task_completion"
 import codebaseSearch from "./codebase_search"
 import editTool from "./edit"
 import executeCommand from "./execute_command"
@@ -51,7 +51,7 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		apply_diff,
 		applyPatch,
 		askFollowupQuestion,
-		attemptCompletion,
+		taskCompletion,
 		codebaseSearch,
 		executeCommand,
 		generateImage,

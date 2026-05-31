@@ -723,7 +723,7 @@ describe("convertToOpenAiMessages", () => {
 						{
 							type: "tool_use" as const,
 							id: "call_Tb4KVEmEpEAA8W1QcxjyD5Nh",
-							name: "attempt_completion",
+							name: "task_completion",
 							input: {
 								result: "Why did the developer go broke?\n\nBecause they used up all their cache.",
 							},

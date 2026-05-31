@@ -120,7 +120,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let mcpToolRequested = false
 		let mcpToolName: string | null = null
 		let mcpServerResponse: string | null = null
-		let attemptCompletionCalled = false
+		let taskCompletionCalled = false
 		let errorOccurred: string | null = null
 
 		// Listen for messages
@@ -155,9 +155,9 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.log("MCP server response received:", message.text?.substring(0, 200))
 			}
 
-			// Check for attempt_completion
+			// Check for task_completion
 			if (message.type === "say" && message.say === "completion_result") {
-				attemptCompletionCalled = true
+				taskCompletionCalled = true
 				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 
@@ -239,8 +239,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			// Wait for task to start
 			await waitFor(() => taskStarted, { timeout: 45_000 })
 
-			// Wait for attempt_completion to be called (indicating task finished)
-			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
+			// Wait for task_completion to be called (indicating task finished)
+			await waitFor(() => taskCompletionCalled, { timeout: 45_000 })
 
 			// Verify the MCP tool was requested
 			assert.ok(mcpToolRequested, "The use_mcp_tool should have been requested")
@@ -276,7 +276,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			)
 
 			// Verify task completed successfully
-			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion")
+			assert.ok(taskCompletionCalled, "Task should have completed with task_completion")
 
 			// Check that no errors occurred
 			assert.strictEqual(errorOccurred, null, "No errors should have occurred")
@@ -297,7 +297,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let mcpToolRequested = false
 		let mcpToolName: string | null = null
 		let mcpServerResponse: string | null = null
-		let attemptCompletionCalled = false
+		let taskCompletionCalled = false
 		let errorOccurred: string | null = null
 
 		// Listen for messages
@@ -332,9 +332,9 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.log("MCP server response received:", message.text?.substring(0, 200))
 			}
 
-			// Check for attempt_completion
+			// Check for task_completion
 			if (message.type === "say" && message.say === "completion_result") {
-				attemptCompletionCalled = true
+				taskCompletionCalled = true
 				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 
@@ -368,8 +368,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				text: `Use the MCP filesystem server's write_file tool to create a new file called "${newFileName}" with the content "Hello from MCP!".`,
 			})
 
-			// Wait for attempt_completion to be called (indicating task finished)
-			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
+			// Wait for task_completion to be called (indicating task finished)
+			await waitFor(() => taskCompletionCalled, { timeout: 45_000 })
 
 			// Verify the MCP tool was requested
 			assert.ok(mcpToolRequested, "The use_mcp_tool should have been requested for writing")
@@ -405,7 +405,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			)
 
 			// Verify task completed successfully
-			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion")
+			assert.ok(taskCompletionCalled, "Task should have completed with task_completion")
 
 			// Check that no errors occurred
 			assert.strictEqual(errorOccurred, null, "No errors should have occurred")
@@ -425,7 +425,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let mcpToolRequested = false
 		let mcpToolName: string | null = null
 		let mcpServerResponse: string | null = null
-		let attemptCompletionCalled = false
+		let taskCompletionCalled = false
 		let errorOccurred: string | null = null
 
 		// Listen for messages
@@ -460,9 +460,9 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.log("MCP server response received:", message.text?.substring(0, 200))
 			}
 
-			// Check for attempt_completion
+			// Check for task_completion
 			if (message.type === "say" && message.say === "completion_result") {
-				attemptCompletionCalled = true
+				taskCompletionCalled = true
 				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 
@@ -495,8 +495,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				text: `Use the MCP filesystem server's list_directory tool to list the contents of the current directory. I want to see the files in the workspace.`,
 			})
 
-			// Wait for attempt_completion to be called (indicating task finished)
-			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
+			// Wait for task_completion to be called (indicating task finished)
+			await waitFor(() => taskCompletionCalled, { timeout: 45_000 })
 
 			// Verify the MCP tool was requested
 			assert.ok(mcpToolRequested, "The use_mcp_tool should have been requested")
@@ -544,7 +544,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			)
 
 			// Verify task completed successfully
-			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion")
+			assert.ok(taskCompletionCalled, "Task should have completed with task_completion")
 
 			// Check that no errors occurred
 			assert.strictEqual(errorOccurred, null, "No errors should have occurred")
@@ -564,7 +564,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let mcpToolRequested = false
 		let mcpToolName: string | null = null
 		let mcpServerResponse: string | null = null
-		let attemptCompletionCalled = false
+		let taskCompletionCalled = false
 		let errorOccurred: string | null = null
 
 		// Listen for messages
@@ -599,9 +599,9 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.log("MCP server response received:", message.text?.substring(0, 200))
 			}
 
-			// Check for attempt_completion
+			// Check for task_completion
 			if (message.type === "say" && message.say === "completion_result") {
-				attemptCompletionCalled = true
+				taskCompletionCalled = true
 				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 
@@ -634,8 +634,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				text: `Use the MCP filesystem server's directory_tree tool to show me the directory structure of the current workspace. I want to see the folder hierarchy.`,
 			})
 
-			// Wait for attempt_completion to be called (indicating task finished)
-			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
+			// Wait for task_completion to be called (indicating task finished)
+			await waitFor(() => taskCompletionCalled, { timeout: 45_000 })
 
 			// Verify the MCP tool was requested
 			assert.ok(mcpToolRequested, "The use_mcp_tool should have been requested")
@@ -683,7 +683,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			)
 
 			// Verify task completed successfully
-			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion")
+			assert.ok(taskCompletionCalled, "Task should have completed with task_completion")
 
 			// Check that no errors occurred
 			assert.strictEqual(errorOccurred, null, "No errors should have occurred")
@@ -704,7 +704,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let _taskCompleted = false
 		let _mcpToolRequested = false
 		let _errorHandled = false
-		let attemptCompletionCalled = false
+		let taskCompletionCalled = false
 
 		// Listen for messages
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
@@ -724,9 +724,9 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				}
 			}
 
-			// Check for attempt_completion
+			// Check for task_completion
 			if (message.type === "say" && message.say === "completion_result") {
-				attemptCompletionCalled = true
+				taskCompletionCalled = true
 				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 		}
@@ -753,11 +753,11 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				text: `Use the MCP server "nonexistent-server" to perform some operation. This should trigger an error but the task should still complete gracefully.`,
 			})
 
-			// Wait for attempt_completion to be called (indicating task finished)
-			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
+			// Wait for task_completion to be called (indicating task finished)
+			await waitFor(() => taskCompletionCalled, { timeout: 45_000 })
 
 			// Verify task completed successfully even with error
-			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion even with MCP error")
+			assert.ok(taskCompletionCalled, "Task should have completed with task_completion even with MCP error")
 
 			console.log("Test passed! MCP error handling verified and task completed")
 		} finally {
@@ -775,7 +775,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let validMessageFormat = false
 		let mcpToolName: string | null = null
 		let mcpServerResponse: string | null = null
-		let attemptCompletionCalled = false
+		let taskCompletionCalled = false
 		let errorOccurred: string | null = null
 
 		// Listen for messages
@@ -820,9 +820,9 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				console.log("MCP server response received:", message.text?.substring(0, 200))
 			}
 
-			// Check for attempt_completion
+			// Check for task_completion
 			if (message.type === "say" && message.say === "completion_result") {
-				attemptCompletionCalled = true
+				taskCompletionCalled = true
 				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 
@@ -856,8 +856,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				text: `Use the MCP filesystem server's get_file_info tool to get information about the file "${fileName}". This file exists in the workspace and will validate proper message formatting.`,
 			})
 
-			// Wait for attempt_completion to be called (indicating task finished)
-			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
+			// Wait for task_completion to be called (indicating task finished)
+			await waitFor(() => taskCompletionCalled, { timeout: 45_000 })
 
 			// Verify the MCP tool was requested with valid format
 			assert.ok(mcpToolRequested, "The use_mcp_tool should have been requested")
@@ -913,7 +913,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			)
 
 			// Verify task completed successfully
-			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion")
+			assert.ok(taskCompletionCalled, "Task should have completed with task_completion")
 
 			// Check that no errors occurred
 			assert.strictEqual(errorOccurred, null, "No errors should have occurred")

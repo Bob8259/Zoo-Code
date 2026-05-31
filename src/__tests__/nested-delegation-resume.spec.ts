@@ -49,7 +49,7 @@ vi.mock("../core/task-persistence", () => ({
 	saveTaskMessages: vi.fn().mockResolvedValue(undefined),
 }))
 
-import { attemptCompletionTool } from "../core/tools/AttemptCompletionTool"
+import { taskCompletionTool } from "../core/tools/TaskCompletionTool"
 import { ClineProvider } from "../core/webview/ClineProvider"
 import type { Task } from "../core/task/Task"
 import { readTaskMessages } from "../core/task-persistence/taskMessages"
@@ -156,7 +156,7 @@ describe("Nested delegation resume (A → B → C)", () => {
 			removeClineFromStack,
 			createTaskWithHistoryItem,
 			updateTaskHistory,
-			// Wire through provider method so attemptCompletionTool can call it
+			// Wire through provider method so taskCompletionTool can call it
 			reopenParentFromDelegation: vi.fn(async (params: any) => {
 				return await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, params)
 			}),
@@ -185,7 +185,7 @@ describe("Nested delegation resume (A → B → C)", () => {
 
 		const blockC = {
 			type: "tool_use",
-			name: "attempt_completion",
+			name: "task_completion",
 			params: { result: "C finished" },
 			nativeArgs: { result: "C finished" },
 			partial: false,
@@ -197,7 +197,7 @@ describe("Nested delegation resume (A → B → C)", () => {
 			throw err
 		})
 
-		await attemptCompletionTool.handle(clineC, blockC, {
+		await taskCompletionTool.handle(clineC, blockC, {
 			askApproval: vi.fn(),
 			handleError,
 			pushToolResult: vi.fn(),
@@ -232,13 +232,13 @@ describe("Nested delegation resume (A → B → C)", () => {
 
 		const blockB = {
 			type: "tool_use",
-			name: "attempt_completion",
+			name: "task_completion",
 			params: { result: "B finished" },
 			nativeArgs: { result: "B finished" },
 			partial: false,
 		} as any
 
-		await attemptCompletionTool.handle(clineB, blockB, {
+		await taskCompletionTool.handle(clineB, blockB, {
 			askApproval: vi.fn(),
 			handleError,
 			pushToolResult: vi.fn(),

@@ -11,18 +11,18 @@ import { t } from "../../i18n"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
-interface AttemptCompletionParams {
+interface TaskCompletionParams {
 	result: string
 	command?: string
 }
 
-export interface AttemptCompletionCallbacks extends ToolCallbacks {
+export interface TaskCompletionCallbacks extends ToolCallbacks {
 	askFinishSubTaskApproval: () => Promise<boolean>
 	toolDescription: () => string
 }
 
 /**
- * Interface for provider methods needed by AttemptCompletionTool for delegation handling.
+ * Interface for provider methods needed by TaskCompletionTool for delegation handling.
  */
 interface DelegationProvider {
 	getTaskWithId(id: string): Promise<{ historyItem: HistoryItem }>
@@ -33,16 +33,16 @@ interface DelegationProvider {
 	}): Promise<void>
 }
 
-export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
-	readonly name = "attempt_completion" as const
+export class TaskCompletionTool extends BaseTool<"task_completion"> {
+	readonly name = "task_completion" as const
 
-	async execute(params: AttemptCompletionParams, task: Task, callbacks: AttemptCompletionCallbacks): Promise<void> {
+	async execute(params: TaskCompletionParams, task: Task, callbacks: TaskCompletionCallbacks): Promise<void> {
 		const { result } = params
 		const { handleError, pushToolResult, askFinishSubTaskApproval } = callbacks
 
-		// Prevent attempt_completion if any tool failed in the current turn
+		// Prevent task_completion if any tool failed in the current turn
 		if (task.didToolFailInCurrentTurn) {
-			const errorMsg = t("common:errors.attempt_completion_tool_failed")
+			const errorMsg = t("common:errors.task_completion_tool_failed")
 
 			await task.say("error", errorMsg)
 			pushToolResult(formatResponse.toolError(errorMsg))
@@ -57,7 +57,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 		if (preventCompletionWithOpenTodos && hasIncompleteTodos) {
 			task.consecutiveMistakeCount++
-			task.recordToolError("attempt_completion")
+			task.recordToolError("task_completion")
 
 			pushToolResult(
 				formatResponse.toolError(
@@ -71,8 +71,8 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		try {
 			if (!result) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("attempt_completion")
-				pushToolResult(await task.sayAndCreateMissingParamError("attempt_completion", "result"))
+				task.recordToolError("task_completion")
+				pushToolResult(await task.sayAndCreateMissingParamError("task_completion", "result"))
 				return
 			}
 
@@ -111,9 +111,9 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 						} else {
 							// Unexpected status (undefined or "delegated") - log error and skip delegation
 							// undefined indicates a bug in status persistence during child creation
-							// "delegated" would mean this child has its own grandchild pending (shouldn't reach attempt_completion)
+							// "delegated" would mean this child has its own grandchild pending (shouldn't reach task_completion)
 							console.error(
-								`[AttemptCompletionTool] Unexpected child task status "${status}" for task ${task.taskId}. ` +
+								`[TaskCompletionTool] Unexpected child task status "${status}" for task ${task.taskId}. ` +
 									`Expected "active" or "completed". Skipping delegation to prevent data corruption.`,
 							)
 							// Fall through to normal completion ask flow
@@ -121,7 +121,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 					} catch (err) {
 						// If we can't get the history, log error and skip delegation
 						console.error(
-							`[AttemptCompletionTool] Failed to get history for task ${task.taskId}: ${(err as Error)?.message ?? String(err)}. ` +
+							`[TaskCompletionTool] Failed to get history for task ${task.taskId}: ${(err as Error)?.message ?? String(err)}. ` +
 								`Skipping delegation.`,
 						)
 						// Fall through to normal completion ask flow
@@ -178,7 +178,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		return "delegated"
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"attempt_completion">): Promise<void> {
+	override async handlePartial(task: Task, block: ToolUse<"task_completion">): Promise<void> {
 		const result: string | undefined = block.params.result
 		const command: string | undefined = block.params.command
 
@@ -206,4 +206,4 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 	}
 }
 
-export const attemptCompletionTool = new AttemptCompletionTool()
+export const taskCompletionTool = new TaskCompletionTool()

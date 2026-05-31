@@ -37,7 +37,7 @@ describe("OpenAiCodexHandler native tool calls", () => {
 							item: {
 								type: "function_call",
 								call_id: "call_1",
-								name: "attempt_completion",
+								name: "task_completion",
 								arguments: "",
 							},
 							output_index: 0,
@@ -58,7 +58,7 @@ describe("OpenAiCodexHandler native tool calls", () => {
 									{
 										type: "function_call",
 										call_id: "call_1",
-										name: "attempt_completion",
+										name: "task_completion",
 										arguments: '{"result":"hi"}',
 									},
 								],
@@ -94,7 +94,7 @@ describe("OpenAiCodexHandler native tool calls", () => {
 		expect(toolChunks[0]).toMatchObject({
 			type: "tool_call_partial",
 			id: "call_1",
-			name: "attempt_completion",
+			name: "task_completion",
 		})
 	})
 
@@ -243,7 +243,7 @@ describe("OpenAiCodexHandler native tool calls", () => {
 							item: {
 								type: "function_call",
 								call_id: "call_done_only",
-								name: "attempt_completion",
+								name: "task_completion",
 								arguments: '{"result":"ok"}',
 							},
 							output_index: 0,
@@ -277,7 +277,7 @@ describe("OpenAiCodexHandler native tool calls", () => {
 		expect(toolCalls[0]).toMatchObject({
 			type: "tool_call",
 			id: "call_done_only",
-			name: "attempt_completion",
+			name: "task_completion",
 		})
 	})
 

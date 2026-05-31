@@ -65,7 +65,7 @@ export interface ToolData {
 	// Question/completion fields
 	/** Question text for ask_followup_question */
 	question?: string
-	/** Result text for attempt_completion */
+	/** Result text for task_completion */
 	result?: string
 
 	// Additional display hints

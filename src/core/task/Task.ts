@@ -2480,11 +2480,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// The way this agentic loop works is that cline will be given a
 			// task that he then calls tools to complete. Unless there's an
-			// attempt_completion call, we keep responding back to him with his
-			// tool's responses until he either attempt_completion or does not
+			// task_completion call, we keep responding back to him with his
+			// tool's responses until he either task_completion or does not
 			// use anymore tools. If he does not use anymore tools, we ask him
 			// to consider if he's completed the task and then call
-			// attempt_completion, otherwise proceed with completing the task.
+			// task_completion, otherwise proceed with completing the task.
 			// There is a MAX_REQUESTS_PER_TASK limit to prevent infinite
 			// requests, but Cline is prompted to finish the task as efficiently
 			// as he can.
@@ -2757,7 +2757,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.didAlreadyUseTool = false
 				this.assistantMessageSavedToHistory = false
 				// Reset tool failure flag for each new assistant turn - this ensures that tool failures
-				// only prevent attempt_completion within the same assistant message, not across turns
+				// only prevent task_completion within the same assistant message, not across turns
 				// (e.g., if a tool fails, then user sends a message saying "just complete anyway")
 				this.didToolFailInCurrentTurn = false
 				this.presentAssistantMessageLocked = false
@@ -3610,7 +3610,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					await pWaitFor(() => this.userMessageContentReady)
 
 					// If the model did not tool use, then we need to tell it to
-					// either use a tool or attempt_completion.
+					// either use a tool or task_completion.
 					const didToolUse = this.assistantMessageContent.some(
 						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 					)

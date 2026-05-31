@@ -81,8 +81,8 @@ export function getToolDisplayName(toolName: string): string {
 		finishTask: "Finish Task",
 
 		// Completion operations
-		attempt_completion: "Task Complete",
-		attemptCompletion: "Task Complete",
+		task_completion: "Task Complete",
+		taskCompletion: "Task Complete",
 		ask_followup_question: "Question",
 		askFollowupQuestion: "Question",
 
@@ -133,8 +133,8 @@ export function getToolIconName(toolName: string): IconName {
 		finishTask: "check",
 
 		// Completion operations
-		attempt_completion: "check",
-		attemptCompletion: "check",
+		task_completion: "check",
+		taskCompletion: "check",
 		ask_followup_question: "question",
 		askFollowupQuestion: "question",
 

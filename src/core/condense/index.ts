@@ -125,7 +125,7 @@ The goal is for work to continue seamlessly after condensation - as if it never 
 /**
  * Injects synthetic tool_results for orphan tool_calls that don't have matching results.
  * This is necessary because OpenAI's Responses API rejects conversations with orphan tool_calls.
- * This can happen when the user triggers condense after receiving a tool_call (like attempt_completion)
+ * This can happen when the user triggers condense after receiving a tool_call (like task_completion)
  * but before responding to it.
  *
  * @param messages - The conversation messages to process
@@ -304,7 +304,7 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	}
 
 	// Inject synthetic tool_results for orphan tool_calls to prevent API rejections
-	// (e.g., when user triggers condense after receiving attempt_completion but before responding)
+	// (e.g., when user triggers condense after receiving task_completion but before responding)
 	const messagesWithToolResults = injectSyntheticToolResults(messagesToSummarize)
 
 	// Transform tool_use and tool_result blocks to text representations.

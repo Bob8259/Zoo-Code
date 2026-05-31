@@ -57,11 +57,11 @@
         </execute_command>
 
         If the output is "not-git-repo", stop:
-        <attempt_completion>
+        <task_completion>
         <result>
         This mode must be run from within a GitHub repository. Navigate to a git repository and try again.
         </result>
-        </attempt_completion>
+        </task_completion>
 
         2) Get origin remote and normalize to OWNER/REPO:
         <execute_command>
@@ -69,11 +69,11 @@
         </execute_command>
 
         If no origin remote exists, stop:
-        <attempt_completion>
+        <task_completion>
         <result>
         No GitHub 'origin' remote found. Configure a GitHub remote and retry.
         </result>
-        </attempt_completion>
+        </task_completion>
 
         Record the normalized OWNER/REPO (e.g., owner/repo) as [OWNER_REPO] to pass via --repo during submission.
  
@@ -356,11 +356,11 @@ Title: [ISSUE_TITLE]
           - Rerun this step and present the updated issue details
 
         On success: Capture the created issue URL from stdout and complete:
-        <attempt_completion>
+        <task_completion>
         <result>
         Created issue: [URL]
         </result>
-        </attempt_completion>
+        </task_completion>
 
         On failure: Present the error succinctly and offer to retry after fixing gh setup (installation/auth). Provide the computed Title and Body inline so the user can submit manually if needed.
 

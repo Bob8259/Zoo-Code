@@ -179,7 +179,7 @@ suite.skip("Roo Code execute_command Tool", function () {
 
 The file ${testFile.name} will be created in the current workspace directory. Assume you can execute this command directly.
 
-Then use the attempt_completion tool to complete the task. Do not suggest any commands in the attempt_completion.`,
+Then use the task_completion tool to complete the task. Do not suggest any commands in the task_completion.`,
 			})
 
 			console.log("Task ID:", taskId)
@@ -287,7 +287,7 @@ Then use the attempt_completion tool to complete the task. Do not suggest any co
 
 The subdirectory ${subDir} exists in the workspace. Assume you can execute this command directly with the specified working directory.
 
-Avoid at all costs suggesting a command when using the attempt_completion tool`,
+Avoid at all costs suggesting a command when using the task_completion tool`,
 			})
 
 			console.log("Task ID:", taskId)
@@ -403,7 +403,7 @@ The file ${testFile.name} will be created in the current workspace directory. As
 
 Important: Use only the echo command which is available on all Unix platforms. Execute each command separately using the execute_command tool.
 
-After both commands are executed, use the attempt_completion tool to complete the task.`,
+After both commands are executed, use the task_completion tool to complete the task.`,
 			})
 
 			console.log("Task ID:", taskId)
@@ -521,7 +521,7 @@ After both commands are executed, use the attempt_completion tool to complete th
 
 Assume you can execute this command directly in the current workspace directory.
 
-Avoid at all costs suggesting a command when using the attempt_completion tool`,
+Avoid at all costs suggesting a command when using the task_completion tool`,
 			})
 
 			console.log("Task ID:", taskId)

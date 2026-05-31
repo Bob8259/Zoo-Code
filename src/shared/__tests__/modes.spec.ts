@@ -37,7 +37,7 @@ describe("isToolAllowedForMode", () => {
 
 	it("allows always available tools", () => {
 		expect(isToolAllowedForMode("ask_followup_question", "markdown-editor", customModes)).toBe(true)
-		expect(isToolAllowedForMode("attempt_completion", "markdown-editor", customModes)).toBe(true)
+		expect(isToolAllowedForMode("task_completion", "markdown-editor", customModes)).toBe(true)
 	})
 
 	it("allows unrestricted tools", () => {

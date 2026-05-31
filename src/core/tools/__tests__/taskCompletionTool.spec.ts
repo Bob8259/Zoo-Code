@@ -1,6 +1,6 @@
 import { RooCodeEventName, TodoItem } from "@roo-code/types"
 
-import { AttemptCompletionToolUse } from "../../../shared/tools"
+import { TaskCompletionToolUse } from "../../../shared/tools"
 
 // Mock the formatResponse module before importing the tool
 vi.mock("../../prompts/responses", () => ({
@@ -38,11 +38,11 @@ vi.mock("../../../shared/package", () => ({
 	},
 }))
 
-import { attemptCompletionTool, AttemptCompletionCallbacks } from "../AttemptCompletionTool"
+import { taskCompletionTool, TaskCompletionCallbacks } from "../TaskCompletionTool"
 import { Task } from "../../task/Task"
 import * as vscode from "vscode"
 
-describe("attemptCompletionTool", () => {
+describe("taskCompletionTool", () => {
 	let mockTask: Partial<Task>
 	let mockPushToolResult: ReturnType<typeof vi.fn>
 	let mockAskApproval: ReturnType<typeof vi.fn>
@@ -88,9 +88,9 @@ describe("attemptCompletionTool", () => {
 
 	describe("todo list validation", () => {
 		it("should allow completion when there is no todo list", async () => {
-			const block: AttemptCompletionToolUse = {
+			const block: TaskCompletionToolUse = {
 				type: "tool_use",
-				name: "attempt_completion",
+				name: "task_completion",
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -98,14 +98,14 @@ describe("attemptCompletionTool", () => {
 
 			mockTask.todoList = undefined
 
-			const callbacks: AttemptCompletionCallbacks = {
+			const callbacks: TaskCompletionCallbacks = {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
 				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
-			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			// Should not call pushToolResult with an error for empty todo list
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
@@ -113,9 +113,9 @@ describe("attemptCompletionTool", () => {
 		})
 
 		it("should allow completion when todo list is empty", async () => {
-			const block: AttemptCompletionToolUse = {
+			const block: TaskCompletionToolUse = {
 				type: "tool_use",
-				name: "attempt_completion",
+				name: "task_completion",
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -123,23 +123,23 @@ describe("attemptCompletionTool", () => {
 
 			mockTask.todoList = []
 
-			const callbacks: AttemptCompletionCallbacks = {
+			const callbacks: TaskCompletionCallbacks = {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
 				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
-			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
 			expect(mockTask.recordToolError).not.toHaveBeenCalled()
 		})
 
 		it("should allow completion when all todos are completed", async () => {
-			const block: AttemptCompletionToolUse = {
+			const block: TaskCompletionToolUse = {
 				type: "tool_use",
-				name: "attempt_completion",
+				name: "task_completion",
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -152,23 +152,23 @@ describe("attemptCompletionTool", () => {
 
 			mockTask.todoList = completedTodos
 
-			const callbacks: AttemptCompletionCallbacks = {
+			const callbacks: TaskCompletionCallbacks = {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
 				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
-			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
 			expect(mockTask.recordToolError).not.toHaveBeenCalled()
 		})
 
 		it("should prevent completion when there are pending todos", async () => {
-			const block: AttemptCompletionToolUse = {
+			const block: TaskCompletionToolUse = {
 				type: "tool_use",
-				name: "attempt_completion",
+				name: "task_completion",
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -191,26 +191,26 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			const callbacks: AttemptCompletionCallbacks = {
+			const callbacks: TaskCompletionCallbacks = {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
 				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
-			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
-			expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("task_completion")
 			expect(mockPushToolResult).toHaveBeenCalledWith(
 				expect.stringContaining("Cannot complete task while there are incomplete todos"),
 			)
 		})
 
 		it("should prevent completion when there are in-progress todos", async () => {
-			const block: AttemptCompletionToolUse = {
+			const block: TaskCompletionToolUse = {
 				type: "tool_use",
-				name: "attempt_completion",
+				name: "task_completion",
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -233,26 +233,26 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			const callbacks: AttemptCompletionCallbacks = {
+			const callbacks: TaskCompletionCallbacks = {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
 				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
-			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
-			expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("task_completion")
 			expect(mockPushToolResult).toHaveBeenCalledWith(
 				expect.stringContaining("Cannot complete task while there are incomplete todos"),
 			)
 		})
 
 		it("should prevent completion when there are mixed incomplete todos", async () => {
-			const block: AttemptCompletionToolUse = {
+			const block: TaskCompletionToolUse = {
 				type: "tool_use",
-				name: "attempt_completion",
+				name: "task_completion",
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -276,26 +276,26 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			const callbacks: AttemptCompletionCallbacks = {
+			const callbacks: TaskCompletionCallbacks = {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
 				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
-			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
-			expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("task_completion")
 			expect(mockPushToolResult).toHaveBeenCalledWith(
 				expect.stringContaining("Cannot complete task while there are incomplete todos"),
 			)
 		})
 
 		it("should allow completion when setting is disabled even with incomplete todos", async () => {
-			const block: AttemptCompletionToolUse = {
+			const block: TaskCompletionToolUse = {
 				type: "tool_use",
-				name: "attempt_completion",
+				name: "task_completion",
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -318,14 +318,14 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			const callbacks: AttemptCompletionCallbacks = {
+			const callbacks: TaskCompletionCallbacks = {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
 				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
-			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			// Should not prevent completion when setting is disabled
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
@@ -336,9 +336,9 @@ describe("attemptCompletionTool", () => {
 		})
 
 		it("should prevent completion when setting is enabled with incomplete todos", async () => {
-			const block: AttemptCompletionToolUse = {
+			const block: TaskCompletionToolUse = {
 				type: "tool_use",
-				name: "attempt_completion",
+				name: "task_completion",
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -361,27 +361,27 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			const callbacks: AttemptCompletionCallbacks = {
+			const callbacks: TaskCompletionCallbacks = {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
 				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
-			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			// Should prevent completion when setting is enabled and there are incomplete todos
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
-			expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("task_completion")
 			expect(mockPushToolResult).toHaveBeenCalledWith(
 				expect.stringContaining("Cannot complete task while there are incomplete todos"),
 			)
 		})
 
 		it("should allow completion when setting is enabled but all todos are completed", async () => {
-			const block: AttemptCompletionToolUse = {
+			const block: TaskCompletionToolUse = {
 				type: "tool_use",
-				name: "attempt_completion",
+				name: "task_completion",
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -404,14 +404,14 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			const callbacks: AttemptCompletionCallbacks = {
+			const callbacks: TaskCompletionCallbacks = {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
 				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
-			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			// Should allow completion when setting is enabled but all todos are completed
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
@@ -423,9 +423,9 @@ describe("attemptCompletionTool", () => {
 
 		describe("tool failure guardrail", () => {
 			it("should prevent completion when a previous tool failed in the current turn", async () => {
-				const block: AttemptCompletionToolUse = {
+				const block: TaskCompletionToolUse = {
 					type: "tool_use",
-					name: "attempt_completion",
+					name: "task_completion",
 					params: { result: "Task completed successfully" },
 					nativeArgs: { result: "Task completed successfully" },
 					partial: false,
@@ -434,7 +434,7 @@ describe("attemptCompletionTool", () => {
 				mockTask.todoList = undefined
 				mockTask.didToolFailInCurrentTurn = true
 
-				const callbacks: AttemptCompletionCallbacks = {
+				const callbacks: TaskCompletionCallbacks = {
 					askApproval: mockAskApproval,
 					handleError: mockHandleError,
 					pushToolResult: mockPushToolResult,
@@ -445,21 +445,21 @@ describe("attemptCompletionTool", () => {
 				const mockSay = vi.fn()
 				mockTask.say = mockSay
 
-				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+				await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 				expect(mockSay).toHaveBeenCalledWith(
 					"error",
-					expect.stringContaining("errors.attempt_completion_tool_failed"),
+					expect.stringContaining("errors.task_completion_tool_failed"),
 				)
 				expect(mockPushToolResult).toHaveBeenCalledWith(
-					expect.stringContaining("errors.attempt_completion_tool_failed"),
+					expect.stringContaining("errors.task_completion_tool_failed"),
 				)
 			})
 
 			it("should allow completion when no tools failed", async () => {
-				const block: AttemptCompletionToolUse = {
+				const block: TaskCompletionToolUse = {
 					type: "tool_use",
-					name: "attempt_completion",
+					name: "task_completion",
 					params: { result: "Task completed successfully" },
 					nativeArgs: { result: "Task completed successfully" },
 					partial: false,
@@ -468,7 +468,7 @@ describe("attemptCompletionTool", () => {
 				mockTask.todoList = undefined
 				mockTask.didToolFailInCurrentTurn = false
 
-				const callbacks: AttemptCompletionCallbacks = {
+				const callbacks: TaskCompletionCallbacks = {
 					askApproval: mockAskApproval,
 					handleError: mockHandleError,
 					pushToolResult: mockPushToolResult,
@@ -476,7 +476,7 @@ describe("attemptCompletionTool", () => {
 					toolDescription: mockToolDescription,
 				}
 
-				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+				await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 				expect(mockTask.consecutiveMistakeCount).toBe(0)
 				expect(mockTask.recordToolError).not.toHaveBeenCalled()
@@ -485,9 +485,9 @@ describe("attemptCompletionTool", () => {
 
 		describe("completion lifecycle", () => {
 			it("emits TaskCompleted only when completion is accepted", async () => {
-				const block: AttemptCompletionToolUse = {
+				const block: TaskCompletionToolUse = {
 					type: "tool_use",
-					name: "attempt_completion",
+					name: "task_completion",
 					params: { result: "2" },
 					nativeArgs: { result: "2" },
 					partial: false,
@@ -495,7 +495,7 @@ describe("attemptCompletionTool", () => {
 
 				mockTask.ask = vi.fn().mockResolvedValue({ response: "yesButtonClicked", text: "", images: [] })
 
-				const callbacks: AttemptCompletionCallbacks = {
+				const callbacks: TaskCompletionCallbacks = {
 					askApproval: mockAskApproval,
 					handleError: mockHandleError,
 					pushToolResult: mockPushToolResult,
@@ -503,7 +503,7 @@ describe("attemptCompletionTool", () => {
 					toolDescription: mockToolDescription,
 				}
 
-				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+				await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 				expect(mockHandleError).not.toHaveBeenCalled()
 				expect(mockCaptureTaskCompleted).toHaveBeenCalledWith("task_1")
@@ -516,9 +516,9 @@ describe("attemptCompletionTool", () => {
 			})
 
 			it("does not emit TaskCompleted when user provides follow-up feedback", async () => {
-				const block: AttemptCompletionToolUse = {
+				const block: TaskCompletionToolUse = {
 					type: "tool_use",
-					name: "attempt_completion",
+					name: "task_completion",
 					params: { result: "2" },
 					nativeArgs: { result: "2" },
 					partial: false,
@@ -530,7 +530,7 @@ describe("attemptCompletionTool", () => {
 					images: [],
 				})
 
-				const callbacks: AttemptCompletionCallbacks = {
+				const callbacks: TaskCompletionCallbacks = {
 					askApproval: mockAskApproval,
 					handleError: mockHandleError,
 					pushToolResult: mockPushToolResult,
@@ -538,7 +538,7 @@ describe("attemptCompletionTool", () => {
 					toolDescription: mockToolDescription,
 				}
 
-				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+				await taskCompletionTool.handle(mockTask as Task, block, callbacks)
 
 				expect(mockHandleError).not.toHaveBeenCalled()
 				expect(mockCaptureTaskCompleted).not.toHaveBeenCalled()

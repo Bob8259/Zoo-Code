@@ -337,19 +337,19 @@ describe("ChatHistoryItem", () => {
 			expect(output).toContain("Search Files")
 		})
 
-		it("renders attempt_completion tool with CompletionTool renderer", () => {
+		it("renders task_completion tool with CompletionTool renderer", () => {
 			const message: TUIMessage = {
 				id: "12",
 				role: "tool",
 				content: JSON.stringify({
-					tool: "attempt_completion",
+					tool: "task_completion",
 					result: "I've completed the task successfully.",
 				}),
-				toolName: "attempt_completion",
+				toolName: "task_completion",
 				toolDisplayName: "Task Complete",
 				toolDisplayOutput: "✅ I've completed the task successfully.",
 				toolData: {
-					tool: "attempt_completion",
+					tool: "task_completion",
 					result: "I've completed the task successfully.",
 				},
 			}

@@ -500,7 +500,7 @@ describe("OpenAiNativeHandler done-event fallbacks", () => {
 				item: {
 					type: "function_call",
 					call_id: "call_done_only",
-					name: "attempt_completion",
+					name: "task_completion",
 					arguments: '{"result":"ok"}',
 				},
 				output_index: 0,
@@ -521,7 +521,7 @@ describe("OpenAiNativeHandler done-event fallbacks", () => {
 		expect(toolCalls[0]).toMatchObject({
 			type: "tool_call",
 			id: "call_done_only",
-			name: "attempt_completion",
+			name: "task_completion",
 		})
 	})
 

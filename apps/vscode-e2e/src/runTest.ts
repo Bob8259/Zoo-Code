@@ -89,7 +89,7 @@ async function main() {
 					response: {
 						toolCalls: [
 							{
-								name: "attempt_completion",
+								name: "task_completion",
 								arguments: JSON.stringify({ result: "Switched to ❓ Ask mode as requested." }),
 								id: "call_modes_post_switch_001",
 							},

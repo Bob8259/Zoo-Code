@@ -28,7 +28,7 @@ import { useMcpToolTool } from "../tools/UseMcpToolTool"
 import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
 import { askFollowupQuestionTool } from "../tools/AskFollowupQuestionTool"
 import { switchModeTool } from "../tools/SwitchModeTool"
-import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
+import { taskCompletionTool, TaskCompletionCallbacks } from "../tools/TaskCompletionTool"
 import { newTaskTool } from "../tools/NewTaskTool"
 import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
@@ -361,7 +361,7 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.server_name}']`
 					case "ask_followup_question":
 						return `[${block.name} for '${block.params.question}']`
-					case "attempt_completion":
+					case "task_completion":
 						return `[${block.name}]`
 					case "switch_mode":
 						return `[${block.name} to '${block.params.mode_slug}'${block.params.reason ? ` because: ${block.params.reason}` : ""}]`
@@ -812,17 +812,17 @@ export async function presentAssistantMessage(cline: Task) {
 						toolCallId: block.id,
 					})
 					break
-				case "attempt_completion": {
-					const completionCallbacks: AttemptCompletionCallbacks = {
+				case "task_completion": {
+					const completionCallbacks: TaskCompletionCallbacks = {
 						askApproval,
 						handleError,
 						pushToolResult,
 						askFinishSubTaskApproval,
 						toolDescription,
 					}
-					await attemptCompletionTool.handle(
+					await taskCompletionTool.handle(
 						cline,
-						block as ToolUse<"attempt_completion">,
+						block as ToolUse<"task_completion">,
 						completionCallbacks,
 					)
 					break

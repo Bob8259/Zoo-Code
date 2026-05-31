@@ -24,7 +24,7 @@
 			"response": {
 				"toolCalls": [
 					{
-						"name": "attempt_completion",
+						"name": "task_completion",
 						"arguments": "{\"result\":\"DEEPSEEK_V4_MARKER_deepseek_v4_flash_reasoning_on\"}",
 						"id": "call_dsv4_flash_on_done"
 					}
@@ -55,7 +55,7 @@
 			"response": {
 				"toolCalls": [
 					{
-						"name": "attempt_completion",
+						"name": "task_completion",
 						"arguments": "{\"result\":\"DEEPSEEK_V4_MARKER_deepseek_v4_flash_reasoning_off\"}",
 						"id": "call_dsv4_flash_off_done"
 					}
@@ -86,7 +86,7 @@
 			"response": {
 				"toolCalls": [
 					{
-						"name": "attempt_completion",
+						"name": "task_completion",
 						"arguments": "{\"result\":\"DEEPSEEK_V4_MARKER_deepseek_v4_pro_reasoning_on\"}",
 						"id": "call_dsv4_pro_on_done"
 					}
@@ -117,7 +117,7 @@
 			"response": {
 				"toolCalls": [
 					{
-						"name": "attempt_completion",
+						"name": "task_completion",
 						"arguments": "{\"result\":\"DEEPSEEK_V4_MARKER_deepseek_v4_pro_reasoning_off\"}",
 						"id": "call_dsv4_pro_off_done"
 					}

@@ -79,7 +79,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 	})
 
 	it("should not modify API history when apiConversationHistoryIndex is -1", async () => {
-		// Setup: User message followed by attempt_completion
+		// Setup: User message followed by task_completion
 		const userMessageTs = 1000
 		const assistantMessageTs = 2000
 		const completionMessageTs = 3000
@@ -118,7 +118,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 				content: [
 					{
 						type: "tool_use",
-						name: "attempt_completion",
+						name: "task_completion",
 						id: "tool-1",
 						input: {
 							result: "Task Completed!",
@@ -326,7 +326,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 		expect(mockCurrentTask.overwriteApiConversationHistory).not.toHaveBeenCalled()
 	})
 
-	it("should correctly handle attempt_completion in API history", async () => {
+	it("should correctly handle task_completion in API history", async () => {
 		const userMessageTs = 1000
 		const completionTs = 2000
 		const feedbackTs = 3000
@@ -352,7 +352,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 			} as ClineMessage,
 		]
 
-		// API history with attempt_completion tool use (user message missing)
+		// API history with task_completion tool use (user message missing)
 		mockCurrentTask.apiConversationHistory = [
 			{
 				ts: completionTs,
@@ -360,7 +360,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 				content: [
 					{
 						type: "tool_use",
-						name: "attempt_completion",
+						name: "task_completion",
 						id: "tool-1",
 						input: {
 							result: "Task Completed!",

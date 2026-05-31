@@ -3,17 +3,17 @@ import { runStreamCase, StreamEvent } from "../lib/stream-harness"
 const START_PROMPT = 'Answer this question and finish: What is 1+1? Reply with only "2", then complete the task.'
 const FOLLOWUP_PROMPT = 'Different question now: what is 3+3? Reply with only "6".'
 
-function looksLikeAttemptCompletionToolUse(event: StreamEvent): boolean {
+function looksLikeTaskCompletionToolUse(event: StreamEvent): boolean {
 	if (event.type !== "tool_use") {
 		return false
 	}
 
-	if (event.tool_use?.name === "attempt_completion") {
+	if (event.tool_use?.name === "task_completion") {
 		return true
 	}
 
 	const content = event.content ?? ""
-	return content.includes('"tool":"attempt_completion"') || content.includes('"name":"attempt_completion"')
+	return content.includes('"tool":"task_completion"') || content.includes('"name":"task_completion"')
 }
 
 function validateFollowupResult(text: string): void {
@@ -30,7 +30,7 @@ async function main() {
 	let initSeen = false
 	let sentFollowup = false
 	let sentShutdown = false
-	let sawAttemptCompletion = false
+	let sawTaskCompletion = false
 	let sawFollowupUserTurn = false
 	let sawMisroutedToolResult = false
 	let followupResult = ""
@@ -54,8 +54,8 @@ async function main() {
 				)
 			}
 
-			if (!sawAttemptCompletion && looksLikeAttemptCompletionToolUse(event)) {
-				sawAttemptCompletion = true
+			if (!sawTaskCompletion && looksLikeTaskCompletionToolUse(event)) {
+				sawTaskCompletion = true
 				if (!sentFollowup) {
 					context.sendCommand({
 						command: "message",
@@ -125,7 +125,7 @@ async function main() {
 				throw new Error("follow-up did not appear as a normal user turn in stream output")
 			}
 
-			console.log(`[PASS] saw attempt_completion tool use: ${sawAttemptCompletion}`)
+			console.log(`[PASS] saw task_completion tool use: ${sawTaskCompletion}`)
 			console.log(`[PASS] saw start assistant chunk before follow-up: ${sawFirstAssistantChunkForStart}`)
 			console.log(`[PASS] follow-up user turn observed: ${sawFollowupUserTurn}`)
 			console.log(`[PASS] follow-up result: "${followupResult}"`)
@@ -143,7 +143,7 @@ async function main() {
 				"timed out waiting for follow-up validation",
 				`initSeen=${initSeen}`,
 				`sentFollowup=${sentFollowup}`,
-				`sawAttemptCompletion=${sawAttemptCompletion}`,
+				`sawTaskCompletion=${sawTaskCompletion}`,
 				`sawFirstAssistantChunkForStart=${sawFirstAssistantChunkForStart}`,
 				`sawFollowupUserTurn=${sawFollowupUserTurn}`,
 				`sawMisroutedToolResult=${sawMisroutedToolResult}`,

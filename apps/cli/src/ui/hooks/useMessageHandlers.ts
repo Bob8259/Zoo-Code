@@ -165,7 +165,7 @@ export function useMessageHandlers({ nonInteractive }: UseMessageHandlersOptions
 				try {
 					const completionInfo = JSON.parse(text) as Record<string, unknown>
 					const toolData: ToolData = {
-						tool: "attempt_completion",
+						tool: "task_completion",
 						result: completionInfo.result as string | undefined,
 						content: completionInfo.result as string | undefined,
 					}
@@ -174,9 +174,9 @@ export function useMessageHandlers({ nonInteractive }: UseMessageHandlersOptions
 						id: messageId,
 						role: "tool",
 						content: text,
-						toolName: "attempt_completion",
+						toolName: "task_completion",
 						toolDisplayName: "Task Complete",
-						toolDisplayOutput: formatToolOutput({ tool: "attempt_completion", ...completionInfo }),
+						toolDisplayOutput: formatToolOutput({ tool: "task_completion", ...completionInfo }),
 						originalType: ask,
 						toolData,
 					})
@@ -186,12 +186,12 @@ export function useMessageHandlers({ nonInteractive }: UseMessageHandlersOptions
 						id: messageId,
 						role: "tool",
 						content: text || "Task completed",
-						toolName: "attempt_completion",
+						toolName: "task_completion",
 						toolDisplayName: "Task Complete",
 						toolDisplayOutput: "✅ Task completed",
 						originalType: ask,
 						toolData: {
-							tool: "attempt_completion",
+							tool: "task_completion",
 							content: text,
 						},
 					})

@@ -754,7 +754,7 @@ describe("MessageManager", () => {
 				{
 					ts: 200, // Race: added AFTER clineMessage at ts=100
 					role: "assistant",
-					content: [{ type: "tool_use", id: "tool_1", name: "attempt_completion", input: {} }],
+					content: [{ type: "tool_use", id: "tool_1", name: "task_completion", input: {} }],
 				},
 				{
 					ts: 300,
