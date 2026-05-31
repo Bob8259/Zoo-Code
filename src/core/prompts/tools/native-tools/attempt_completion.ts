@@ -1,13 +1,13 @@
 import type OpenAI from "openai"
 
-const ATTEMPT_COMPLETION_DESCRIPTION = `Present the final task result to the user.
+const ATTEMPT_COMPLETION_DESCRIPTION = `Signal that the user's task is finished and present the final result.
 
-CRITICAL: Do NOT use this tool until you have confirmed that all previous tool uses were successful. Formulate a final, conclusive result that does not end with questions or offers for further assistance.
+REQUIRED: When you have completed the user's task, you MUST call this tool. Do NOT end the task with a plain-text summary — always use attempt_completion instead.
 
 Example: Completing after updating CSS
 { "result": "I've updated the CSS to use flexbox layout for better responsiveness" }`
 
-const RESULT_PARAMETER_DESCRIPTION = `Conclusive final result message`
+const RESULT_PARAMETER_DESCRIPTION = `Conclusive final result message. Required whenever the task is done.`
 
 export default {
 	type: "function",

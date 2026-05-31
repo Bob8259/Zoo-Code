@@ -3619,10 +3619,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Increment consecutive no-tool-use counter
 						this.consecutiveNoToolUseCount++
 
-						// Only show error and count toward mistake limit after 2 consecutive failures
-						if (this.consecutiveNoToolUseCount >= 2) {
+						// Show error and count toward mistake limit on first no-tool response
+						if (this.consecutiveNoToolUseCount >= 1) {
 							await this.say("error", "MODEL_NO_TOOLS_USED")
-							// Only count toward mistake limit after second consecutive failure
 							this.consecutiveMistakeCount++
 						}
 

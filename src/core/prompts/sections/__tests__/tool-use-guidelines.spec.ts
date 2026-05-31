@@ -7,6 +7,8 @@ describe("getToolUseGuidelinesSection", () => {
 		expect(guidelines).toContain("1. Assess what information")
 		expect(guidelines).toContain("2. Choose the most appropriate tool")
 		expect(guidelines).toContain("3. If multiple actions are needed")
+		expect(guidelines).toContain("4. When the user's task is fully complete")
+		expect(guidelines).toContain("attempt_completion")
 	})
 
 	it("should include multiple-tools-per-message guidance", () => {
