@@ -20,7 +20,7 @@ Qoo Code also gives **most controls to you**, the user. It does not try to guess
 
 Together, these changes aim to **improve the day-to-day user experience**, **raise safety** while preserving useful **autonomous** behavior (auto-approval where appropriate), **borrow proven ideas** from other projects where they fit, and support a **clearer, more efficient workflow** from exploration through implementation.
 
-1. **Quick Mode Switch Shortcut (`Alt+Q`)**: Fast transition between **Code mode** and **Architecture mode** using a simple keyboard shortcut.
+1. **Quick Mode Switch Shortcut (`Alt+Q`)**: Fast transition between **Code mode** and **Architect mode** using a simple keyboard shortcut.
 2. **Simplified Prompts**: Highly optimized and simplified system prompts for modes, giving the agent clear guidance and removing prompt clutter.
 3. **Focused Environment Details Context**: Re-added a highly optimized `<environment_details>` XML block that ONLY includes the path to the currently active focused editor, injected exactly once at the start of each new conversation. This maintains minimal latency and saves API tokens while ensuring the agent always knows your starting active file.
 4. **Structured Markdown Context Compaction**: Replaced the verbose legacy XML-wrapped context summarization format with a concise, highly structured 7-section Markdown compaction format. This drastically reduces prompt overhead and keeps goals, constraints, progress, key decisions, and next steps perfectly synchronized. This compaction design is credited to and adapted from the elegant compaction methodology in [OpenCode](https://github.com/anomalyco/opencode).
