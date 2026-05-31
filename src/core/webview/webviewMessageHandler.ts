@@ -3324,7 +3324,7 @@ export const webviewMessageHandler = async (
 
 				const tmpDir = os.tmpdir()
 				const timestamp = Date.now()
-				const tempFileName = `roo-debug-command-review-prompt-${timestamp}.txt`
+				const tempFileName = `roo-debug-command-review-prompt-${timestamp}.json`
 				const tempFilePath = path.join(tmpDir, tempFileName)
 
 				await fs.writeFile(tempFilePath, lastPrompt, "utf8")

@@ -3,7 +3,7 @@ import * as fs from "fs/promises"
 import * as path from "path"
 import { Task } from "../../core/task/Task"
 import { buildApiHandler } from "../../api"
-import { ProviderSettings } from "@roo-code/types"
+import { ProviderSettings, getModelId } from "@roo-code/types"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
 
 export class CommandReviewService {
@@ -134,14 +134,56 @@ Respond strictly in the following JSON format:
 				chatHistory,
 			})
 
-			// Save the prompt for debug inspection
-			CommandReviewService.lastReviewPrompt = promptText
-
 			// 9. Call LLM
 			const handler = buildApiHandler(apiConfig)
 			const systemPrompt =
 				"You are a command-line safety and security review agent. Respond strictly in the specified JSON format."
 			const messages = [{ role: "user" as const, content: promptText }]
+
+			// Save full request details as formatted JSON for debug inspection
+			const requestPayload = {
+				provider: apiConfig.apiProvider,
+				modelId:
+					getModelId(apiConfig) ||
+					(apiConfig as any).modelId ||
+					(apiConfig as any).openRouterModelId ||
+					(apiConfig as any).openAiModelId ||
+					(apiConfig as any).ollamaModelId ||
+					(apiConfig as any).lmStudioModelId,
+				temperature: apiConfig.modelTemperature ?? null,
+				maxTokens: apiConfig.modelMaxTokens ?? null,
+				maxThinkingTokens: apiConfig.modelMaxThinkingTokens ?? null,
+				reasoningEffort: apiConfig.reasoningEffort ?? null,
+				systemPrompt: systemPrompt,
+				messages: messages,
+				apiConfig: {
+					...apiConfig,
+					// Redact sensitive credentials to ensure safety
+					apiKey: apiConfig.apiKey ? "******" : undefined,
+					openAiApiKey: (apiConfig as any).openAiApiKey ? "******" : undefined,
+					openRouterApiKey: (apiConfig as any).openRouterApiKey ? "******" : undefined,
+					geminiApiKey: (apiConfig as any).geminiApiKey ? "******" : undefined,
+					awsAccessKey: (apiConfig as any).awsAccessKey ? "******" : undefined,
+					awsSecretKey: (apiConfig as any).awsSecretKey ? "******" : undefined,
+					awsSessionToken: (apiConfig as any).awsSessionToken ? "******" : undefined,
+					vertexJsonCredentials: (apiConfig as any).vertexJsonCredentials ? "******" : undefined,
+					ollamaApiKey: (apiConfig as any).ollamaApiKey ? "******" : undefined,
+					poeApiKey: (apiConfig as any).poeApiKey ? "******" : undefined,
+					moonshotApiKey: (apiConfig as any).moonshotApiKey ? "******" : undefined,
+					minimaxApiKey: (apiConfig as any).minimaxApiKey ? "******" : undefined,
+					requestyApiKey: (apiConfig as any).requestyApiKey ? "******" : undefined,
+					unboundApiKey: (apiConfig as any).unboundApiKey ? "******" : undefined,
+					xaiApiKey: (apiConfig as any).xaiApiKey ? "******" : undefined,
+					litellmApiKey: (apiConfig as any).litellmApiKey ? "******" : undefined,
+					sambaNovaApiKey: (apiConfig as any).sambaNovaApiKey ? "******" : undefined,
+					zaiApiKey: (apiConfig as any).zaiApiKey ? "******" : undefined,
+					fireworksApiKey: (apiConfig as any).fireworksApiKey ? "******" : undefined,
+					basetenApiKey: (apiConfig as any).basetenApiKey ? "******" : undefined,
+					rooApiKey: (apiConfig as any).rooApiKey ? "******" : undefined,
+					vercelAiGatewayApiKey: (apiConfig as any).vercelAiGatewayApiKey ? "******" : undefined,
+				},
+			}
+			CommandReviewService.lastReviewPrompt = JSON.stringify(requestPayload, null, 2)
 
 			const stream = handler.createMessage(systemPrompt, messages)
 			let responseText = ""
