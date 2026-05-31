@@ -231,6 +231,88 @@ describe("CommandReviewService", () => {
 			expect(contentStr).toContain('"content": "try to check the git status."')
 			expect(contentStr).toContain('"role": "assistant"')
 			expect(contentStr).toContain('"content": "Checked status."')
+
+			// Assert safety criteria appear at the start (before Proposed Command)
+			const safetyIdx = contentStr.indexOf("Evaluate commands against these safety criteria:")
+			const commandIdx = contentStr.indexOf("Proposed Command:")
+			expect(safetyIdx).toBeGreaterThan(-1)
+			expect(safetyIdx).toBeLessThan(commandIdx)
+
+			// Assert safety criteria are repeated at the end (before response format)
+			expect(contentStr).toContain("Remember the safety criteria above")
+			const rememberIdx = contentStr.indexOf("Remember the safety criteria above")
+			const formatIdx = contentStr.indexOf("Respond strictly in the following JSON format:")
+			expect(rememberIdx).toBeLessThan(formatIdx)
+
+			// Assert chat history label says 10 messages
+			expect(contentStr).toContain("Recent Chat History (Last 10 messages)")
+		})
+
+		it("should use the most recent user_feedback message as userQuery", async () => {
+			mockTask.clineMessages = [
+				{ type: "say", say: "user_feedback", text: "First user message about setup." },
+				{ type: "say", say: "text", text: "Okay, I will set up the project." },
+				{ type: "say", say: "user_feedback", text: "Now run the tests please." },
+				{ type: "say", say: "text", text: "Running tests..." },
+			]
+
+			const result = await CommandReviewService.reviewCommand("npm test", "/mock/workspace", mockTask as Task)
+			expect(result.approved).toBe("Yes")
+
+			const lastPrompt = CommandReviewService.lastReviewPrompt
+			expect(lastPrompt).toBeDefined()
+			const parsed = JSON.parse(lastPrompt!)
+			const contentStr = parsed.messages[0].content.join("\n")
+
+			// Should contain the MOST RECENT user message
+			expect(contentStr).toContain("Now run the tests please.")
+			// Should NOT contain the first user message as the User Intent line
+			const intentSection = contentStr.split("User Intent (Most Recent Query):")[1]?.split("\n")[1] || ""
+			expect(intentSection).toContain("Now run the tests please.")
+			expect(intentSection).not.toContain("First user message about setup.")
+		})
+
+		it("should include up to 10 recent chat messages in history", async () => {
+			// Create 15 messages so the last 10 are selected
+			const messages = Array.from({ length: 15 }, (_, i) => ({
+				type: "say" as const,
+				say: i % 2 === 0 ? "user_feedback" : "text",
+				text: i % 2 === 0 ? `User message ${i}` : `Assistant response ${i}`,
+			}))
+			mockTask.clineMessages = messages
+
+			const result = await CommandReviewService.reviewCommand("git status", "/mock/workspace", mockTask as Task)
+			expect(result.approved).toBe("Yes")
+
+			const lastPrompt = CommandReviewService.lastReviewPrompt
+			expect(lastPrompt).toBeDefined()
+			const parsed = JSON.parse(lastPrompt!)
+			const contentStr = parsed.messages[0].content.join("\n")
+
+			// Should contain messages from index 5-14 (last 10)
+			expect(contentStr).toContain("User message 14")
+			expect(contentStr).toContain("Assistant response 5")
+			// Should NOT contain messages 0-4 (oldest 5)
+			expect(contentStr).not.toContain("User message 0")
+			expect(contentStr).not.toContain("User message 4")
+		})
+
+		it("should fallback to last message if no user_feedback exists", async () => {
+			mockTask.clineMessages = [
+				{ type: "say", say: "text", text: "Some assistant message." },
+				{ type: "say", say: "completion_result", text: "Task completed." },
+			]
+
+			const result = await CommandReviewService.reviewCommand("git status", "/mock/workspace", mockTask as Task)
+			expect(result.approved).toBe("Yes")
+
+			const lastPrompt = CommandReviewService.lastReviewPrompt
+			expect(lastPrompt).toBeDefined()
+			const parsed = JSON.parse(lastPrompt!)
+			const contentStr = parsed.messages[0].content.join("\n")
+
+			// The fallback should use the last message in clineMessages
+			expect(contentStr).toContain("Task completed.")
 		})
 	})
 })

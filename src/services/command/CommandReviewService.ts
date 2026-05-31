@@ -11,39 +11,41 @@ export class CommandReviewService {
 
 	static readonly DEFAULT_SAFETY_PROMPT = `You are a command-line safety and security review agent. Your role is to analyze a proposed shell command and determine if it is safe and correct to execute.
 
-Proposed Command:
-\`{{command}}\`
-
-Context:
-1. **User Intent (Most Recent Query):**
-   "{{userQuery}}"
-
-2. **System Information:**
-   - Operating System: {{os}}
-   - Working Directory: {{cwd}}
-
-3. **Current TODO List:**
-   {{todoList}}
-
-4. **Directory Structure (Depth up to 3):**
-   {{directoryStructure}}
-
-5. **File Contents (if applicable):**
-   {{fileContents}}
-
-6. **Recent Chat History (Last 5 messages):**
-   {{chatHistory}}
-
-Evaluate the command against the following safety criteria:
+Evaluate commands against these safety criteria:
 - **Destructive Actions:** Does the command perform dangerous deletions or modifications (e.g., rm -rf without backups, unintended deletes, formatting disks, or overwriting critical system/project resources)?
 - **Data Exfiltration & Security:** Does the command attempt to send sensitive keys, passwords, credentials, or proprietary source code to external servers?
 - **Unauthorized Network Access:** Does it start backdoors, open untrusted listening ports, or download unverified executable content from the internet?
 - **Malicious Intent Detection:** Does the command attempt to execute actions completely unrelated or contrary to the user's query and intent?
 
+Proposed Command:
+\`{{command}}\`
+
+Context:
+1. **User Intent (Most Recent Query):**
+	  "{{userQuery}}"
+
+2. **System Information:**
+	  - Operating System: {{os}}
+	  - Working Directory: {{cwd}}
+
+3. **Current TODO List:**
+	  {{todoList}}
+
+4. **Directory Structure (Depth up to 3):**
+	  {{directoryStructure}}
+
+5. **File Contents (if applicable):**
+	  {{fileContents}}
+
+6. **Recent Chat History (Last 10 messages):**
+	  {{chatHistory}}
+
+Remember the safety criteria above (Destructive Actions, Data Exfiltration, Unauthorized Network Access, Malicious Intent). Evaluate the command against them before responding.
+
 Respond strictly in the following JSON format:
 {
-  "approved": "Yes" | "No" | "Unsure",
-  "reason": "Clear explanation of why it was approved, rejected, or marked as unsure. If rejected or unsure, clearly specify the potential security/safety risk."
+	 "approved": "Yes" | "No" | "Unsure",
+	 "reason": "Clear explanation of why it was approved, rejected, or marked as unsure. If rejected or unsure, clearly specify the potential security/safety risk."
 }`
 
 	static async reviewCommand(
@@ -61,10 +63,10 @@ Respond strictly in the following JSON format:
 			// 1. Gather OS details
 			const osInfo = `${os.platform()} ${os.release()} (${os.arch()})`
 
-			// 2. Gather User Intent
+			// 2. Gather User Intent (use the most recent user message)
 			const userQuery =
-				task.clineMessages.find((m) => m.type === "say" && m.say === "user_feedback")?.text ||
-				task.clineMessages[0]?.text ||
+				task.clineMessages.filter((m) => m.type === "say" && m.say === "user_feedback").at(-1)?.text ||
+				task.clineMessages[task.clineMessages.length - 1]?.text ||
 				""
 
 			// 3. Gather TODO list
@@ -86,7 +88,7 @@ Respond strictly in the following JSON format:
 			// 5. Gather file contents referenced in the command
 			const fileContents = await this.gatherReferencedFileContents(command, cwd, task.rooIgnoreController)
 
-			// 6. Gather recent 5 chat turns as a structured JSON array
+			// 6. Gather recent 10 chat turns as a structured JSON array
 			const filteredMessages = task.clineMessages.filter(
 				(m) =>
 					m.text &&
@@ -98,7 +100,7 @@ Respond strictly in the following JSON format:
 						m.say === "completion_result"),
 			)
 
-			const historyJson = filteredMessages.slice(-5).map((m) => {
+			const historyJson = filteredMessages.slice(-10).map((m) => {
 				const role = m === task.clineMessages[0] || m.say === "user_feedback" ? "user" : "assistant"
 				return {
 					role,

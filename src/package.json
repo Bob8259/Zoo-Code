@@ -1,8 +1,8 @@
 {
-	"name": "zoo-code-alt",
+	"name": "q-code",
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
-	"publisher": "QCodeOrganization",
+	"publisher": "Azikaban",
 	"version": "3.54.1",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
@@ -18,9 +18,8 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/zoo-code-alt-Org/zoo-code-alt"
+		"url": "https://github.com/Bob8259/Zoo-Code"
 	},
-	"homepage": "https://zoocode.dev",
 	"categories": [
 		"AI",
 		"Chat",
@@ -30,7 +29,7 @@
 		"Testing"
 	],
 	"keywords": [
-		"cline",
+		"ai agent",
 		"claude",
 		"dev",
 		"mcp",
@@ -441,8 +440,8 @@
 		"bundle": "node esbuild.mjs",
 		"vscode:prepublish": "pnpm bundle --production",
 		"vsix": "mkdirp ../bin && vsce package --no-dependencies --out ../bin",
-		"publish:vsce": "npx @vscode/vsce publish --packagePath ../bin/zoo-code-alt-$npm_package_version.vsix",
-		"publish:ovsx": "pnpm exec ovsx publish ../bin/zoo-code-alt-$npm_package_version.vsix --skip-duplicate",
+		"publish:vsce": "npx @vscode/vsce publish --packagePath ../bin/q-code-$npm_package_version.vsix",
+		"publish:ovsx": "pnpm exec ovsx publish ../bin/q-code-$npm_package_version.vsix --skip-duplicate",
 		"publish:marketplace": "pnpm vsix && pnpm publish:vsce && pnpm publish:ovsx",
 		"watch:bundle": "pnpm bundle --watch",
 		"watch:tsc": "cd .. && tsc --noEmit --watch --project src/tsconfig.json",
