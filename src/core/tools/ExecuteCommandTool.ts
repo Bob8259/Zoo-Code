@@ -91,6 +91,24 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 			let didApprove = false
 
 			if (level1Approved) {
+				let partialCommandMsg = undefined
+				for (let idx = task.clineMessages.length - 1; idx >= 0; idx--) {
+					const msg = task.clineMessages[idx]
+					if (msg && msg.type === "ask" && msg.ask === "command" && msg.partial) {
+						partialCommandMsg = msg
+						break
+					}
+				}
+				if (partialCommandMsg) {
+					partialCommandMsg.partial = false
+					partialCommandMsg.text = canonicalCommand
+					await (task as any).saveClineMessages()
+					await (task as any).updateClineMessage(partialCommandMsg)
+				} else {
+					const askPromise = task.ask("command", canonicalCommand, false)
+					task.approveAsk()
+					await askPromise
+				}
 				didApprove = true
 			} else if (level1Denied) {
 				task.didRejectTool = true
@@ -119,6 +137,24 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 						undefined,
 						false,
 					)
+					let partialCommandMsg = undefined
+					for (let idx = task.clineMessages.length - 1; idx >= 0; idx--) {
+						const msg = task.clineMessages[idx]
+						if (msg && msg.type === "ask" && msg.ask === "command" && msg.partial) {
+							partialCommandMsg = msg
+							break
+						}
+					}
+					if (partialCommandMsg) {
+						partialCommandMsg.partial = false
+						partialCommandMsg.text = canonicalCommand
+						await (task as any).saveClineMessages()
+						await (task as any).updateClineMessage(partialCommandMsg)
+					} else {
+						const askPromise = task.ask("command", canonicalCommand, false)
+						task.approveAsk()
+						await askPromise
+					}
 					didApprove = true
 				} else {
 					await task.say(
