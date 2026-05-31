@@ -86,25 +86,28 @@ Respond strictly in the following JSON format:
 			// 5. Gather file contents referenced in the command
 			const fileContents = await this.gatherReferencedFileContents(command, cwd, task.rooIgnoreController)
 
-			// 6. Gather recent 5 chat turns
+			// 6. Gather recent 5 chat turns as a structured JSON array
+			const filteredMessages = task.clineMessages.filter(
+				(m) =>
+					m.text &&
+					!m.partial &&
+					m.type === "say" &&
+					(m.say === "text" ||
+						m.say === "user_feedback" ||
+						m.say === "error" ||
+						m.say === "completion_result"),
+			)
+
+			const historyJson = filteredMessages.slice(-5).map((m) => {
+				const role = m === task.clineMessages[0] || m.say === "user_feedback" ? "user" : "assistant"
+				return {
+					role,
+					content: m.text || "",
+				}
+			})
+
 			const chatHistory =
-				task.clineMessages
-					.filter(
-						(m) =>
-							m.text &&
-							!m.partial &&
-							m.type === "say" &&
-							(m.say === "text" ||
-								m.say === "user_feedback" ||
-								m.say === "error" ||
-								m.say === "completion_result"),
-					)
-					.slice(-5)
-					.map((m) => {
-						const role = m.say === "user_feedback" ? "User" : "Assistant"
-						return `[${role}]: ${m.text}`
-					})
-					.join("\n\n") || "(No prior conversation history)"
+				historyJson.length > 0 ? JSON.stringify(historyJson, null, 2) : "(No prior conversation history)"
 
 			// 7. Instantiate the configured API provider configuration
 			let apiConfig: ProviderSettings = task.apiConfiguration
@@ -136,26 +139,65 @@ Respond strictly in the following JSON format:
 
 			// 9. Call LLM
 			const handler = buildApiHandler(apiConfig)
+
+			// Resolve model parameters dynamically using getModel()
+			let resolvedModel: any = null
+			try {
+				resolvedModel = handler.getModel()
+			} catch (e) {
+				console.error("Failed to call getModel on handler:", e)
+			}
+
+			const modelId =
+				resolvedModel?.id ||
+				getModelId(apiConfig) ||
+				(apiConfig as any).modelId ||
+				(apiConfig as any).openRouterModelId ||
+				(apiConfig as any).openAiModelId ||
+				(apiConfig as any).ollamaModelId ||
+				(apiConfig as any).lmStudioModelId
+
+			const temperature =
+				resolvedModel?.temperature !== undefined
+					? resolvedModel.temperature
+					: (apiConfig.modelTemperature ?? null)
+			const maxTokens =
+				resolvedModel?.maxTokens !== undefined ? resolvedModel.maxTokens : (apiConfig.modelMaxTokens ?? null)
+			const maxThinkingTokens =
+				resolvedModel?.reasoningBudget !== undefined
+					? resolvedModel.reasoningBudget
+					: (apiConfig.modelMaxThinkingTokens ?? null)
+			const reasoningEffort =
+				resolvedModel?.reasoningEffort !== undefined
+					? resolvedModel.reasoningEffort
+					: (apiConfig.reasoningEffort ?? null)
+
 			const systemPrompt =
 				"You are a command-line safety and security review agent. Respond strictly in the specified JSON format."
 			const messages = [{ role: "user" as const, content: promptText }]
 
+			const formatMultiline = (text: any): any => {
+				if (typeof text === "string") {
+					return text.split(/\r?\n/)
+				}
+				return text
+			}
+
+			const formattedMessages = messages.map((msg) => ({
+				...msg,
+				content: formatMultiline(msg.content),
+			}))
+
 			// Save full request details as formatted JSON for debug inspection
 			const requestPayload = {
 				provider: apiConfig.apiProvider,
-				modelId:
-					getModelId(apiConfig) ||
-					(apiConfig as any).modelId ||
-					(apiConfig as any).openRouterModelId ||
-					(apiConfig as any).openAiModelId ||
-					(apiConfig as any).ollamaModelId ||
-					(apiConfig as any).lmStudioModelId,
-				temperature: apiConfig.modelTemperature ?? null,
-				maxTokens: apiConfig.modelMaxTokens ?? null,
-				maxThinkingTokens: apiConfig.modelMaxThinkingTokens ?? null,
-				reasoningEffort: apiConfig.reasoningEffort ?? null,
-				systemPrompt: systemPrompt,
-				messages: messages,
+				modelId,
+				temperature,
+				maxTokens,
+				maxThinkingTokens,
+				reasoningEffort,
+				systemPrompt: formatMultiline(systemPrompt),
+				messages: formattedMessages,
 				apiConfig: {
 					...apiConfig,
 					// Redact sensitive credentials to ensure safety

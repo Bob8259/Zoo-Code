@@ -193,5 +193,44 @@ describe("CommandReviewService", () => {
 			expect(result.approved).toBe("Unsure")
 			expect(result.reason).toContain("Command Auto-Review failed with error")
 		})
+
+		it("should resolve dynamic parameters and split prompt newlines into arrays", async () => {
+			mockApiHandler.getModel.mockReturnValue({
+				id: "mock-deepseek",
+				temperature: 0.7,
+				maxTokens: 4000,
+				reasoningBudget: 2000,
+				reasoningEffort: "xhigh",
+			})
+
+			mockTask.clineMessages = [
+				{ type: "say", say: "text", text: "try to check the git status." },
+				{ type: "say", say: "completion_result", text: "Checked status." },
+			]
+
+			const result = await CommandReviewService.reviewCommand("git status", "/mock/workspace", mockTask as Task)
+			expect(result.approved).toBe("Yes")
+
+			const lastPrompt = CommandReviewService.lastReviewPrompt
+			expect(lastPrompt).toBeDefined()
+			const parsed = JSON.parse(lastPrompt!)
+			expect(parsed.modelId).toBe("mock-deepseek")
+			expect(parsed.temperature).toBe(0.7)
+			expect(parsed.maxTokens).toBe(4000)
+			expect(parsed.maxThinkingTokens).toBe(2000)
+			expect(parsed.reasoningEffort).toBe("xhigh")
+			expect(Array.isArray(parsed.systemPrompt)).toBe(true)
+			expect(parsed.systemPrompt[0]).toBe(
+				"You are a command-line safety and security review agent. Respond strictly in the specified JSON format.",
+			)
+			expect(Array.isArray(parsed.messages[0].content)).toBe(true)
+
+			// Assert history JSON array is embedded inside message content
+			const contentStr = parsed.messages[0].content.join("\n")
+			expect(contentStr).toContain('"role": "user"')
+			expect(contentStr).toContain('"content": "try to check the git status."')
+			expect(contentStr).toContain('"role": "assistant"')
+			expect(contentStr).toContain('"content": "Checked status."')
+		})
 	})
 })
