@@ -1,16 +1,17 @@
 import type OpenAI from "openai"
 
-const NEW_TASK_DESCRIPTION = `Create a new task instance in a chosen mode with a message and initial todo list.
+const NEW_TASK_DESCRIPTION = `Create a focused subtask in a chosen mode. Best for simple, self-contained work (e.g. find files, search the codebase, gather information, inspect structure, read-only analysis). The result of the subtask will be returned to you.
 
-Use subtasks to delegate focused work back to the parent via task_completion. For read-only exploration (codebase search, file listing, structure inspection), prefer ask mode with a concise scope and require the subtask to summarize findings in task_completion.
+Prefer ask mode for read-only exploration. Keep the message to one objective with a clear deliverable. 
+Do not use for complex implementation, or tasks that need ongoing user back-and-forth.
 
-CRITICAL: Call this tool alone. Do NOT call it alongside other tools in the same turn. Gather necessary information in preceding turns first.`
+CRITICAL: Call this tool alone. Do NOT call it alongside other tools in the same turn.`
 
-const MODE_PARAMETER_DESCRIPTION = `Mode slug to begin the new task in (e.g. code, debug, architect)`
+const MODE_PARAMETER_DESCRIPTION = `Mode slug to begin the subtask in (e.g. ask, code, debug, architect). Use ask for read-only exploration; use other modes only when edits or command execution are required.`
 
-const MESSAGE_PARAMETER_DESCRIPTION = `Initial instructions or context`
+const MESSAGE_PARAMETER_DESCRIPTION = `Single objective for the subtask: context the parent needs, explicit scope, expected deliverable, and instruction to finish with task_completion and a concise summary for the parent.`
 
-const TODOS_PARAMETER_DESCRIPTION = `Optional initial todo markdown checklist`
+const TODOS_PARAMETER_DESCRIPTION = `Optional short markdown checklist to scope a simple subtask; omit when not needed.`
 
 export default {
 	type: "function",

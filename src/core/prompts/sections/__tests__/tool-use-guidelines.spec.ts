@@ -8,6 +8,9 @@ describe("getToolUseGuidelinesSection", () => {
 		expect(guidelines).toContain("2. Choose the most appropriate tool")
 		expect(guidelines).toContain("3. If multiple actions are needed")
 		expect(guidelines).toContain("4. When the user's task is fully complete")
+		expect(guidelines).toContain("5. For simple, self-contained exploration")
+		expect(guidelines).toContain("new_task")
+		expect(guidelines).toContain("ask")
 		expect(guidelines).toContain("task_completion")
 	})
 
