@@ -64,7 +64,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 	const descriptionIntro =
 		"Read a file and return its contents with line numbers. IMPORTANT: This tool reads exactly one file per call. For multiple files, issue multiple parallel read_file calls."
 
-	const modeDescription = ` Modes: 'slice' (default) reads sequentially with offset/limit (ideal for general exploration); 'indentation' extracts complete code blocks containing an anchor line (preferred when you have a specific line number to guarantee valid blocks). anchor_line is REQUIRED for indentation mode.`
+	const modeDescription = ` Modes: 'slice' (default) reads sequentially with offset/limit (ideal for general exploration); 'indentation' extracts complete code blocks containing an anchor line (requires anchor_line; guarantees complete semantic blocks). anchor_line is REQUIRED for indentation mode.`
 
 	const limitNote = ` Returns up to ${DEFAULT_LINE_LIMIT} lines. Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
 
@@ -110,7 +110,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 			type: "string",
 			enum: ["slice", "indentation"],
 			description:
-				"Reading mode. 'slice' (default): sequential reading - use for general exploration. 'indentation': semantic code block extraction - PREFERRED when you have a specific line number to avoid truncation. WARNING: anchor_line is required for indentation mode.",
+				"Reading mode. 'slice' (default): sequential reading - use for general exploration. 'indentation': semantic code block extraction based on an anchor line (requires anchor_line); extracts complete code blocks like functions or classes.",
 		},
 		offset: {
 			type: "integer",

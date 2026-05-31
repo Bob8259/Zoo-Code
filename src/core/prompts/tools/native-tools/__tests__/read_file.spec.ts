@@ -118,5 +118,26 @@ describe("createReadFileTool", () => {
 
 			expect(schema.required).toContain("path")
 		})
+
+		it("should not contain preference language in description", () => {
+			const tool = createReadFileTool()
+			const description = getFunctionDef(tool).description!
+			const lowerDescription = description.toLowerCase()
+
+			// The prompt should describe both modes objectively without biasing the agent
+			expect(lowerDescription).not.toContain("prefer")
+			expect(lowerDescription).not.toContain("must default")
+			expect(lowerDescription).not.toContain("should always")
+		})
+
+		it("should not contain preference language in mode parameter description", () => {
+			const tool = createReadFileTool()
+			const schema = getFunctionDef(tool).parameters as any
+			const modeDescription = schema.properties.mode.description as string
+			const lowerModeDescription = modeDescription.toLowerCase()
+
+			expect(lowerModeDescription).not.toContain("prefer")
+			expect(lowerModeDescription).not.toContain("must default")
+		})
 	})
 })
