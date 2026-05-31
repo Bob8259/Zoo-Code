@@ -32,10 +32,12 @@ suite("Zoo Code Extension", function () {
 			"terminalExplainCommand",
 		]
 
-		const commands = new Set((await vscode.commands.getCommands(true)).filter((cmd) => cmd.startsWith("zoo-code")))
+		const commands = new Set(
+			(await vscode.commands.getCommands(true)).filter((cmd) => cmd.startsWith("azikaban-q-code")),
+		)
 
 		for (const command of expectedCommands) {
-			assert.ok(commands.has(`zoo-code.${command}`), `Command ${command} should be registered`)
+			assert.ok(commands.has(`azikaban-q-code.${command}`), `Command ${command} should be registered`)
 		}
 	})
 })

@@ -4,6 +4,18 @@ All notable changes to Zoo Code will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and Zoo Code uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.54.3
+
+### Changed
+
+- Use marketplace extension name `azikaban-q-code` under publisher `Azikaban` (`Azikaban.azikaban-q-code`) because `q-code` is globally reserved on the VS Code Marketplace.
+
+## 3.54.2
+
+### Changed
+
+- Publish stable extension under the `Azikaban.azikaban-q-code` Marketplace identity (publisher `Azikaban`, extension name `azikaban-q-code`); user-facing display name remains **Q Code**.
+
 ## 3.54.1
 
 ### Patch Changes

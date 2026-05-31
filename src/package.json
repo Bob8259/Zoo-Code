@@ -1,9 +1,9 @@
 {
-	"name": "q-code",
+	"name": "azikaban-q-code",
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "Azikaban",
-	"version": "3.54.1",
+	"version": "3.54.3",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -14,7 +14,7 @@
 		"node": "20.20.2"
 	},
 	"author": {
-		"name": "Q Code"
+		"name": "Qoo Code"
 	},
 	"repository": {
 		"type": "git",
@@ -53,119 +53,119 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "q-code-ActivityBar",
+					"id": "azikaban-q-code-ActivityBar",
 					"title": "%views.activitybar.title%",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
 		},
 		"views": {
-			"q-code-ActivityBar": [
+			"azikaban-q-code-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "q-code.SidebarProvider",
+					"id": "azikaban-q-code.SidebarProvider",
 					"name": "%views.sidebar.name%"
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "q-code.plusButtonClicked",
+				"command": "azikaban-q-code.plusButtonClicked",
 				"title": "%command.newTask.title%",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "q-code.historyButtonClicked",
+				"command": "azikaban-q-code.historyButtonClicked",
 				"title": "%command.history.title%",
 				"icon": "$(history)"
 			},
 			{
-				"command": "q-code.marketplaceButtonClicked",
+				"command": "azikaban-q-code.marketplaceButtonClicked",
 				"title": "%command.marketplace.title%",
 				"icon": "$(extensions)"
 			},
 			{
-				"command": "q-code.popoutButtonClicked",
+				"command": "azikaban-q-code.popoutButtonClicked",
 				"title": "%command.openInEditor.title%",
 				"icon": "$(link-external)"
 			},
 			{
-				"command": "q-code.settingsButtonClicked",
+				"command": "azikaban-q-code.settingsButtonClicked",
 				"title": "%command.settings.title%",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "q-code.openInNewTab",
+				"command": "azikaban-q-code.openInNewTab",
 				"title": "%command.openInNewTab.title%",
 				"category": "%configuration.title%"
 			},
 			{
-				"command": "q-code.explainCode",
+				"command": "azikaban-q-code.explainCode",
 				"title": "%command.explainCode.title%",
 				"category": "%configuration.title%"
 			},
 			{
-				"command": "q-code.fixCode",
+				"command": "azikaban-q-code.fixCode",
 				"title": "%command.fixCode.title%",
 				"category": "%configuration.title%"
 			},
 			{
-				"command": "q-code.improveCode",
+				"command": "azikaban-q-code.improveCode",
 				"title": "%command.improveCode.title%",
 				"category": "%configuration.title%"
 			},
 			{
-				"command": "q-code.addToContext",
+				"command": "azikaban-q-code.addToContext",
 				"title": "%command.addToContext.title%",
 				"category": "%configuration.title%"
 			},
 			{
-				"command": "q-code.newTask",
+				"command": "azikaban-q-code.newTask",
 				"title": "%command.newTask.title%",
 				"category": "%configuration.title%"
 			},
 			{
-				"command": "q-code.terminalAddToContext",
+				"command": "azikaban-q-code.terminalAddToContext",
 				"title": "%command.terminal.addToContext.title%",
 				"category": "Terminal"
 			},
 			{
-				"command": "q-code.terminalFixCommand",
+				"command": "azikaban-q-code.terminalFixCommand",
 				"title": "%command.terminal.fixCommand.title%",
 				"category": "Terminal"
 			},
 			{
-				"command": "q-code.terminalExplainCommand",
+				"command": "azikaban-q-code.terminalExplainCommand",
 				"title": "%command.terminal.explainCommand.title%",
 				"category": "Terminal"
 			},
 			{
-				"command": "q-code.setCustomStoragePath",
+				"command": "azikaban-q-code.setCustomStoragePath",
 				"title": "%command.setCustomStoragePath.title%",
 				"category": "%configuration.title%"
 			},
 			{
-				"command": "q-code.importSettings",
+				"command": "azikaban-q-code.importSettings",
 				"title": "%command.importSettings.title%",
 				"category": "%configuration.title%"
 			},
 			{
-				"command": "q-code.focusInput",
+				"command": "azikaban-q-code.focusInput",
 				"title": "%command.focusInput.title%",
 				"category": "%configuration.title%"
 			},
 			{
-				"command": "q-code.acceptInput",
+				"command": "azikaban-q-code.acceptInput",
 				"title": "%command.acceptInput.title%",
 				"category": "%configuration.title%"
 			},
 			{
-				"command": "q-code.toggleAutoApprove",
+				"command": "azikaban-q-code.toggleAutoApprove",
 				"title": "%command.toggleAutoApprove.title%",
 				"category": "%configuration.title%"
 			},
 			{
-				"command": "q-code.toggleCodeArchitectMode",
+				"command": "azikaban-q-code.toggleCodeArchitectMode",
 				"title": "Toggle Code/Architect Mode",
 				"category": "%configuration.title%"
 			}
@@ -173,102 +173,102 @@
 		"menus": {
 			"editor/context": [
 				{
-					"submenu": "q-code.contextMenu",
+					"submenu": "azikaban-q-code.contextMenu",
 					"group": "1"
 				}
 			],
-			"q-code.contextMenu": [
+			"azikaban-q-code.contextMenu": [
 				{
-					"command": "q-code.addToContext",
+					"command": "azikaban-q-code.addToContext",
 					"group": "1_actions@1"
 				},
 				{
-					"command": "q-code.explainCode",
+					"command": "azikaban-q-code.explainCode",
 					"group": "1_actions@2"
 				},
 				{
-					"command": "q-code.improveCode",
+					"command": "azikaban-q-code.improveCode",
 					"group": "1_actions@3"
 				}
 			],
 			"terminal/context": [
 				{
-					"submenu": "q-code.terminalMenu",
+					"submenu": "azikaban-q-code.terminalMenu",
 					"group": "2"
 				}
 			],
-			"q-code.terminalMenu": [
+			"azikaban-q-code.terminalMenu": [
 				{
-					"command": "q-code.terminalAddToContext",
+					"command": "azikaban-q-code.terminalAddToContext",
 					"group": "1_actions@1"
 				},
 				{
-					"command": "q-code.terminalFixCommand",
+					"command": "azikaban-q-code.terminalFixCommand",
 					"group": "1_actions@2"
 				},
 				{
-					"command": "q-code.terminalExplainCommand",
+					"command": "azikaban-q-code.terminalExplainCommand",
 					"group": "1_actions@3"
 				}
 			],
 			"view/title": [
 				{
-					"command": "q-code.plusButtonClicked",
+					"command": "azikaban-q-code.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == q-code.SidebarProvider"
+					"when": "view == azikaban-q-code.SidebarProvider"
 				},
 				{
-					"command": "q-code.settingsButtonClicked",
+					"command": "azikaban-q-code.settingsButtonClicked",
 					"group": "navigation@2",
-					"when": "view == q-code.SidebarProvider"
+					"when": "view == azikaban-q-code.SidebarProvider"
 				},
 				{
-					"command": "q-code.marketplaceButtonClicked",
+					"command": "azikaban-q-code.marketplaceButtonClicked",
 					"group": "navigation@3",
-					"when": "view == q-code.SidebarProvider"
+					"when": "view == azikaban-q-code.SidebarProvider"
 				},
 				{
-					"command": "q-code.historyButtonClicked",
+					"command": "azikaban-q-code.historyButtonClicked",
 					"group": "overflow@1",
-					"when": "view == q-code.SidebarProvider"
+					"when": "view == azikaban-q-code.SidebarProvider"
 				},
 				{
-					"command": "q-code.popoutButtonClicked",
+					"command": "azikaban-q-code.popoutButtonClicked",
 					"group": "overflow@2",
-					"when": "view == q-code.SidebarProvider"
+					"when": "view == azikaban-q-code.SidebarProvider"
 				}
 			],
 			"editor/title": [
 				{
-					"command": "q-code.plusButtonClicked",
+					"command": "azikaban-q-code.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "activeWebviewPanelId == q-code.TabPanelProvider"
+					"when": "activeWebviewPanelId == azikaban-q-code.TabPanelProvider"
 				},
 				{
-					"command": "q-code.settingsButtonClicked",
+					"command": "azikaban-q-code.settingsButtonClicked",
 					"group": "navigation@2",
-					"when": "activeWebviewPanelId == q-code.TabPanelProvider"
+					"when": "activeWebviewPanelId == azikaban-q-code.TabPanelProvider"
 				},
 				{
-					"command": "q-code.marketplaceButtonClicked",
+					"command": "azikaban-q-code.marketplaceButtonClicked",
 					"group": "navigation@3",
-					"when": "activeWebviewPanelId == q-code.TabPanelProvider"
+					"when": "activeWebviewPanelId == azikaban-q-code.TabPanelProvider"
 				},
 				{
-					"command": "q-code.historyButtonClicked",
+					"command": "azikaban-q-code.historyButtonClicked",
 					"group": "overflow@1",
-					"when": "activeWebviewPanelId == q-code.TabPanelProvider"
+					"when": "activeWebviewPanelId == azikaban-q-code.TabPanelProvider"
 				},
 				{
-					"command": "q-code.popoutButtonClicked",
+					"command": "azikaban-q-code.popoutButtonClicked",
 					"group": "overflow@2",
-					"when": "activeWebviewPanelId == q-code.TabPanelProvider"
+					"when": "activeWebviewPanelId == azikaban-q-code.TabPanelProvider"
 				}
 			]
 		},
 		"keybindings": [
 			{
-				"command": "q-code.addToContext",
+				"command": "azikaban-q-code.addToContext",
 				"key": "cmd+l",
 				"mac": "cmd+l",
 				"win": "ctrl+l",
@@ -276,14 +276,14 @@
 				"when": "editorTextFocus && editorHasSelection"
 			},
 			{
-				"command": "q-code.toggleAutoApprove",
+				"command": "azikaban-q-code.toggleAutoApprove",
 				"key": "cmd+alt+a",
 				"mac": "cmd+alt+a",
 				"win": "ctrl+alt+a",
 				"linux": "ctrl+alt+a"
 			},
 			{
-				"command": "q-code.toggleCodeArchitectMode",
+				"command": "azikaban-q-code.toggleCodeArchitectMode",
 				"key": "alt+q",
 				"mac": "alt+q",
 				"win": "alt+q",
@@ -292,18 +292,18 @@
 		],
 		"submenus": [
 			{
-				"id": "q-code.contextMenu",
+				"id": "azikaban-q-code.contextMenu",
 				"label": "%views.contextMenu.label%"
 			},
 			{
-				"id": "q-code.terminalMenu",
+				"id": "azikaban-q-code.terminalMenu",
 				"label": "%views.terminalMenu.label%"
 			}
 		],
 		"configuration": {
 			"title": "%configuration.title%",
 			"properties": {
-				"q-code.allowedCommands": {
+				"azikaban-q-code.allowedCommands": {
 					"type": "array",
 					"items": {
 						"type": "string"
@@ -315,7 +315,7 @@
 					],
 					"description": "%commands.allowedCommands.description%"
 				},
-				"q-code.deniedCommands": {
+				"azikaban-q-code.deniedCommands": {
 					"type": "array",
 					"items": {
 						"type": "string"
@@ -323,14 +323,14 @@
 					"default": [],
 					"description": "%commands.deniedCommands.description%"
 				},
-				"q-code.commandExecutionTimeout": {
+				"azikaban-q-code.commandExecutionTimeout": {
 					"type": "number",
 					"default": 0,
 					"minimum": 0,
 					"maximum": 600,
 					"description": "%commands.commandExecutionTimeout.description%"
 				},
-				"q-code.commandTimeoutAllowlist": {
+				"azikaban-q-code.commandTimeoutAllowlist": {
 					"type": "array",
 					"items": {
 						"type": "string"
@@ -338,12 +338,12 @@
 					"default": [],
 					"description": "%commands.commandTimeoutAllowlist.description%"
 				},
-				"q-code.preventCompletionWithOpenTodos": {
+				"azikaban-q-code.preventCompletionWithOpenTodos": {
 					"type": "boolean",
 					"default": false,
 					"description": "%commands.preventCompletionWithOpenTodos.description%"
 				},
-				"q-code.vsCodeLmModelSelector": {
+				"azikaban-q-code.vsCodeLmModelSelector": {
 					"type": "object",
 					"properties": {
 						"vendor": {
@@ -357,70 +357,70 @@
 					},
 					"description": "%settings.vsCodeLmModelSelector.description%"
 				},
-				"q-code.customStoragePath": {
+				"azikaban-q-code.customStoragePath": {
 					"type": "string",
 					"default": "",
 					"description": "%settings.customStoragePath.description%"
 				},
-				"q-code.enableCodeActions": {
+				"azikaban-q-code.enableCodeActions": {
 					"type": "boolean",
 					"default": true,
 					"description": "%settings.enableCodeActions.description%"
 				},
-				"q-code.autoImportSettingsPath": {
+				"azikaban-q-code.autoImportSettingsPath": {
 					"type": "string",
 					"default": "",
 					"description": "%settings.autoImportSettingsPath.description%"
 				},
-				"q-code.maximumIndexedFilesForFileSearch": {
+				"azikaban-q-code.maximumIndexedFilesForFileSearch": {
 					"type": "number",
 					"default": 10000,
 					"minimum": 5000,
 					"maximum": 500000,
 					"description": "%settings.maximumIndexedFilesForFileSearch.description%"
 				},
-				"q-code.useAgentRules": {
+				"azikaban-q-code.useAgentRules": {
 					"type": "boolean",
 					"default": true,
 					"description": "%settings.useAgentRules.description%"
 				},
-				"q-code.apiRequestTimeout": {
+				"azikaban-q-code.apiRequestTimeout": {
 					"type": "number",
 					"default": 600,
 					"minimum": 0,
 					"maximum": 3600,
 					"description": "%settings.apiRequestTimeout.description%"
 				},
-				"q-code.newTaskRequireTodos": {
+				"azikaban-q-code.newTaskRequireTodos": {
 					"type": "boolean",
 					"default": false,
 					"description": "%settings.newTaskRequireTodos.description%"
 				},
-				"q-code.codeIndex.embeddingBatchSize": {
+				"azikaban-q-code.codeIndex.embeddingBatchSize": {
 					"type": "number",
 					"default": 60,
 					"minimum": 1,
 					"maximum": 200,
 					"description": "%settings.codeIndex.embeddingBatchSize.description%"
 				},
-				"q-code.debug": {
+				"azikaban-q-code.debug": {
 					"type": "boolean",
 					"default": false,
 					"description": "%settings.debug.description%"
 				},
-				"q-code.debugProxy.enabled": {
+				"azikaban-q-code.debugProxy.enabled": {
 					"type": "boolean",
 					"default": false,
 					"description": "%settings.debugProxy.enabled.description%",
 					"markdownDescription": "%settings.debugProxy.enabled.description%"
 				},
-				"q-code.debugProxy.serverUrl": {
+				"azikaban-q-code.debugProxy.serverUrl": {
 					"type": "string",
 					"default": "http://127.0.0.1:8888",
 					"description": "%settings.debugProxy.serverUrl.description%",
 					"markdownDescription": "%settings.debugProxy.serverUrl.description%"
 				},
-				"q-code.debugProxy.tlsInsecure": {
+				"azikaban-q-code.debugProxy.tlsInsecure": {
 					"type": "boolean",
 					"default": false,
 					"description": "%settings.debugProxy.tlsInsecure.description%",
@@ -440,8 +440,8 @@
 		"bundle": "node esbuild.mjs",
 		"vscode:prepublish": "pnpm bundle --production",
 		"vsix": "mkdirp ../bin && vsce package --no-dependencies --out ../bin",
-		"publish:vsce": "npx @vscode/vsce publish --packagePath ../bin/q-code-$npm_package_version.vsix",
-		"publish:ovsx": "pnpm exec ovsx publish ../bin/q-code-$npm_package_version.vsix --skip-duplicate",
+		"publish:vsce": "npx @vscode/vsce publish --packagePath ../bin/azikaban-q-code-$npm_package_version.vsix",
+		"publish:ovsx": "pnpm exec ovsx publish ../bin/azikaban-q-code-$npm_package_version.vsix --skip-duplicate",
 		"publish:marketplace": "pnpm vsix && pnpm publish:vsce && pnpm publish:ovsx",
 		"watch:bundle": "pnpm bundle --watch",
 		"watch:tsc": "cd .. && tsc --noEmit --watch --project src/tsconfig.json",

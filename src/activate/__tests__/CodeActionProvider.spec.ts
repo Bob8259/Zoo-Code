@@ -110,7 +110,7 @@ describe("CodeActionProvider", () => {
 			const actions = provider.provideCodeActions(mockDocument, mockRange, mockContext)
 
 			expect(actions).toEqual([])
-			expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("q-code")
+			expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("azikaban-q-code")
 			expect(mockGet).toHaveBeenCalledWith("enableCodeActions", true)
 		})
 

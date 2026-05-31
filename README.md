@@ -1,12 +1,20 @@
-# Q Code
+# Qoo Code
 
 > Your AI-Powered Dev Team, Right in Your Editor — Engineered for Precision and Simplicity.
 
-Q Code is a fork of [Zoo Code](https://github.com/Zoo-Code-Org/Zoo-Code) (to whom we give deep credit and gratitude for their incredible community-driven contributions continuing the Roo Code lineage).
+Qoo Code is a fork of [Zoo Code](https://github.com/Zoo-Code-Org/Zoo-Code) (to whom we give deep credit and gratitude for their incredible community-driven contributions continuing the Roo Code lineage).
 
-## The Q Code Philosophy: "Less is More"
+## Why "Qoo Code"?
 
-The core concept driving **Q Code** is **"less is more"**. Rather than overloading the model with excessive prompt noise, context bloat, and automated IDE logs that lead to confusion, Q Code focuses on minimal, highly precise prompt engineering. This significantly **reduces agent hallucinations** and improves execution accuracy.
+The author keeps an eggplant plush toy on their desk. In Chinese, eggplant is **茄子** (_qié zi_); the first character **茄** starts with **Q** in pinyin. That little plush became the namesake for this extension: **Qoo Code**.
+
+The name also honors the two extensions this project builds on: **[Roo Code](https://github.com/RooCodeInc/Roo-Code)** and **[Zoo Code](https://github.com/Zoo-Code-Org/Zoo-Code)**—keeping the **Q** lineage while carrying their ideas forward.
+
+## The Qoo Code Philosophy: "Less is More"
+
+The core concept driving **Qoo Code** is **"less is more"**. Rather than overloading the model with excessive prompt noise, context bloat, and automated IDE logs that lead to confusion, Qoo Code focuses on minimal, highly precise prompt engineering. This significantly **reduces agent hallucinations** and improves execution accuracy.
+
+Qoo Code also gives **most controls to you**, the user. It does not try to guess every workflow or hide decisions behind opaque defaults. That means you should invest in a project-level **[AGENTS.md](./AGENTS.md)** (or equivalent agent rules file): write how you want the agent to behave, what to avoid, and how your repo is organized. The extension stays out of your way; **AGENTS.md** is how you steer it.
 
 ### Key Enhancements
 
@@ -29,7 +37,7 @@ The core concept driving **Q Code** is **"less is more"**. Rather than overloadi
 1. **Clone** the repo:
 
     ```sh
-    git clone https://github.com/zoo-code-alt-Org/zoo-code-alt.git
+    git clone https://github.com/Bob8259/Zoo-Code.git
     ```
 
 2. **Install dependencies**:
@@ -39,10 +47,10 @@ The core concept driving **Q Code** is **"less is more"**. Rather than overloadi
     ```
 
 3. **Run the extension**:
-   Press `F5` (or go to **Run** → **Start Debugging**) in VSCode. This will open a new VSCode window with the Q Code extension running.
+   Press `F5` (or go to **Run** → **Start Debugging**) in VSCode. This will open a new VSCode window with the Qoo Code extension running.
 
 ---
 
 ## License
 
-[Apache 2.0 © 2026 Q Code Org](./LICENSE)
+[Apache 2.0 © 2026 Qoo Code](./LICENSE)

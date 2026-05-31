@@ -12,5 +12,5 @@ export default defineConfig({
 		ui: "tdd",
 		timeout: 60000,
 	},
-	launchArgs: ["--enable-proposed-api=ZooCodeOrganization.zoo-code", "--disable-extensions"],
+	launchArgs: ["--enable-proposed-api=Azikaban.azikaban-q-code", "--disable-extensions"],
 })

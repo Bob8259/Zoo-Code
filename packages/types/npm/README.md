@@ -15,7 +15,7 @@ To use this API in your extension:
 ```typescript
 import { RooCodeAPI } from "@roo-code/types"
 
-const extension = vscode.extensions.getExtension<RooCodeAPI>("ZooCodeOrganization.zoo-code")
+const extension = vscode.extensions.getExtension<RooCodeAPI>("Azikaban.azikaban-q-code")
 
 if (!extension?.isActive) {
 	throw new Error("Extension is not activated")
@@ -43,10 +43,10 @@ await api.pressPrimaryButton()
 await api.pressSecondaryButton()
 ```
 
-**NOTE:** To ensure that the `ZooCodeOrganization.zoo-code` extension is activated before your extension, add it to the `extensionDependencies` in your `package.json`:
+**NOTE:** To ensure that the `Azikaban.azikaban-q-code` extension is activated before your extension, add it to the `extensionDependencies` in your `package.json`:
 
 ```json
-"extensionDependencies": ["ZooCodeOrganization.zoo-code"]
+"extensionDependencies": ["Azikaban.azikaban-q-code"]
 ```
 
 For detailed information on the available methods and their usage, refer to the generated declarations in `dist/index.d.ts` or the source types in `packages/types/src/index.ts`.
