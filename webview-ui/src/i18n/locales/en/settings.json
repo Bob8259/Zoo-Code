@@ -32,6 +32,7 @@
 		"worktrees": "Worktrees",
 		"skills": "Skills",
 		"autoApprove": "Auto-Approve",
+		"subtasks": "Subtasks",
 		"checkpoints": "Checkpoints",
 		"notifications": "Notifications",
 		"contextManagement": "Context",
@@ -313,11 +314,7 @@
 		},
 		"subtasks": {
 			"label": "Subtasks",
-			"description": "Allow creation and completion of subtasks without requiring approval",
-			"profileLabel": "Subtask model profile",
-			"profileDescription": "Provider profile used when the agent creates a subtask via new_task. Use a cheaper or faster model for exploration subtasks such as file search or structure inspection.",
-			"profilePlaceholder": "Select a provider profile",
-			"profileDefault": "Default (mode profile)"
+			"description": "Allow creation and completion of subtasks without requiring approval"
 		},
 		"followupQuestions": {
 			"label": "Question",
@@ -629,6 +626,13 @@
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximum number of output tokens for Claude Code responses. Default is 8000."
 		}
+	},
+	"subtasks": {
+		"description": "Configure how subtasks created via new_task run.",
+		"profileLabel": "Subtask model profile",
+		"profileDescription": "Provider profile used when the agent creates a subtask via new_task. Use a cheaper or faster model for exploration subtasks such as file search or structure inspection.",
+		"profilePlaceholder": "Select a provider profile",
+		"profileDefault": "Default (mode profile)"
 	},
 	"checkpoints": {
 		"timeout": {

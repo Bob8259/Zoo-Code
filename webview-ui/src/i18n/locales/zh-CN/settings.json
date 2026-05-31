@@ -31,6 +31,7 @@
 		"mcp": "MCP 服务",
 		"worktrees": "Worktrees",
 		"autoApprove": "自动批准",
+		"subtasks": "子任务",
 		"checkpoints": "存档点",
 		"notifications": "通知",
 		"contextManagement": "上下文",

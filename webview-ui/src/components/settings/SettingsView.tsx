@@ -29,6 +29,7 @@ import {
 	ArrowLeft,
 	GitCommitVertical,
 	GraduationCap,
+	ListTree,
 } from "lucide-react"
 
 import {
@@ -66,6 +67,7 @@ import { SectionHeader } from "./SectionHeader"
 import ApiConfigManager from "./ApiConfigManager"
 import ApiOptions from "./ApiOptions"
 import { AutoApproveSettings } from "./AutoApproveSettings"
+import { SubtaskSettings } from "./SubtaskSettings"
 import { CheckpointSettings } from "./CheckpointSettings"
 import { NotificationSettings } from "./NotificationSettings"
 import { ContextManagementSettings } from "./ContextManagementSettings"
@@ -98,6 +100,7 @@ export interface SettingsViewRef {
 export const sectionNames = [
 	"providers",
 	"autoApprove",
+	"subtasks",
 	"slashCommands",
 	"skills",
 	"checkpoints",
@@ -521,6 +524,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "skills", icon: GraduationCap },
 			{ id: "slashCommands", icon: SquareSlash },
 			{ id: "autoApprove", icon: CheckCheck },
+			{ id: "subtasks", icon: ListTree },
 			{ id: "mcp", icon: Server },
 			{ id: "checkpoints", icon: GitCommitVertical },
 			{ id: "notifications", icon: Bell },
@@ -800,7 +804,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								enableCommandAutoReview={enableCommandAutoReview}
 								commandAutoReviewProfileId={commandAutoReviewProfileId}
 								commandAutoReviewPrompt={commandAutoReviewPrompt}
-								subtaskApiConfigProfileId={subtaskApiConfigProfileId}
 								listApiConfigMeta={listApiConfigMeta}
 								alwaysAllowFollowupQuestions={alwaysAllowFollowupQuestions}
 								followupAutoApproveTimeoutMs={followupAutoApproveTimeoutMs}
@@ -808,6 +811,15 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								allowedMaxRequests={allowedMaxRequests ?? undefined}
 								allowedMaxCost={allowedMaxCost ?? undefined}
 								deniedCommands={deniedCommands}
+								setCachedStateField={setCachedStateField}
+							/>
+						)}
+
+						{/* Subtasks Section */}
+						{renderTab === "subtasks" && (
+							<SubtaskSettings
+								subtaskApiConfigProfileId={subtaskApiConfigProfileId}
+								listApiConfigMeta={listApiConfigMeta}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
