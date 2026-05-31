@@ -10,6 +10,7 @@ import type { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+import { buildSubtaskCompletionSummary } from "./buildSubtaskCompletionSummary"
 
 interface TaskCompletionParams {
 	result: string
@@ -169,10 +170,12 @@ export class TaskCompletionTool extends BaseTool<"task_completion"> {
 
 		pushToolResult("")
 
+		const completionResultSummary = buildSubtaskCompletionSummary(task, result)
+
 		await provider.reopenParentFromDelegation({
 			parentTaskId: task.parentTaskId!,
 			childTaskId: task.taskId,
-			completionResultSummary: result,
+			completionResultSummary,
 		})
 
 		return "delegated"
