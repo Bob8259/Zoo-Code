@@ -114,6 +114,7 @@ export const globalSettingsSchema = z.object({
 	enableCommandAutoReview: z.boolean().optional(),
 	commandAutoReviewProfileId: z.string().optional(),
 	commandAutoReviewPrompt: z.string().optional(),
+	subtaskApiConfigProfileId: z.string().optional(),
 	commandExecutionTimeout: z.number().optional(),
 	commandTimeoutAllowlist: z.array(z.string()).optional(),
 	preventCompletionWithOpenTodos: z.boolean().optional(),

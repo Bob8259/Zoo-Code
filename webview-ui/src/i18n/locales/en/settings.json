@@ -313,7 +313,11 @@
 		},
 		"subtasks": {
 			"label": "Subtasks",
-			"description": "Allow creation and completion of subtasks without requiring approval"
+			"description": "Allow creation and completion of subtasks without requiring approval",
+			"profileLabel": "Subtask model profile",
+			"profileDescription": "Provider profile used when the agent creates a subtask via new_task. Use a cheaper or faster model for exploration subtasks such as file search or structure inspection.",
+			"profilePlaceholder": "Select a provider profile",
+			"profileDefault": "Default (mode profile)"
 		},
 		"followupQuestions": {
 			"label": "Question",

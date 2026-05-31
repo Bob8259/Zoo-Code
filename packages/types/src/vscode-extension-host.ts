@@ -269,6 +269,7 @@ export type ExtensionState = Pick<
 	| "enableCommandAutoReview"
 	| "commandAutoReviewProfileId"
 	| "commandAutoReviewPrompt"
+	| "subtaskApiConfigProfileId"
 	| "allowedMaxRequests"
 	| "allowedMaxCost"
 	| "ttsEnabled"

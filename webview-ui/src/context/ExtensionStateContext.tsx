@@ -61,6 +61,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setCommandAutoReviewProfileId: (value: string | undefined) => void
 	commandAutoReviewPrompt?: string
 	setCommandAutoReviewPrompt: (value: string | undefined) => void
+	subtaskApiConfigProfileId?: string
 	marketplaceItems?: any[]
 	marketplaceInstalledMetadata?: MarketplaceInstalledMetadata
 	profileThresholds: Record<string, number>
@@ -227,6 +228,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		enableCommandAutoReview: false,
 		commandAutoReviewProfileId: "default",
 		commandAutoReviewPrompt: "",
+		subtaskApiConfigProfileId: "default",
 		customModes: [],
 		maxOpenTabsContext: 20,
 		maxWorkspaceFiles: 200,

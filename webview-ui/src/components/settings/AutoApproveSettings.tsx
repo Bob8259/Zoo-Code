@@ -31,6 +31,7 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	enableCommandAutoReview?: boolean
 	commandAutoReviewProfileId?: string
 	commandAutoReviewPrompt?: string
+	subtaskApiConfigProfileId?: string
 	listApiConfigMeta?: any[]
 	alwaysAllowFollowupQuestions?: boolean
 	followupAutoApproveTimeoutMs?: number
@@ -51,6 +52,7 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "enableCommandAutoReview"
 		| "commandAutoReviewProfileId"
 		| "commandAutoReviewPrompt"
+		| "subtaskApiConfigProfileId"
 		| "alwaysAllowFollowupQuestions"
 		| "followupAutoApproveTimeoutMs"
 		| "allowedCommands"
@@ -73,6 +75,7 @@ export const AutoApproveSettings = ({
 	enableCommandAutoReview,
 	commandAutoReviewProfileId,
 	commandAutoReviewPrompt,
+	subtaskApiConfigProfileId,
 	listApiConfigMeta,
 	alwaysAllowFollowupQuestions,
 	followupAutoApproveTimeoutMs = 60000,
@@ -170,6 +173,40 @@ export const AutoApproveSettings = ({
 						alwaysAllowFollowupQuestions={alwaysAllowFollowupQuestions}
 						onToggle={(key, value) => setCachedStateField(key, value)}
 					/>
+
+					<div className="border-t border-vscode-settings-sectionBorder pt-4 mt-2">
+						<SearchableSetting
+							settingId="subtask-api-config-profile"
+							section="autoApprove"
+							label={t("settings:autoApprove.subtasks.profileLabel")}>
+							<label className="block font-medium mb-1">
+								{t("settings:autoApprove.subtasks.profileLabel")}
+							</label>
+							<Select
+								value={subtaskApiConfigProfileId || "default"}
+								onValueChange={(value) => setCachedStateField("subtaskApiConfigProfileId", value)}
+								data-testid="subtask-api-config-profile-select">
+								<SelectTrigger className="w-full">
+									<SelectValue
+										placeholder={t("settings:autoApprove.subtasks.profilePlaceholder")}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="default">
+										{t("settings:autoApprove.subtasks.profileDefault")}
+									</SelectItem>
+									{(listApiConfigMeta || []).map((config) => (
+										<SelectItem key={config.id} value={config.id}>
+											{config.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("settings:autoApprove.subtasks.profileDescription")}
+							</div>
+						</SearchableSetting>
+					</div>
 
 					<MaxLimitInputs
 						allowedMaxRequests={allowedMaxRequests}

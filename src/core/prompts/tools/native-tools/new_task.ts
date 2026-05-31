@@ -2,6 +2,8 @@ import type OpenAI from "openai"
 
 const NEW_TASK_DESCRIPTION = `Create a new task instance in a chosen mode with a message and initial todo list.
 
+Use subtasks to delegate focused work back to the parent via task_completion. For read-only exploration (codebase search, file listing, structure inspection), prefer ask mode with a concise scope and require the subtask to summarize findings in task_completion.
+
 CRITICAL: Call this tool alone. Do NOT call it alongside other tools in the same turn. Gather necessary information in preceding turns first.`
 
 const MODE_PARAMETER_DESCRIPTION = `Mode slug to begin the new task in (e.g. code, debug, architect)`

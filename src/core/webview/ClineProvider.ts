@@ -1609,6 +1609,47 @@ export class ClineProvider
 		}
 	}
 
+	/**
+	 * Activate the user-configured subtask provider profile when delegating via new_task.
+	 * Returns the activated profile name, or undefined when using the default (mode-bound) profile.
+	 */
+	private async activateSubtaskProfileIfConfigured(): Promise<string | undefined> {
+		const isCliRuntime = process.env.ROO_CLI_RUNTIME === "1"
+		if (isCliRuntime) {
+			return undefined
+		}
+
+		const { subtaskApiConfigProfileId } = await this.getState()
+		if (!subtaskApiConfigProfileId || subtaskApiConfigProfileId === "default") {
+			return undefined
+		}
+
+		const listApiConfig = await this.providerSettingsManager.listConfig()
+		const profile = listApiConfig.find(({ id }) => id === subtaskApiConfigProfileId)
+
+		if (!profile?.name) {
+			this.log(
+				`[activateSubtaskProfileIfConfigured] Subtask profile id '${subtaskApiConfigProfileId}' not found; using mode-bound profile.`,
+			)
+			return undefined
+		}
+
+		const fullProfile = await this.providerSettingsManager.getProfile({ name: profile.name })
+		if (!fullProfile.apiProvider) {
+			this.log(
+				`[activateSubtaskProfileIfConfigured] Subtask profile '${profile.name}' has no provider configured; using mode-bound profile.`,
+			)
+			return undefined
+		}
+
+		await this.activateProviderProfile(
+			{ id: subtaskApiConfigProfileId },
+			{ persistModeConfig: false, persistTaskHistory: false },
+		)
+
+		return profile.name
+	}
+
 	async updateCustomInstructions(instructions?: string) {
 		// User may be clearing the field.
 		await this.updateGlobalState("customInstructions", instructions || undefined)
@@ -2070,6 +2111,7 @@ export class ClineProvider
 			enableCommandAutoReview,
 			commandAutoReviewProfileId,
 			commandAutoReviewPrompt,
+			subtaskApiConfigProfileId,
 			alwaysAllowMcp,
 			alwaysAllowModeSwitch,
 			alwaysAllowSubtasks,
@@ -2238,6 +2280,7 @@ export class ClineProvider
 			enableCommandAutoReview: enableCommandAutoReview ?? false,
 			commandAutoReviewProfileId: commandAutoReviewProfileId ?? "default",
 			commandAutoReviewPrompt: commandAutoReviewPrompt ?? "",
+			subtaskApiConfigProfileId: subtaskApiConfigProfileId ?? "default",
 			soundVolume: soundVolume ?? 0.5,
 			writeDelayMs: writeDelayMs ?? DEFAULT_WRITE_DELAY_MS,
 			terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? Terminal.defaultShellIntegrationTimeout,
@@ -2438,6 +2481,7 @@ export class ClineProvider
 			enableCommandAutoReview: stateValues.enableCommandAutoReview ?? false,
 			commandAutoReviewProfileId: stateValues.commandAutoReviewProfileId ?? "default",
 			commandAutoReviewPrompt: stateValues.commandAutoReviewPrompt ?? "",
+			subtaskApiConfigProfileId: stateValues.subtaskApiConfigProfileId ?? "default",
 			soundEnabled: stateValues.soundEnabled ?? false,
 			ttsEnabled: stateValues.ttsEnabled ?? false,
 			ttsSpeed: stateValues.ttsSpeed ?? 1.0,
@@ -3256,6 +3300,18 @@ export class ClineProvider
 			)
 		}
 
+		// Apply user-configured subtask provider profile (if set) after mode switch.
+		let subtaskProfileName: string | undefined
+		try {
+			subtaskProfileName = await this.activateSubtaskProfileIfConfigured()
+		} catch (e) {
+			this.log(
+				`[delegateParentAndOpenChild] Failed to activate subtask profile: ${
+					(e as Error)?.message ?? String(e)
+				}`,
+			)
+		}
+
 		// 4) Create child as sole active (parent reference preserved for lineage)
 		// Pass initialStatus: "active" to ensure the child task's historyItem is created
 		// with status from the start, avoiding race conditions where the task might
@@ -3272,6 +3328,21 @@ export class ClineProvider
 			initialStatus: "active",
 			startTask: false,
 		})
+
+		// Persist the subtask profile on the child history item when configured.
+		if (subtaskProfileName) {
+			try {
+				child.setTaskApiConfigName(subtaskProfileName)
+				const { historyItem: childHistory } = await this.getTaskWithId(child.taskId)
+				await this.updateTaskHistory({ ...childHistory, apiConfigName: subtaskProfileName })
+			} catch (err) {
+				this.log(
+					`[delegateParentAndOpenChild] Failed to persist subtask profile for child ${child.taskId}: ${
+						(err as Error)?.message ?? String(err)
+					}`,
+				)
+			}
+		}
 
 		// 5) Persist parent delegation metadata BEFORE the child starts writing.
 		try {

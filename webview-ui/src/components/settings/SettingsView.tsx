@@ -195,6 +195,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		enableCommandAutoReview,
 		commandAutoReviewProfileId,
 		commandAutoReviewPrompt,
+		subtaskApiConfigProfileId,
 		includeDiagnosticMessages,
 		maxDiagnosticMessages,
 		includeTaskHistoryInEnhance,
@@ -376,6 +377,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					enableCommandAutoReview: enableCommandAutoReview ?? false,
 					commandAutoReviewProfileId: commandAutoReviewProfileId ?? "default",
 					commandAutoReviewPrompt: commandAutoReviewPrompt ?? "",
+					subtaskApiConfigProfileId: subtaskApiConfigProfileId ?? "default",
 					alwaysAllowMcp,
 					alwaysAllowModeSwitch,
 					allowedCommands: allowedCommands ?? [],
@@ -798,6 +800,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								enableCommandAutoReview={enableCommandAutoReview}
 								commandAutoReviewProfileId={commandAutoReviewProfileId}
 								commandAutoReviewPrompt={commandAutoReviewPrompt}
+								subtaskApiConfigProfileId={subtaskApiConfigProfileId}
 								listApiConfigMeta={listApiConfigMeta}
 								alwaysAllowFollowupQuestions={alwaysAllowFollowupQuestions}
 								followupAutoApproveTimeoutMs={followupAutoApproveTimeoutMs}
