@@ -18,6 +18,8 @@ Qoo Code also gives **most controls to you**, the user. It does not try to guess
 
 ### Key Enhancements
 
+Together, these changes aim to **improve the day-to-day user experience**, **raise safety** while preserving useful **autonomous** behavior (auto-approval where appropriate), **borrow proven ideas** from other projects where they fit, and support a **clearer, more efficient workflow** from exploration through implementation.
+
 1. **Quick Mode Switch Shortcut (`Alt+Q`)**: Fast transition between **Code mode** and **Architecture mode** using a simple keyboard shortcut.
 2. **Simplified Prompts**: Highly optimized and simplified system prompts for modes, giving the agent clear guidance and removing prompt clutter.
 3. **Focused Environment Details Context**: Re-added a highly optimized `<environment_details>` XML block that ONLY includes the path to the currently active focused editor, injected exactly once at the start of each new conversation. This maintains minimal latency and saves API tokens while ensuring the agent always knows your starting active file.
@@ -29,6 +31,7 @@ Qoo Code also gives **most controls to you**, the user. It does not try to guess
     - **Level 1 (Explicit Lists):** Matches command prefixes against Allowed/Denied lists to bypass or reject execution instantly.
     - **Level 2 (Context-Aware Safety Review):** Gathers comprehensive environment state (User Intent, OS, CWD directory tree, referenced script contents, active TODOs, and recent chat history as a structured JSON array) and invokes a safety review LLM.
     - **Level 3 (Action Routing):** Automatically executes approved commands, or prompts the user with a manual approval dialog showing the detailed safety reasoning if rejected or unsure. Includes a developer debug action (shield icon) to inspect the fully-resolved LLM parameters and multiline prompt JSON arrays natively in VS Code.
+9. **Redesigned Subtask Delegation**: Reworked subtask flow so the main agent can spawn focused child tasks via `new_task` for simple, self-contained work (file discovery, codebase search, structure inspection, read-only analysis). Configure a dedicated **Subtask model profile** in settings so subtasks run on a smaller, cheaper, or faster model while the parent keeps a stronger model for implementation—saving tokens and latency on trivial exploration without blocking the main task.
 
 ---
 
@@ -48,6 +51,20 @@ Qoo Code also gives **most controls to you**, the user. It does not try to guess
 
 3. **Run the extension**:
    Press `F5` (or go to **Run** → **Start Debugging**) in VSCode. This will open a new VSCode window with the Qoo Code extension running.
+
+---
+
+## Why Changes Are Not Submitted Upstream to Zoo Code
+
+Qoo Code remains a **fork** rather than a stream of pull requests to [Zoo Code](https://github.com/Zoo-Code-Org/Zoo-Code). That is intentional, for the reasons below.
+
+1. **Breaking changes and different direction.** This fork introduces breaking changes and product choices (for example, simplified prompts, altered context compaction, and command auto-review behavior) that do not match Zoo Code’s current development plan or upstream API expectations. Merging them would require large, coordinated redesigns on the Zoo Code side—not small, drop-in patches.
+
+2. **Upstream merge backlog.** Zoo Code already has a large backlog of open, unmerged pull requests. Adding another substantial PR from this fork would likely sit in that queue for a long time without realistic review bandwidth, which does not help either project.
+
+3. **AI-assisted development without full review.** Most changes here were produced with AI assistance under tight time constraints. They were **not** run through the same human review cycle Zoo Code expects, and **automated tests were not run** before release. Upstreaming without that quality bar would be unfair to Zoo Code maintainers and to their users.
+
+If you want these ideas in upstream Zoo Code, treat this repository as a **reference implementation** and cherry-pick or reimplement pieces deliberately—with tests and maintainer alignment—rather than expecting a direct merge of this branch.
 
 ---
 
