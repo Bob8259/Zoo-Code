@@ -188,6 +188,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				throw handleOpenAIError(error, this.providerName)
 			}
 
+			await this.validateStreamResponse(stream)
+
 			const matcher = new TagMatcher(
 				"think",
 				(chunk) =>
@@ -197,6 +199,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}) as const,
 			)
 
+			let yieldedAnyResponse = false
 			let lastUsage
 			const activeToolCallIds = new Set<string>()
 			let finishReason: string | null | undefined = undefined
@@ -208,6 +211,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 				if (delta.content) {
 					hasContent = true
+					yieldedAnyResponse = true
 					for (const chunk of matcher.update(delta.content)) {
 						yield chunk
 					}
@@ -215,13 +219,17 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 				if ("reasoning_content" in delta && delta.reasoning_content) {
 					hasContent = true
+					yieldedAnyResponse = true
 					yield {
 						type: "reasoning",
 						text: (delta.reasoning_content as string | undefined) || "",
 					}
 				}
 
-				yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
+				for (const chunk of this.processToolCalls(delta, finishReason, activeToolCallIds)) {
+					yieldedAnyResponse = true
+					yield chunk
+				}
 
 				if (chunk.usage) {
 					lastUsage = chunk.usage
@@ -229,11 +237,29 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			for (const chunk of matcher.final()) {
+				yieldedAnyResponse = true
 				yield chunk
 			}
 
 			if (finishReason && finishReason === "content_filter" && !hasContent && activeToolCallIds.size === 0) {
 				throw new Error("OpenAI stream terminated with finish reason: content_filter. The response was blocked by safety/content filters.");
+			}
+
+			if (!yieldedAnyResponse) {
+				const response = (stream as any).response
+				const status = response?.status
+				let errorDetails = ""
+				if (response) {
+					try {
+						errorDetails = await response.text()
+					} catch (e) {
+						errorDetails = `(Response body unavailable: ${e})`
+					}
+				}
+				const emptyError = new Error("The language model returned an empty response without any text or tool calls.")
+				;(emptyError as any).status = status ?? 200
+				;(emptyError as any).errorDetails = errorDetails
+				throw handleOpenAIError(emptyError, this.providerName)
 			}
 
 			if (lastUsage) {
@@ -266,7 +292,16 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const message = response.choices?.[0]?.message
 
-			if (message?.tool_calls) {
+			const hasToolCalls = !!(message?.tool_calls && message.tool_calls.length > 0)
+			const hasText = !!message?.content
+			if (!hasText && !hasToolCalls) {
+				const emptyError = new Error("The language model returned an empty response without any text or tool calls.")
+				;(emptyError as any).status = 200
+				;(emptyError as any).errorDetails = JSON.stringify(response, null, 2)
+				throw handleOpenAIError(emptyError, this.providerName)
+			}
+
+			if (message?.tool_calls) {e
 				for (const toolCall of message.tool_calls) {
 					if (toolCall.type === "function") {
 						let args = toolCall.function.arguments
@@ -396,6 +431,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				throw handleOpenAIError(error, this.providerName)
 			}
 
+			await this.validateStreamResponse(stream)
+
 			yield* this.handleStreamResponse(stream)
 		} else {
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
@@ -431,6 +468,16 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			const message = response.choices?.[0]?.message
+
+			const hasToolCalls = !!(message?.tool_calls && message.tool_calls.length > 0)
+			const hasText = !!message?.content
+			if (!hasText && !hasToolCalls) {
+				const emptyError = new Error("The language model returned an empty response without any text or tool calls.")
+				;(emptyError as any).status = 200
+				;(emptyError as any).errorDetails = JSON.stringify(response, null, 2)
+				throw handleOpenAIError(emptyError, this.providerName)
+			}
+
 			if (message?.tool_calls) {
 				for (const toolCall of message.tool_calls) {
 					if (toolCall.type === "function") {
@@ -459,6 +506,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	private async *handleStreamResponse(stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>): ApiStream {
 		const activeToolCallIds = new Set<string>()
+		let yieldedAnyResponse = false
 
 		for await (const chunk of stream) {
 			const delta = chunk.choices?.[0]?.delta
@@ -466,13 +514,17 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			if (delta) {
 				if (delta.content) {
+					yieldedAnyResponse = true
 					yield {
 						type: "text",
 						text: delta.content,
 					}
 				}
 
-				yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
+				for (const chunk of this.processToolCalls(delta, finishReason, activeToolCallIds)) {
+					yieldedAnyResponse = true
+					yield chunk
+				}
 			}
 
 			if (chunk.usage) {
@@ -482,6 +534,23 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					outputTokens: chunk.usage.completion_tokens || 0,
 				}
 			}
+		}
+
+		if (!yieldedAnyResponse) {
+			const response = (stream as any).response
+			const status = response?.status
+			let errorDetails = ""
+			if (response) {
+				try {
+					errorDetails = await response.text()
+				} catch (e) {
+					errorDetails = `(Response body unavailable: ${e})`
+				}
+			}
+			const emptyError = new Error("The language model returned an empty response without any text or tool calls.")
+			;(emptyError as any).status = status ?? 200
+			;(emptyError as any).errorDetails = errorDetails
+			throw handleOpenAIError(emptyError, this.providerName)
 		}
 	}
 
@@ -576,6 +645,26 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Use user-configured modelMaxTokens if available, otherwise fall back to model's default maxTokens
 			// Using max_completion_tokens as max_tokens is deprecated
 			requestOptions.max_completion_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
+		}
+	}
+
+	private async validateStreamResponse(stream: any): Promise<void> {
+		const response = stream?.response
+		if (response) {
+			const contentType = response.headers?.get("content-type") || ""
+			if (contentType.includes("application/json") || response.status < 200 || response.status >= 300) {
+				let errorDetails = ""
+				try {
+					const body = await response.text()
+					errorDetails = body
+				} catch (e) {
+					errorDetails = `Failed to read response body: ${e}`
+				}
+				const streamError = new Error(`Server returned JSON or invalid status instead of SSE stream (Status Code: ${response.status})`)
+				;(streamError as any).status = response.status
+				;(streamError as any).errorDetails = errorDetails
+				throw handleOpenAIError(streamError, this.providerName)
+			}
 		}
 	}
 }

@@ -497,6 +497,86 @@ describe("OpenAiHandler", () => {
 			const callArgs = mockCreate.mock.calls[0][0]
 			expect(callArgs.max_completion_tokens).toBe(4096)
 		})
+
+		it("should throw error on empty streaming response", async () => {
+			mockCreate.mockImplementationOnce(async (options) => {
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						// yield nothing
+					},
+					response: {
+						status: 200,
+						headers: {
+							get: (name: string) => name.toLowerCase() === "content-type" ? "text/event-stream" : null,
+						},
+						text: async () => "Empty stream details",
+					}
+				}
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// Consume the stream to trigger execution
+				}
+			}).rejects.toThrow("The language model returned an empty response without any text or tool calls.")
+		})
+
+		it("should throw error on JSON streaming response", async () => {
+			mockCreate.mockImplementationOnce(async (options) => {
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						// yield nothing
+					},
+					response: {
+						status: 200,
+						headers: {
+							get: (name: string) => name.toLowerCase() === "content-type" ? "application/json" : null,
+						},
+						text: async () => '{"error": {"message": "Custom proxy error message"}}',
+					}
+				}
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// Consume the stream
+				}
+			}).rejects.toThrow("Server returned JSON or invalid status instead of SSE stream")
+		})
+
+		it("should throw error on empty non-streaming response", async () => {
+			mockCreate.mockResolvedValueOnce({
+				choices: [
+					{
+						message: {
+							role: "assistant",
+							content: null,
+							tool_calls: null,
+						},
+						finish_reason: "stop",
+					},
+				],
+				usage: {
+					prompt_tokens: 10,
+					completion_tokens: 5,
+					total_tokens: 15,
+				},
+			})
+
+			const nonStreamHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiStreamingEnabled: false,
+			})
+
+			const stream = nonStreamHandler.createMessage(systemPrompt, messages)
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// Consume
+				}
+			}).rejects.toThrow("The language model returned an empty response without any text or tool calls.")
+		})
 	})
 
 	describe("error handling", () => {
