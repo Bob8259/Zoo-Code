@@ -187,7 +187,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 							"createMessage",
 						),
 					)
-					throw error
+					throw handleProviderError(error, this.providerName)
 				}
 				break
 			}
@@ -215,7 +215,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 							"createMessage",
 						),
 					)
-					throw error
+					throw handleProviderError(error, this.providerName)
 				}
 				break
 			}
@@ -416,7 +416,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 					"completePrompt",
 				),
 			)
-			throw error
+			throw handleProviderError(error, this.providerName)
 		}
 
 		const content = message.content.find(({ type }) => type === "text")

@@ -25,6 +25,7 @@ import { convertAnthropicMessageToGemini } from "../transform/gemini-format"
 import { t } from "i18next"
 import type { ApiStream, GroundingSource } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { handleProviderError } from "./utils/error-handler"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
@@ -333,16 +334,18 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 					}),
 				}
 			}
+
+			if (finishReason && finishReason !== "STOP" && !hasContent && !hasReasoning) {
+				throw new Error(`Gemini stream terminated with finish reason: ${finishReason}. This usually indicates the response was blocked by safety filters or other policy restrictions.`);
+			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			const apiError = new ApiProviderError(errorMessage, this.providerName, model, "createMessage")
 			TelemetryService.instance.captureException(apiError)
 
-			if (error instanceof Error) {
-				throw new Error(t("common:errors.gemini.generate_stream", { error: error.message }))
-			}
-
-			throw error
+			throw handleProviderError(error, this.providerName, {
+				messageTransformer: (msg) => t("common:errors.gemini.generate_stream", { error: msg }),
+			})
 		}
 	}
 
@@ -447,11 +450,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			const apiError = new ApiProviderError(errorMessage, this.providerName, model, "completePrompt")
 			TelemetryService.instance.captureException(apiError)
 
-			if (error instanceof Error) {
-				throw new Error(t("common:errors.gemini.generate_complete_prompt", { error: error.message }))
-			}
-
-			throw error
+			throw handleProviderError(error, this.providerName, {
+				messageTransformer: (msg) => t("common:errors.gemini.generate_complete_prompt", { error: msg }),
+			})
 		}
 	}
 

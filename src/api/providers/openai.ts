@@ -199,18 +199,22 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			let lastUsage
 			const activeToolCallIds = new Set<string>()
+			let finishReason: string | null | undefined = undefined
+			let hasContent = false
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices?.[0]?.delta ?? {}
-				const finishReason = chunk.choices?.[0]?.finish_reason
+				finishReason = chunk.choices?.[0]?.finish_reason
 
 				if (delta.content) {
+					hasContent = true
 					for (const chunk of matcher.update(delta.content)) {
 						yield chunk
 					}
 				}
 
 				if ("reasoning_content" in delta && delta.reasoning_content) {
+					hasContent = true
 					yield {
 						type: "reasoning",
 						text: (delta.reasoning_content as string | undefined) || "",
@@ -226,6 +230,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			for (const chunk of matcher.final()) {
 				yield chunk
+			}
+
+			if (finishReason && finishReason === "content_filter" && !hasContent && activeToolCallIds.size === 0) {
+				throw new Error("OpenAI stream terminated with finish reason: content_filter. The response was blocked by safety/content filters.");
 			}
 
 			if (lastUsage) {

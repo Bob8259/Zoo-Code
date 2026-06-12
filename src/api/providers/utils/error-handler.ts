@@ -55,7 +55,7 @@ export function handleProviderError(
 			message: msg,
 			name: error.name,
 			stack: error.stack,
-			status: anyErr.status,
+			status: anyErr.status ?? anyErr.statusCode ?? anyErr.response?.status ?? anyErr.$metadata?.httpStatusCode,
 		})
 
 		let wrapped: Error
@@ -75,11 +75,31 @@ export function handleProviderError(
 		// Preserve HTTP status and structured details for retry/backoff + UI
 		// These fields are used by Task.backoffAndAnnounce() and ChatRow/ErrorRow
 		// to provide status-aware error messages and handling
-		if (anyErr.status !== undefined) {
-			;(wrapped as any).status = anyErr.status
+		const status = anyErr.status ?? anyErr.statusCode ?? anyErr.response?.status ?? anyErr.$metadata?.httpStatusCode
+		if (status !== undefined) {
+			;(wrapped as any).status = status
 		}
 		if (anyErr.errorDetails !== undefined) {
 			;(wrapped as any).errorDetails = anyErr.errorDetails
+		} else {
+			// Extract server response / raw error body
+			let serverResponse: any = undefined
+			if (anyErr.error) {
+				serverResponse = anyErr.error
+			} else if (anyErr.response?.data) {
+				serverResponse = anyErr.response.data
+			} else if (anyErr.response?.body) {
+				serverResponse = anyErr.response.body
+			} else if (anyErr.response) {
+				serverResponse = anyErr.response
+			}
+
+			if (serverResponse) {
+				const detailsStr = typeof serverResponse === "object"
+					? JSON.stringify(serverResponse, null, 2)
+					: String(serverResponse)
+				;(wrapped as any).errorDetails = detailsStr
+			}
 		}
 		if (anyErr.code !== undefined) {
 			;(wrapped as any).code = anyErr.code
@@ -98,11 +118,34 @@ export function handleProviderError(
 
 	// Also try to preserve status for non-Error exceptions (e.g., plain objects with status)
 	const anyErr = error as any
-	if (typeof anyErr?.status === "number") {
-		;(wrapped as any).status = anyErr.status
+	const status = anyErr?.status ?? anyErr?.statusCode ?? anyErr?.response?.status ?? anyErr?.$metadata?.httpStatusCode
+	if (status !== undefined) {
+		;(wrapped as any).status = status
 	}
 
-	return wrapped
+	if (anyErr?.errorDetails !== undefined) {
+		;(wrapped as any).errorDetails = anyErr.errorDetails
+	} else {
+		let serverResponse: any = undefined
+		if (anyErr?.error) {
+			serverResponse = anyErr.error
+		} else if (anyErr?.response?.data) {
+			serverResponse = anyErr.response.data
+		} else if (anyErr?.response?.body) {
+			serverResponse = anyErr.response.body
+		} else if (anyErr?.response) {
+			serverResponse = anyErr.response
+		}
+
+		if (serverResponse) {
+			const detailsStr = typeof serverResponse === "object"
+				? JSON.stringify(serverResponse, null, 2)
+				: String(serverResponse)
+			;(wrapped as any).errorDetails = detailsStr
+		}
+	}
+
+	return wrapped;
 }
 
 /**

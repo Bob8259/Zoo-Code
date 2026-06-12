@@ -1,115 +1,37 @@
-<p align="center">
-          <a href="https://marketplace.visualstudio.com/items?itemName=ZooCodeOrganization.zoo-code"><img src="https://img.shields.io/badge/VS_Code_Marketplace-007ACC?style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code Marketplace"></a>
-          <a href="https://x.com/ZooCodeDev"><img src="https://img.shields.io/badge/ZooCode-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
-          <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
-          <a href="https://discord.gg/VxfP4Vx3gX"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
-          <a href="https://www.reddit.com/r/ZooCode/"><img src="https://img.shields.io/badge/Join%20r%2FZooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/ZooCode"></a>
-          <a href="https://github.com/Zoo-Code-Org/Zoo-Code/issues"><img src="https://img.shields.io/badge/GitHub-Issues-181717?style=flat&logo=github&logoColor=white" alt="GitHub Issues"></a>
-        </p>
-        <p align="center">
-          <em>快速获取帮助 → <a href="https://discord.gg/VxfP4Vx3gX">加入 Discord</a> • 偏好异步？→ <a href="https://www.reddit.com/r/ZooCode/">加入 r/ZooCode</a></em>
-        </p>
+# Qoo Code
 
-        # Zoo Code
+> 您的 AI 驱动开发团队，就在您的编辑器中 —— 专为精准与极简而生。
 
-        > 你的 AI 驱动开发团队，就在你的编辑器里
+Qoo Code 是 [Zoo Code](https://github.com/Zoo-Code-Org/Zoo-Code) 的一个分支（我们对 Zoo Code 社区驱动的卓越贡献表示深切的谢意和敬意，他们延续了 Roo Code 的血脉）。
 
-        ## 我们是 Zoo Code
+## 为什么叫 "Qoo Code"？
 
-> 你可能已经看到 Roo 团队 🦘🦘🦘 的[最近公告](https://x.com/mattrubens/status/2046636598859559114)。简单来说，团队在把重心放到 [Roomote](https://roomote.dev/) 的同时，正在逐步减少 Roo Code 的活跃开发。这个消息让很多 Roo 用户都很难受；这个插件对这个社区意义重大。
->
-> 我们想感谢整个 Roo 团队为这个插件投入的努力。这里不会逐一点名，但大家都能认同，他们既是卓越的开发者，也是同样令人敬佩的优秀的人。感谢 Roo 团队。
->
-> Roo 用户来自各种不同背景。有人在日常工作中专业使用它，也有人用它来折腾难以想象的复杂 workflow。有人用它来改进 Roo 本身，也有人用它来改进 Roo 所使用的模型（非常 meta）。我们想表达的是，这个社区非常多元。虽然袋鼠 🦘🦘🦘 是一种高贵又有辨识度的动物，但我们觉得由不同物种组成的“Zoo” 🐘🦡🦒🦓🦛🦧🦭🦦 更能体现插件用户的多样性。
->
-> 所以我们想宣布，**Zoo Code** 将继续开发这个重要项目。核心团队由此前曾为 Roo 做出贡献、并且非常在乎这个插件的开发者组成。我们会继续更新模型、修复 bug，并发布新功能。但最重要的是，我们会认真倾听你们——让这个插件如此特别的社区。欢迎加入我们的 [Discord](https://discord.gg/VxfP4Vx3gX)、[Reddit](https://www.reddit.com/r/ZooCode)，或者[创建一个 PR 或 issue](https://github.com/Zoo-Code-Org/Zoo-Code)；但更重要的是，我们希望你作为社区的一员继续保持参与、保持连接、保持活跃。
->
-> _-Zoo Code Team_
+作者的桌上放着一个茄子毛绒玩具。在中文里，茄子是**茄子**（_qié zi_）；第一个字**茄**的拼音首字母是 **Q**。这个小小的毛绒玩具便成为了这个扩展的命名来源：**Qoo Code**。
 
-## 从 Roo Code 迁移到 Zoo Code
+这个名字也向该项目所基于的两个扩展致敬：**[Roo Code](https://github.com/RooCodeInc/Roo-Code)** 和 **[Zoo Code](https://github.com/Zoo-Code-Org/Zoo-Code)** —— 在继承 **Q** 谱系的同时，将它们的设计理念发扬光大。
 
-你可以在 [Roo→Zoo 迁移指南](https://docs.zoocode.dev/roo-to-zoo-migration) 中找到从 Roo Code 迁移到 Zoo Code 的快速说明。我们希望在大家迁移过程中尽可能提供帮助，这也是我们设立 [Reddit](https://www.reddit.com/r/ZooCode) 和 [Discord](https://discord.gg/VxfP4Vx3gX) 社区的原因。如果你遇到问题或有任何疑问，欢迎加入后直接提问。
+## Qoo Code 的哲学：“少即是多”
 
-## v3.54.1 新增内容
+推动 **Qoo Code** 的核心理念是 **少即是多**。Qoo Code 专注于极简、高度精准的提示词工程，而不是用过多的提示词噪音、上下文膨胀和自动 IDE 日志来让模型过载（这往往会导致混淆）。这显著**减少了智能体的幻觉**并提高了执行准确性。
 
-**Zoo Code 首次发布** —— Zoo Code 现已作为独立扩展在 VS Code Marketplace 上线，标识为 `ZooCodeOrganization.zoo-code`，并会在每次 merge 到 `main` 后自动发布 pre-release 构建。
+Qoo Code 还将**绝大部分控制权交还给您**（用户）。它不会试图去猜测每一种工作流，也不会将决策隐藏在不透明的默认设置背后。这意味着您应该在项目级别投资一个 **[AGENTS.md](../../AGENTS.md)**（或等效的智能体规则文件）：写下您希望智能体如何行动、需要避免什么，以及您的仓库是如何组织的。本扩展不会干涉您的工作；**AGENTS.md** 就是您引导它的方向盘。
 
-- 通过 OpenAI Codex 提供商新增对 GPT-5.5 的支持。
-- 在 Vertex AI 上新增对 Claude Opus 4.7 的支持。
-- 在聊天中新增上一 checkpoint 导航控件。
-- 支持动态拉取模型的 DeepSeek V4。
-- 支持 MCP OAuth 客户端。
+### 关键改进
 
-<details>
-  <summary>🌐 可用语言</summary>
+这些改进共同旨在**提升日常用户体验**、**提高安全性**，同时保留有用的**自主**行为（在合适的地方进行自动审批）、**借鉴其他项目行之有效的想法**，并支持从探索到实现的**更清晰、更高效的工作流**。
 
-- [English](../../README.md)
-- [Català](../ca/README.md)
-- [Deutsch](../de/README.md)
-- [Español](../es/README.md)
-- [Français](../fr/README.md)
-- [हिंदी](../hi/README.md)
-- [Bahasa Indonesia](../id/README.md)
-- [Italiano](../it/README.md)
-- [日本語](../ja/README.md)
-- [한국어](../ko/README.md)
-- [Nederlands](../nl/README.md)
-- [Polski](../pl/README.md)
-- [Português (BR)](../pt-BR/README.md)
-- [Русский](../ru/README.md)
-- [Türkçe](../tr/README.md)
-- [Tiếng Việt](../vi/README.md)
-- [简体中文](../zh-CN/README.md)
-- [繁體中文](../zh-TW/README.md)
-- ...
-      </details>
-
----
-
-## Zoo Code 能为您做什么？
-
-- 从自然语言描述生成代码
-- 使用模式进行调整：代码、架构师、提问、调试和自定义模式
-- 重构和调试现有代码
-- 编写和更新文档
-- 回答关于您的代码库的问题
-- 自动化重复性任务
-- 使用 MCP 服务器
-
-## 模式
-
-Zoo Code 适应您的工作方式，而不是相反：
-
-- 代码模式：日常编码、编辑和文件操作
-- 架构师模式：规划系统、规范和迁移
-- 提问模式：快速回答、解释和文档
-- 调试模式：跟踪问题、添加日志、隔离根本原因
-- 自定义模式：为您的团队或工作流程构建专门的模式
-
-了解更多：[使用模式](https://docs.zoocode.dev/basic-usage/using-modes) • [自定义模式](https://docs.zoocode.dev/advanced-usage/custom-modes)
-
-## 教程和功能视频
-
-<div align="center">
-
-|                                                                                                                                                                     |                                                                                                                                                                    |                                                                                                                                                                  |
-| :-----------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>安装 Zoo Code</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>配置个人资料</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>代码库索引</b> |
-|  <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>自定义模式</b>   |    <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>检查点</b>    | <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>上下文管理</b> |
-
-</div>
-<p align="center">
-<a href="https://docs.zoocode.dev/tutorial-videos">更多快速教程和功能视频...</a>
-</p>
-
-## 资源
-
-- **[文档](https://docs.zoocode.dev):** 安装、配置和掌握 Zoo Code 的官方指南。
-- **[YouTube 频道](https://youtube.com/@roocodeyt?feature=shared):** 观看教程和功能演示。
-- **[Discord 服务器](https://discord.gg/VxfP4Vx3gX):** 加入社区以获得实时帮助和讨论。
-- **[Reddit 社区](https://www.reddit.com/r/ZooCode):** 分享您的经验，看看别人在构建什么。
-- **[GitHub 问题](https://github.com/Zoo-Code-Org/Zoo-Code/issues):** 报告错误并跟踪开发。
-- **[功能请求](https://github.com/Zoo-Code-Org/Zoo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** 有想法吗？与开发人员分享。
+1. **快速模式切换快捷键 (`Alt+Q`)**：使用简单的键盘快捷键在**代码模式 (Code mode)**和**架构师模式 (Architect mode)**之间快速切换。
+2. **精简提示词**：针对各种模式高度优化和精简了系统提示词，为智能体提供清晰的指导，并去除了冗余的提示词干扰。
+3. **聚焦的环境详情上下文**：重新加入了一个高度优化的 `<environment_details>` XML 块，该块**仅**包含当前活动且聚焦的编辑器的路径，并且仅在每次新对话开始时注入一次。这在确保智能体始终知晓您起始活动文件的同时，保持了极低的延迟并节省了 API Token。
+4. **结构化 Markdown 上下文压缩**：将冗长且被 XML 包裹的传统上下文总结格式替换为简洁、高度结构化的 7 部分 Markdown 压缩格式。这极大地减少了提示词开销，并使目标、约束、进度、关键决策和下一步计划保持完美同步。该压缩设计归功于并改编自 [OpenCode](https://github.com/anomalyco/opencode) 中优雅的压缩方法。
+5. **针对 Gemini 优化的转义解析器**：修改了转义解析器，使其与 Gemini 模型完全兼容且更加适用。
+6. **丰富的调试 API 历史记录**：在任务调试选项中点击“Open API History”现在会显示一个全面的视图，包括完整的系统提示词、工具定义数组和对话历史记录，而不仅仅是原始的用户/助手消息。
+7. **优化的 `apply_diff` 工具指令**：精简了工具提示词和参数描述，并提供了明确的指南，包括前缀剥离（移除类似于 `:130 | ` 的行号前缀）、缩进规范化（转换隐藏的非换行空格）、字面量匹配以及具体示例（替换令人困惑的占位符），以确保极其可靠的搜索/替换应用。
+8. **AI 命令自动审查安全护栏**：在自动执行终端命令之前，添加了一个智能的三级安全过滤器：
+    - **第 1 级（显式列表）：** 将命令前缀与允许/拒绝列表进行匹配，以立即绕过或拒绝执行。
+    - **第 2 级（上下文感知安全审查）：** 收集全面的环境状态（用户意图、操作系统、当前工作目录树、引用的脚本内容、活动 TODO 以及作为结构化 JSON 数组的最近聊天历史记录），并调用安全审查 LLM。
+    - **第 3 级（操作路由）：** 自动执行已批准的命令，或者在拒绝或不确定时向用户弹出手动审批对话框，显示详细的安全推理。包括一个开发者调试操作（盾牌图标），可在 VS Code 中原生检查完全解析的 LLM 参数和多行提示词 JSON 数组。
+9. **重新设计的子任务委派**：重构了子任务流程，使主智能体可以通过 `new_task` 派生出聚焦的子任务，以进行简单、自包含的工作（文件发现、代码库搜索、结构检查、只读分析）。在设置中配置专用的**子任务模型配置 (Subtask model profile)**，以便子任务在更小、更便宜或更快的模型上运行，而父任务则保留更强大的模型进行实现 —— 从而在不阻塞主任务的情况下，节省琐碎探索的 Token 和延迟。
 
 ---
 
@@ -117,86 +39,35 @@ Zoo Code 适应您的工作方式，而不是相反：
 
 1. **克隆**仓库：
 
-```sh
-git clone https://github.com/Zoo-Code-Org/Zoo-Code.git
-```
-
-2. **安装依赖项**:
-
-```sh
-pnpm install
-```
-
-3. **运行扩展程序**:
-
-有几种方法可以运行 Zoo Code 扩展程序：
-
-### 开发模式（F5）
-
-对于积极开发，请使用 VSCode 的内置调试功能：
-
-在 VSCode 中按 `F5`（或转到 **Run** → **Start Debugging**）。这将在运行 Zoo Code 扩展程序的新 VSCode 窗口中打开。
-
-- 对 webview 的更改将立即显示。
-- 对核心扩展程序的更改也会自动热重载。
-
-### 自动化 VSIX 安装
-
-要将扩展程序构建为 VSIX 包并直接安装到 VSCode 中：
-
-```sh
-pnpm install:vsix [-y] [--editor=<command>]
-```
-
-此命令将：
-
-- 询问要使用的编辑器命令（code/cursor/code-insiders） - 默认为“code”
-- 卸载任何现有版本的扩展程序。
-- 构建最新的 VSIX 包。
-- 安装新构建的 VSIX。
-- 提示您重新启动 VS Code 以使更改生效。
-
-选项：
-
-- `-y`: 跳过所有确认提示并使用默认值
-- `--editor=<command>`: 指定编辑器命令（例如，`--editor=cursor` 或 `--editor=code-insiders`）
-
-### 手动 VSIX 安装
-
-如果您希望手动安装 VSIX 包：
-
-1.  首先，构建 VSIX 包：
     ```sh
-    pnpm vsix
-    ```
-2.  将在 `bin/` 目录中生成一个 `.vsix` 文件（例如，`bin/zoo-code-<version>.vsix`）。
-3.  使用 VSCode CLI 手动安装
-    ```sh
-    code --install-extension bin/zoo-code-<version>.vsix
+    git clone https://github.com/Bob8259/Zoo-Code.git
     ```
 
+2. **安装依赖项**：
+
+    ```sh
+    pnpm install
+    ```
+
+3. **运行扩展**：
+   在 VSCode 中按 `F5`（或转到**运行** → **启动调试**）。这将打开一个运行有 Qoo Code 扩展的新 VSCode 窗口。
+
 ---
 
-我们使用 [changesets](https://github.com/changesets/changesets) 进行版本控制和发布。有关发行说明，请查看我们的 `CHANGELOG.md`。
+## 为什么不将更改提交给上游的 Zoo Code
 
----
+Qoo Code 仍然是一个**分支 (fork)**，而不是向 [Zoo Code](https://github.com/Zoo-Code-Org/Zoo-Code) 提交的一系列拉取请求 (PR)。这是有意为之的，原因如下：
 
-## 免责声明
+1. **破坏性变更和不同的发展方向。** 此分支引入了破坏性变更和产品选择（例如，精简的提示词、修改后的上下文压缩以及命令自动审查行为），这些与 Zoo Code 当前的开发计划或上游 API 预期不符。合并它们将需要在 Zoo Code 侧进行大规模、协同的重新设计，而不是小型的、即插即用的补丁。
 
-**请注意**，Zoo Code **不**对与 Zoo Code 相关的任何代码、模型或其他工具、任何相关的第三方工具或任何由此产生的输出作出任何陈述或保证。您承担使用任何此类工具或输出的**所有风险**；此类工具均按**“原样”**和**“可用”**的基础提供。此类风险可能包括但不限于知识产权侵权、网络漏洞或攻击、偏见、不准确、错误、缺陷、病毒、停机、财产损失或损害和/或人身伤害。您对自己使用任何此类工具或输出负全部责任（包括但不限于其合法性、适当性和结果）。
+2. **上游合并积压。** Zoo Code 已经有大量未合并的开放拉取请求。从此分支添加另一个重大的 PR 可能会在队列中搁置很长时间，而没有实际的审查精力，这对两个项目都没有帮助。
 
----
+3. **在没有充分审查的情况下进行 AI 辅助开发。** 这里的绝大多数更改都是在紧迫的时间限制下通过 AI 辅助完成的。它们**没有**经过 Zoo Code 所期望的相同人工审查周期，并且在发布前**没有运行自动化测试**。在没有达到该质量标准的情况下进行上游合并，对 Zoo Code 的维护者和他们的用户都是不公平的。
 
-## 贡献
-
-我们欢迎社区贡献！请阅读我们的 [CONTRIBUTING.md](CONTRIBUTING.md) 开始。
+如果您希望将这些想法引入上游的 Zoo Code，请将此仓库视为**参考实现**，并有针对性地挑选或重新实现某些部分 —— 配合测试并与维护者保持一致 —— 而不是期望直接合并此分支。
 
 ---
 
 ## 许可证
 
-[Apache 2.0 © 2025 Zoo Code Org](../../LICENSE)
-
----
-
-**尽情享受 Zoo Code！** 无论你是让它保持短绳控制，还是让它自主探索，我们都迫不及待想看看你会构建什么。如果你有问题或功能想法，请提交一个 [issue](https://github.com/Zoo-Code-Org/Zoo-Code/issues) 或发起一个 [discussion](https://github.com/Zoo-Code-Org/Zoo-Code/discussions)。祝你编码愉快！
+[Apache 2.0 © 2026 Qoo Code](../../LICENSE)

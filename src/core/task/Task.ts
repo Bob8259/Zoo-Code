@@ -3272,7 +3272,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Determine cancellation reason
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
 
-						const rawErrorMessage = error.message ?? JSON.stringify(serializeError(error), null, 2)
+						let rawErrorMessage = error.message ?? JSON.stringify(serializeError(error), null, 2)
+						if (error.status) {
+							rawErrorMessage += ` (Status Code: ${error.status})`
+						}
+						if (error.errorDetails) {
+							rawErrorMessage += `\n\nServer Response:\n${error.errorDetails}`
+						}
 						const streamingFailedMessage = this.abort
 							? undefined
 							: `${t("common:interruption.streamTerminatedByProvider")}: ${rawErrorMessage}`
@@ -4366,9 +4372,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				return
 			} else {
+				let errorMessage = error.message || "Unknown API error"
+				if (error.status) {
+					errorMessage += ` (Status Code: ${error.status})`
+				}
+				if (error.errorDetails) {
+					errorMessage += `\n\nServer Response:\n${error.errorDetails}`
+				} else if (error.stack) {
+					errorMessage += `\n\nStack Trace:\n${error.stack}`
+				}
 				const { response } = await this.ask(
 					"api_req_failed",
-					error.message ?? JSON.stringify(serializeError(error), null, 2),
+					errorMessage,
 				)
 
 				if (response !== "yesButtonClicked") {
@@ -4438,9 +4453,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Format: "<status>\n<message>" allows ChatRow to extract status via parseInt(text.substring(0,3))
 				// while preserving the full error message in errorDetails for debugging
 				const errorMessage = error?.message || "Unknown error"
-				headerText = `${error.status}\n${errorMessage}`
+				const details = error?.errorDetails ? `\n\nServer Response:\n${error.errorDetails}` : ""
+				headerText = `${error.status}\n${errorMessage}${details}`
 			} else if (error?.message) {
-				headerText = error.message
+				const details = error?.errorDetails ? `\n\nServer Response:\n${error.errorDetails}` : ""
+				headerText = `${error.message}${details}`
 			} else {
 				headerText = "Unknown error"
 			}
