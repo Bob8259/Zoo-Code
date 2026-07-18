@@ -1802,7 +1802,7 @@ describe("Queued message processing after condense", () => {
 		apiKey: "test-api-key",
 	} as any
 
-	it("processes queued message after condense completes", async () => {
+	it("does not process queued messages after condensing completes", async () => {
 		const provider = createProvider()
 		const task = new Task({
 			provider,
@@ -1818,62 +1818,36 @@ describe("Queued message processing after condense", () => {
 		// Queue a message during condensing
 		task.messageQueueService.addMessage("queued text", ["img1.png"])
 
-		// Use fake timers to capture setTimeout(0) in processQueuedMessages
-		vi.useFakeTimers()
 		await task.condenseContext()
 
-		// Flush the microtask that submits the queued message
-		vi.runAllTimers()
-		vi.useRealTimers()
-
-		expect(submitSpy).toHaveBeenCalledWith("queued text", ["img1.png"])
-		expect(task.messageQueueService.isEmpty()).toBe(true)
+		expect(submitSpy).not.toHaveBeenCalled()
+		expect(task.messageQueueService.isEmpty()).toBe(false)
 	})
 
-	it("does not cross-drain queues between separate tasks", async () => {
-		const providerA = createProvider()
-		const providerB = createProvider()
-
-		const taskA = new Task({
-			provider: providerA,
+	it("drains queued message on completion_result ask", async () => {
+		const provider = createProvider()
+		const task = new Task({
+			provider,
 			apiConfiguration: apiConfig,
-			task: "task A",
-			startTask: false,
-		})
-		const taskB = new Task({
-			provider: providerB,
-			apiConfiguration: apiConfig,
-			task: "task B",
+			task: "initial task",
 			startTask: false,
 		})
 
-		vi.spyOn(taskA as any, "getSystemPrompt").mockResolvedValue("system")
-		vi.spyOn(taskB as any, "getSystemPrompt").mockResolvedValue("system")
+		// Stub out internal ask dependencies
+		task.addToClineMessages = vi.fn(async () => {})
+		task.saveClineMessages = vi.fn(async () => {})
+		task.updateClineMessage = vi.fn(async () => {})
+		;(task as any).checkpointSave = vi.fn(async () => {})
 
-		const spyA = vi.spyOn(taskA, "submitUserMessage").mockResolvedValue(undefined)
-		const spyB = vi.spyOn(taskB, "submitUserMessage").mockResolvedValue(undefined)
+		// Queue a message before completion result ask
+		task.messageQueueService.addMessage("completion feedback", ["img1.png"])
 
-		taskA.messageQueueService.addMessage("A message")
-		taskB.messageQueueService.addMessage("B message")
+		const askPromise = task.ask("completion_result", "task completed", false)
 
-		// Condense in task A should only drain A's queue
-		vi.useFakeTimers()
-		await taskA.condenseContext()
-		vi.runAllTimers()
-		vi.useRealTimers()
-
-		expect(spyA).toHaveBeenCalledWith("A message", undefined)
-		expect(spyB).not.toHaveBeenCalled()
-		expect(taskB.messageQueueService.isEmpty()).toBe(false)
-
-		// Now condense in task B should drain B's queue
-		vi.useFakeTimers()
-		await taskB.condenseContext()
-		vi.runAllTimers()
-		vi.useRealTimers()
-
-		expect(spyB).toHaveBeenCalledWith("B message", undefined)
-		expect(taskB.messageQueueService.isEmpty()).toBe(true)
+		const result = await askPromise
+		expect(result.response).toBe("messageResponse")
+		expect(result.text).toBe("completion feedback")
+		expect(task.messageQueueService.isEmpty()).toBe(true)
 	})
 })
 

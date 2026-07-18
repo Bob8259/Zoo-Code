@@ -1383,9 +1383,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// block (via the `pWaitFor`).
 		const isBlocking = !(this.askResponse !== undefined || this.lastMessageTs !== askTs)
 		const isMessageQueued = !this.messageQueueService.isEmpty()
-		// Keep queued user messages intact during command_output asks. Those asks
-		// are terminal flow-control, not conversational turns.
-		const shouldDrainQueuedMessageForAsk = type !== "command_output"
+		// Only drain queued messages when asking for task completion result,
+		// meaning the current task has finished.
+		const shouldDrainQueuedMessageForAsk = type === "completion_result"
 		const isStatusMutable = !partial && isBlocking && !isMessageQueued && approval.decision === "ask"
 
 		if (isStatusMutable) {
@@ -1430,16 +1430,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const message = this.messageQueueService.dequeueMessage()
 
 			if (message) {
-				// Check if this is a tool approval ask that needs to be handled.
-				if (type === "tool" || type === "command" || type === "use_mcp_server") {
-					// For tool approvals, we need to approve first, then send
-					// the message if there's text/images.
-					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
-				} else {
-					// For other ask types (like followup or command_output), fulfill the ask
-					// directly.
-					this.handleWebviewAskResponse("messageResponse", message.text, message.images)
-				}
+				// Treat the queued message as feedback on the completed task.
+				this.handleWebviewAskResponse("messageResponse", message.text, message.images)
 			}
 		}
 
@@ -1456,13 +1448,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				if (shouldDrainQueuedMessageForAsk && !this.messageQueueService.isEmpty()) {
 					const message = this.messageQueueService.dequeueMessage()
 					if (message) {
-						// If this is a tool approval ask, we need to approve first (yesButtonClicked)
-						// and include any queued text/images.
-						if (type === "tool" || type === "command" || type === "use_mcp_server") {
-							this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
-						} else {
-							this.handleWebviewAskResponse("messageResponse", message.text, message.images)
-						}
+						// Treat messages queued during the completion ask as task feedback.
+						this.handleWebviewAskResponse("messageResponse", message.text, message.images)
 					}
 				}
 
@@ -4750,19 +4737,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * @param context - Context string for logging (e.g., the calling tool name)
 	 */
 	public processQueuedMessages(): void {
-		try {
-			if (!this.messageQueueService.isEmpty()) {
-				const queued = this.messageQueueService.dequeueMessage()
-				if (queued) {
-					setTimeout(() => {
-						this.submitUserMessage(queued.text, queued.images).catch((err) =>
-							console.error(`[Task] Failed to submit queued message:`, err),
-						)
-					}, 0)
-				}
-			}
-		} catch (e) {
-			console.error(`[Task] Queue processing error:`, e)
-		}
+		// No-op: queued messages should only be sent out after task completion.
 	}
 }
