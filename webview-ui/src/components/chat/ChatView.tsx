@@ -37,6 +37,7 @@ import Announcement from "./Announcement"
 import ChatRow from "./ChatRow"
 import WarningRow from "./WarningRow"
 import { ChatTextArea } from "./ChatTextArea"
+import { isCondenseCommand } from "./chatCommands"
 import TaskHeader from "./TaskHeader"
 import ProfileViolationWarning from "./ProfileViolationWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
@@ -575,6 +576,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		// setSecondaryButtonText(undefined)
 	}, [])
 
+	const handleCondenseContext = useCallback(
+		(taskId: string): boolean => {
+			if (isCondensing || sendingDisabled) {
+				return false
+			}
+
+			setIsCondensing(true)
+			setSendingDisabled(true)
+			vscode.postMessage({ type: "condenseTaskContextRequest", text: taskId })
+			return true
+		},
+		[isCondensing, sendingDisabled],
+	)
+
 	/**
 	 * Handles sending messages to the extension
 	 * @param text - The message text to send
@@ -585,6 +600,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			text = text.trim()
 
 			if (text || images.length > 0) {
+				// `/condense` is a local action command, not a prompt sent to the agent.
+				if (isCondenseCommand(text)) {
+					if (currentTaskItem?.id && handleCondenseContext(currentTaskItem.id)) {
+						setInputValue("")
+					}
+					return
+				}
+
 				// Intercept when the active provider is retired — show a
 				// WarningRow instead of sending anything to the backend.
 				if (apiConfiguration?.apiProvider && isRetiredProvider(apiConfiguration.apiProvider)) {
@@ -663,6 +686,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			isStreaming,
 			messageQueue.length,
 			apiConfiguration?.apiProvider,
+			currentTaskItem?.id,
+			handleCondenseContext,
 		], // messagesRef and clineAskRef are stable
 	)
 
@@ -1522,6 +1547,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		acceptInput: () => {
 			const hasInput = inputValue.trim() || selectedImages.length > 0
 
+			// Action commands take precedence over ask-specific primary buttons.
+			if (isCondenseCommand(inputValue)) {
+				handleSendMessage(inputValue, selectedImages)
+				return
+			}
+
 			// Special case: during command_output, queue the message instead of
 			// triggering the primary button action (which would lose the message)
 			if (clineAskRef.current === "command_output" && hasInput) {
@@ -1538,15 +1569,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 		},
 	}))
-
-	const handleCondenseContext = (taskId: string) => {
-		if (isCondensing || sendingDisabled) {
-			return
-		}
-		setIsCondensing(true)
-		setSendingDisabled(true)
-		vscode.postMessage({ type: "condenseTaskContextRequest", text: taskId })
-	}
 
 	const areButtonsVisible = showScrollToBottom || primaryButtonText || secondaryButtonText
 

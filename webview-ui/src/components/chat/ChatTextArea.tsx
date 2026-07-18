@@ -33,6 +33,7 @@ import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { ZooCodeAuthBadge } from "./ZooCodeAuthBadge"
 import { usePromptHistory } from "./hooks/usePromptHistory"
+import { CONDENSE_COMMAND, CONDENSE_COMMAND_NAME } from "./chatCommands"
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -96,9 +97,17 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			taskHistory,
 			clineMessages,
 			commands,
+			currentTaskItem,
 			enterBehavior,
 			lockApiConfigAcrossModes,
 		} = useExtensionState()
+
+		// Action commands are handled by the chat UI and must not enter the
+		// prompt-template command pipeline.
+		const availableCommands = useMemo(() => {
+			const promptCommands = (commands ?? []).filter((command) => command.name !== CONDENSE_COMMAND_NAME)
+			return currentTaskItem ? [CONDENSE_COMMAND, ...promptCommands] : promptCommands
+		}, [commands, currentTaskItem])
 
 		// Find the ID and display text for the currently selected API configuration.
 		const { currentConfigId, displayName } = useMemo(() => {
@@ -428,7 +437,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								queryItems,
 								fileSearchResults,
 								allModes,
-								commands,
+								availableCommands,
 							)
 							const optionsLength = options.length
 
@@ -466,7 +475,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							queryItems,
 							fileSearchResults,
 							allModes,
-							commands,
+							availableCommands,
 						)[selectedMenuIndex]
 						if (
 							selectedOption &&
@@ -567,7 +576,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				fileSearchResults,
 				handleHistoryNavigation,
 				resetHistoryNavigation,
-				commands,
+				availableCommands,
 				enterBehavior,
 			],
 		)
@@ -754,7 +763,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 			// Helper function to check if a command is valid
 			const isValidCommand = (commandName: string): boolean => {
-				return commands?.some((cmd) => cmd.name === commandName) || false
+				return availableCommands.some((cmd) => cmd.name === commandName)
 			}
 
 			// Process the text to highlight mentions and valid commands
@@ -786,7 +795,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 			highlightLayerRef.current.scrollTop = textAreaRef.current.scrollTop
 			highlightLayerRef.current.scrollLeft = textAreaRef.current.scrollLeft
-		}, [commands])
+		}, [availableCommands])
 
 		useLayoutEffect(() => {
 			updateHighlights()
@@ -1004,7 +1013,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									modes={allModes}
 									loading={searchLoading}
 									dynamicSearchResults={fileSearchResults}
-									commands={commands}
+									commands={availableCommands}
 								/>
 							</div>
 						)}

@@ -1055,6 +1055,66 @@ describe("ChatView - Context Condensing Indicator Tests", () => {
 		vi.clearAllMocks()
 	})
 
+	it("runs /condense locally without sending it to the agent", async () => {
+		const { getByTestId, container } = renderChatView()
+
+		mockPostMessage({
+			currentTaskItem: { id: "task-123", ts: Date.now() - 2000 },
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2000,
+					text: "Initial task",
+				},
+				{
+					type: "say",
+					say: "api_req_started",
+					ts: Date.now() - 1000,
+					text: JSON.stringify({ apiProtocol: "anthropic", cost: 0.05 }),
+				},
+				{
+					type: "say",
+					say: "text",
+					ts: Date.now(),
+					text: "Response from API",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId("chat-textarea")).toBeInTheDocument()
+		})
+		vi.mocked(vscode.postMessage).mockClear()
+
+		const input = getByTestId("chat-textarea").querySelector("input")! as HTMLInputElement
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "  /CONDENSE  " } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "condenseTaskContextRequest",
+				text: "task-123",
+			})
+		})
+
+		expect(input.value).toBe("")
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(expect.objectContaining({ type: "askResponse" }))
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(expect.objectContaining({ type: "queueMessage" }))
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(expect.objectContaining({ type: "newTask" }))
+
+		await waitFor(() => {
+			const rows = container.querySelectorAll('[data-testid="chat-row"]')
+			const condensingRow = Array.from(rows).find((row) => {
+				const text = row.textContent || ""
+				return text.includes('"say":"condense_context"') && text.includes('"partial":true')
+			})
+			expect(condensingRow).toBeTruthy()
+		})
+	})
+
 	it("should add a condensing message to groupedMessages when isCondensing is true", async () => {
 		// This test verifies that when the condenseTaskContextStarted message is received,
 		// the isCondensing state is set to true and a synthetic condensing message is added

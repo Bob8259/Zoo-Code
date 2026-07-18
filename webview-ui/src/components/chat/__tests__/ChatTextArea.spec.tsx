@@ -931,6 +931,28 @@ describe("ChatTextArea", () => {
 			expect(highlightLayer.innerHTML).toContain('<mark class="mention-context-textarea-highlight">/setup</mark>')
 		})
 
+		it("should suggest and highlight the condense action for an active task", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+				commands: mockCommands,
+				currentTaskItem: { id: "task-123" },
+			})
+
+			const { container, getByTestId, rerender } = render(<ChatTextArea {...defaultProps} inputValue="" />)
+			const textarea = container.querySelector("textarea")!
+
+			fireEvent.change(textarea, { target: { value: "/condense", selectionStart: 9 } })
+			rerender(<ChatTextArea {...defaultProps} inputValue="/condense" />)
+
+			expect(screen.getByText("Condense the current conversation context")).toBeInTheDocument()
+			expect(getByTestId("highlight-layer").innerHTML).toContain(
+				'<mark class="mention-context-textarea-highlight">/condense</mark>',
+			)
+		})
+
 		it("should not highlight invalid slash commands", () => {
 			const { getByTestId } = render(<ChatTextArea {...defaultProps} inputValue="/invalid command" />)
 
