@@ -1805,6 +1805,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				isStreaming={isStreaming}
 				onStop={handleStopTask}
 				onEnqueueMessage={handleEnqueueCurrentMessage}
+				clineAsk={clineAsk}
 			/>
 
 			{isProfileDisabled && (

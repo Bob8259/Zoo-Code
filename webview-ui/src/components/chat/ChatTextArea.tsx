@@ -57,6 +57,7 @@ interface ChatTextAreaProps {
 	isStreaming?: boolean
 	onStop?: () => void
 	onEnqueueMessage?: () => void
+	clineAsk?: string
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -80,6 +81,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			isStreaming = false,
 			onStop,
 			onEnqueueMessage,
+			clineAsk,
 		},
 		ref,
 	) => {
@@ -1204,8 +1206,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										</button>
 									</StandardTooltip>
 								)}
-								{/* Queue button - shown when streaming and user has typed content */}
-								{!isEditMode && isStreaming && hasInputContent && onEnqueueMessage && (
+								{/* Queue button - shown when streaming or command is running and user has typed content */}
+								{!isEditMode && (isStreaming || clineAsk === "command_output") && hasInputContent && onEnqueueMessage && (
 									<StandardTooltip content={t("chat:enqueueMessage")}>
 										<button
 											aria-label={t("chat:enqueueMessage")}
