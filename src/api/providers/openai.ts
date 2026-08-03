@@ -301,7 +301,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				throw handleOpenAIError(emptyError, this.providerName)
 			}
 
-			if (message?.tool_calls) {e
+			if (message?.tool_calls) {
 				for (const toolCall of message.tool_calls) {
 					if (toolCall.type === "function") {
 						let args = toolCall.function.arguments

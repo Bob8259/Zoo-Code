@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.54.7
+
+- Added the `/condense` chat command for manually condensing the current conversation.
+- Delayed queued messages until the current task reaches completion.
+
 ## 3.54.4
 
 Local development build.

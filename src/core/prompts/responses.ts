@@ -171,11 +171,7 @@ Otherwise, if you have not completed the task and do not need additional informa
 				} else {
 					// Check if file is write-protected (only for non-ignored files)
 					const isWriteProtected = rooProtectedController?.isWriteProtected(absoluteFilePath) || false
-					if (isWriteProtected) {
-						rooIgnoreParsed.push("🛡️ " + filePath)
-					} else {
-						rooIgnoreParsed.push(filePath)
-					}
+					rooIgnoreParsed.push(filePath)
 				}
 			}
 		}
