@@ -18,7 +18,8 @@ describe("getToolUseGuidelinesSection", () => {
 		const guidelines = getToolUseGuidelinesSection({ isSubtask: true })
 
 		expect(guidelines).toContain("5. You are a delegated subtask")
-		expect(guidelines).toContain("Do not call `new_task`")
+		expect(guidelines).toContain("Do not call `new_task`, `switch_mode`, or `ask_followup_question`")
+		expect(guidelines).toContain("task_completion")
 		expect(guidelines).not.toContain("5. For simple, self-contained exploration")
 	})
 

@@ -114,6 +114,11 @@ export const globalSettingsSchema = z.object({
 	enableCommandAutoReview: z.boolean().optional(),
 	commandAutoReviewProfileId: z.string().optional(),
 	commandAutoReviewPrompt: z.string().optional(),
+	/**
+	 * Show a system notification when the current task finishes.
+	 * @default true
+	 */
+	notifyOnTaskComplete: z.boolean().optional(),
 	subtaskApiConfigProfileId: z.string().optional(),
 	commandExecutionTimeout: z.number().optional(),
 	commandTimeoutAllowlist: z.array(z.string()).optional(),
@@ -346,6 +351,8 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	commandExecutionTimeout: 20,
 	commandTimeoutAllowlist: [],
 	preventCompletionWithOpenTodos: false,
+
+	notifyOnTaskComplete: true,
 
 	ttsEnabled: false,
 	ttsSpeed: 1,

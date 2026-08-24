@@ -355,6 +355,10 @@
 		"maxLimits": {
 			"description": "Automatically make requests up to these limits before asking for approval to continue."
 		},
+		"taskNotification": {
+			"label": "Notify when attention is needed",
+			"description": "Show a system notification when the agent completes the current task or asks a question."
+		},
 		"toggleAriaLabel": "Toggle auto-approval",
 		"disabledAriaLabel": "Auto-approval disabled - select options first",
 		"selectOptionsFirst": "Select at least one option below to enable auto-approval"

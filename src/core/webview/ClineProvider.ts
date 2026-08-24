@@ -103,6 +103,7 @@ import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
 import { validateAndFixToolResultIds } from "../task/validateToolResultIds"
+import { processPendingEdit } from "./pendingEditOperation"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -1080,32 +1081,7 @@ export class ClineProvider
 			// Process the pending edit after a short delay to ensure the task is fully initialized
 			setTimeout(async () => {
 				try {
-					// Find the message index in the restored state
-					const { messageIndex, apiConversationHistoryIndex } = (() => {
-						const messageIndex = task.clineMessages.findIndex((msg) => msg.ts === pendingEdit.messageTs)
-						const apiConversationHistoryIndex = task.apiConversationHistory.findIndex(
-							(msg) => msg.ts === pendingEdit.messageTs,
-						)
-						return { messageIndex, apiConversationHistoryIndex }
-					})()
-
-					if (messageIndex !== -1) {
-						// Remove the target message and all subsequent messages
-						await task.overwriteClineMessages(task.clineMessages.slice(0, messageIndex))
-
-						if (apiConversationHistoryIndex !== -1) {
-							await task.overwriteApiConversationHistory(
-								task.apiConversationHistory.slice(0, apiConversationHistoryIndex),
-							)
-						}
-
-						// Process the edited message
-						await task.handleWebviewAskResponse(
-							"messageResponse",
-							pendingEdit.editedContent,
-							pendingEdit.images,
-						)
-					}
+					await processPendingEdit(task, pendingEdit)
 				} catch (error) {
 					this.log(`[createTaskWithHistoryItem] Error processing pending edit: ${error}`)
 				}
@@ -2112,6 +2088,7 @@ export class ClineProvider
 			commandAutoReviewProfileId,
 			commandAutoReviewPrompt,
 			subtaskApiConfigProfileId,
+			notifyOnTaskComplete,
 			alwaysAllowMcp,
 			alwaysAllowModeSwitch,
 			alwaysAllowSubtasks,
@@ -2281,6 +2258,7 @@ export class ClineProvider
 			commandAutoReviewProfileId: commandAutoReviewProfileId ?? "default",
 			commandAutoReviewPrompt: commandAutoReviewPrompt ?? "",
 			subtaskApiConfigProfileId: subtaskApiConfigProfileId ?? "default",
+			notifyOnTaskComplete: notifyOnTaskComplete ?? true,
 			soundVolume: soundVolume ?? 0.5,
 			writeDelayMs: writeDelayMs ?? DEFAULT_WRITE_DELAY_MS,
 			terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? Terminal.defaultShellIntegrationTimeout,
@@ -2482,6 +2460,7 @@ export class ClineProvider
 			commandAutoReviewProfileId: stateValues.commandAutoReviewProfileId ?? "default",
 			commandAutoReviewPrompt: stateValues.commandAutoReviewPrompt ?? "",
 			subtaskApiConfigProfileId: stateValues.subtaskApiConfigProfileId ?? "default",
+			notifyOnTaskComplete: stateValues.notifyOnTaskComplete ?? true,
 			soundEnabled: stateValues.soundEnabled ?? false,
 			ttsEnabled: stateValues.ttsEnabled ?? false,
 			ttsSpeed: stateValues.ttsSpeed ?? 1.0,

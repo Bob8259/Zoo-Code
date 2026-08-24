@@ -11,7 +11,9 @@ import { getCostBreakdownIfNeeded } from "@src/utils/costFormatting"
 import { batchConsecutive } from "@src/utils/batchConsecutive"
 
 import type { ClineAsk, ClineSayTool, ClineMessage, ExtensionMessage, AudioType } from "@roo-code/types"
-import { isRetiredProvider } from "@roo-code/types"
+import { isRetiredProvider, commandExecutionStatusSchema } from "@roo-code/types"
+
+import { safeJsonParse } from "@roo/core"
 
 import { findLast } from "@roo/array"
 import { SuggestionItem } from "@roo-code/types"
@@ -180,6 +182,22 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	useEffect(() => {
 		clineAskRef.current = clineAsk
 	}, [clineAsk])
+
+	// Tracks commands that are currently executing in the terminal. An auto-approved
+	// command that has not produced output yet leaves no `command_output` message
+	// behind, so the message list alone cannot tell us a command is still running.
+	const runningCommandIdsRef = useRef<Set<string>>(new Set())
+	const [isCommandRunning, setIsCommandRunning] = useState(false)
+	const isCommandRunningRef = useRef(false)
+
+	const syncIsCommandRunning = useCallback(() => {
+		const running = runningCommandIdsRef.current.size > 0
+
+		if (running !== isCommandRunningRef.current) {
+			isCommandRunningRef.current = running
+			setIsCommandRunning(running)
+		}
+	}, [])
 
 	// Keep inputValueRef in sync with inputValue state
 	useEffect(() => {
@@ -431,16 +449,32 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "api_req_finished":
 						case "error":
 						case "text":
-						case "command_output":
 						case "mcp_server_request_started":
 						case "mcp_server_response":
 						case "completion_result":
+							break
+						case "command_output":
+							// ask:command_output may never become lastMessage when React
+							// batches it with a following say:command_output. Treat partial
+							// streaming output as the same Proceed/Kill UI state.
+							if (lastMessage.partial === true) {
+								setSendingDisabled(false)
+								setClineAsk("command_output")
+								setEnableButtons(true)
+								setPrimaryButtonText(t("chat:proceedWhileRunning.title"))
+								setSecondaryButtonText(t("chat:killCommand.title"))
+							} else if (clineAskRef.current === "command_output") {
+								setClineAsk(undefined)
+								setEnableButtons(false)
+								setPrimaryButtonText(undefined)
+								setSecondaryButtonText(undefined)
+							}
 							break
 					}
 					break
 			}
 		}
-	}, [lastMessage, secondLastMessage])
+	}, [lastMessage, secondLastMessage, t])
 
 	// Update button text when messages change (e.g., completion_result is added) for subtasks in resume_task state
 	useEffect(() => {
@@ -472,13 +506,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		everVisibleMessagesTsRef.current.clear()
 		setCurrentFollowUpTs(null)
 		setIsCondensing(false)
+		runningCommandIdsRef.current.clear()
+		syncIsCommandRunning()
 
 		if (autoApproveTimeoutRef.current) {
 			clearTimeout(autoApproveTimeoutRef.current)
 			autoApproveTimeoutRef.current = null
 		}
 		userRespondedRef.current = false
-	}, [task?.ts])
+	}, [task?.ts, syncIsCommandRunning])
 
 	const taskTs = task?.ts
 
@@ -595,6 +631,22 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	 * @param text - The message text to send
 	 * @param images - Array of image data URLs to send with the message
 	 */
+	/**
+	 * A command occupies the terminal until it exits. While that is happening the
+	 * user's input belongs to the agent's queue, never to the terminal or to a
+	 * stale approval button.
+	 */
+	const isCommandActive = useCallback(() => {
+		const lastRawMessage = messagesRef.current.at(-1)
+
+		return (
+			isCommandRunningRef.current ||
+			clineAskRef.current === "command_output" ||
+			lastRawMessage?.ask === "command_output" ||
+			(lastRawMessage?.say === "command_output" && lastRawMessage.partial === true)
+		)
+	}, [])
+
 	const handleSendMessage = useCallback(
 		(text: string, images: string[]) => {
 			text = text.trim()
@@ -619,13 +671,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				// - Task is busy (sendingDisabled)
 				// - API request in progress (isStreaming)
 				// - Queue has items (preserve message order during drain)
-				// - Command is running (command_output) - user's message should be queued for AI, not sent to terminal
-				if (
-					sendingDisabled ||
-					isStreaming ||
-					messageQueue.length > 0 ||
-					clineAskRef.current === "command_output"
-				) {
+				// - A command is executing - user's message should be queued for AI, not sent to terminal
+				if (sendingDisabled || isStreaming || messageQueue.length > 0 || isCommandActive()) {
 					try {
 						console.log("queueMessage", text, images)
 						vscode.postMessage({ type: "queueMessage", text, images })
@@ -688,6 +735,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			apiConfiguration?.apiProvider,
 			currentTaskItem?.id,
 			handleCondenseContext,
+			isCommandActive,
 		], // messagesRef and clineAskRef are stable
 	)
 
@@ -935,6 +983,27 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "interactionRequired":
 					playSound("notification")
 					break
+				case "commandExecutionStatus": {
+					const result = commandExecutionStatusSchema.safeParse(safeJsonParse(message.text, {}))
+
+					if (result.success) {
+						const data = result.data
+
+						switch (data.status) {
+							case "started":
+								runningCommandIdsRef.current.add(data.executionId)
+								break
+							case "exited":
+							case "timeout":
+								runningCommandIdsRef.current.delete(data.executionId)
+								break
+						}
+
+						syncIsCommandRunning()
+					}
+
+					break
+				}
 				case "taskWithAggregatedCosts":
 					if (message.text && message.aggregatedCosts) {
 						setAggregatedCostsMap((prev) => {
@@ -961,6 +1030,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			handleSecondaryButtonClick,
 			setCheckpointWarning,
 			playSound,
+			syncIsCommandRunning,
 		],
 	)
 
@@ -1553,9 +1623,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				return
 			}
 
-			// Special case: during command_output, queue the message instead of
+			// Special case: while a command is executing, queue the message instead of
 			// triggering the primary button action (which would lose the message)
-			if (clineAskRef.current === "command_output" && hasInput) {
+			if (isCommandActive() && hasInput) {
 				vscode.postMessage({ type: "queueMessage", text: inputValue.trim(), images: selectedImages })
 				setInputValue("")
 				setSelectedImages([])
@@ -1806,6 +1876,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				onStop={handleStopTask}
 				onEnqueueMessage={handleEnqueueCurrentMessage}
 				clineAsk={clineAsk}
+				isCommandRunning={isCommandRunning}
 			/>
 
 			{isProfileDisabled && (

@@ -58,6 +58,7 @@ interface ChatTextAreaProps {
 	onStop?: () => void
 	onEnqueueMessage?: () => void
 	clineAsk?: string
+	isCommandRunning?: boolean
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -82,6 +83,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			onStop,
 			onEnqueueMessage,
 			clineAsk,
+			isCommandRunning = false,
 		},
 		ref,
 	) => {
@@ -1207,28 +1209,31 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									</StandardTooltip>
 								)}
 								{/* Queue button - shown when streaming or command is running and user has typed content */}
-								{!isEditMode && (isStreaming || clineAsk === "command_output") && hasInputContent && onEnqueueMessage && (
-									<StandardTooltip content={t("chat:enqueueMessage")}>
-										<button
-											aria-label={t("chat:enqueueMessage")}
-											disabled={false}
-											onClick={onEnqueueMessage}
-											className={cn(
-												"relative inline-flex items-center justify-center",
-												"bg-transparent border-none p-1.5",
-												"rounded-md min-w-[28px] min-h-[28px]",
-												"text-vscode-descriptionForeground hover:text-vscode-foreground",
-												"transition-all duration-200",
-												"opacity-100 hover:opacity-100 pointer-events-auto",
-												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
-												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-												"active:bg-[rgba(255,255,255,0.1)]",
-												"cursor-pointer",
-											)}>
-											<ListEnd className="w-4 h-4" />
-										</button>
-									</StandardTooltip>
-								)}
+								{!isEditMode &&
+									(isStreaming || isCommandRunning || clineAsk === "command_output") &&
+									hasInputContent &&
+									onEnqueueMessage && (
+										<StandardTooltip content={t("chat:enqueueMessage")}>
+											<button
+												aria-label={t("chat:enqueueMessage")}
+												disabled={false}
+												onClick={onEnqueueMessage}
+												className={cn(
+													"relative inline-flex items-center justify-center",
+													"bg-transparent border-none p-1.5",
+													"rounded-md min-w-[28px] min-h-[28px]",
+													"text-vscode-descriptionForeground hover:text-vscode-foreground",
+													"transition-all duration-200",
+													"opacity-100 hover:opacity-100 pointer-events-auto",
+													"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+													"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+													"active:bg-[rgba(255,255,255,0.1)]",
+													"cursor-pointer",
+												)}>
+												<ListEnd className="w-4 h-4" />
+											</button>
+										</StandardTooltip>
+									)}
 								{/* Send/Stop button - morphs based on streaming state, always visible in edit mode */}
 								<StandardTooltip
 									content={

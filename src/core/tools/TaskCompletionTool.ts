@@ -8,6 +8,7 @@ import { formatResponse } from "../prompts/responses"
 import { Package } from "../../shared/package"
 import type { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"
+import { showSystemNotification } from "../../utils/system-notification"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import { buildSubtaskCompletionSummary } from "./buildSubtaskCompletionSummary"
@@ -81,14 +82,27 @@ export class TaskCompletionTool extends BaseTool<"task_completion"> {
 
 			await task.say("completion_result", result, undefined, false)
 
+			// Notify the user when a top-level task finishes (default: enabled).
+			// Subtasks should not trigger a notification — only the parent/root task.
+			const provider = task.providerRef.deref()
+			if (!task.parentTaskId) {
+				const state = provider ? await provider.getState() : undefined
+				if (state?.notifyOnTaskComplete ?? true) {
+					void showSystemNotification({
+						title: Package.outputChannel,
+						message: t("common:info.task_complete"),
+					})
+				}
+			}
+
 			// Check for subtask using parentTaskId (metadata-driven delegation)
 			if (task.parentTaskId) {
 				// Check if this subtask has already completed and returned to parent
 				// to prevent duplicate tool_results when user revisits from history
-				const provider = task.providerRef.deref() as DelegationProvider | undefined
-				if (provider) {
+				const delegationProvider = provider as DelegationProvider | undefined
+				if (delegationProvider) {
 					try {
-						const { historyItem } = await provider.getTaskWithId(task.taskId)
+						const { historyItem } = await delegationProvider.getTaskWithId(task.taskId)
 						const status = historyItem?.status
 
 						if (status === "completed") {
@@ -101,7 +115,7 @@ export class TaskCompletionTool extends BaseTool<"task_completion"> {
 							const delegation = await this.delegateToParent(
 								task,
 								result,
-								provider,
+								delegationProvider,
 								askFinishSubTaskApproval,
 								pushToolResult,
 							)

@@ -29,6 +29,9 @@ vi.mock("vscode", () => ({
 			get: vi.fn(),
 		})),
 	},
+	window: {
+		showInformationMessage: vi.fn(),
+	},
 }))
 
 // Mock Package module
@@ -38,8 +41,17 @@ vi.mock("../../../shared/package", () => ({
 	},
 }))
 
+vi.mock("../../../i18n", () => ({
+	t: (key: string) => key,
+}))
+
+vi.mock("../../../utils/system-notification", () => ({
+	showSystemNotification: vi.fn().mockResolvedValue(undefined),
+}))
+
 import { taskCompletionTool, TaskCompletionCallbacks } from "../TaskCompletionTool"
 import { Task } from "../../task/Task"
+import { showSystemNotification } from "../../../utils/system-notification"
 import * as vscode from "vscode"
 
 describe("taskCompletionTool", () => {
@@ -50,6 +62,8 @@ describe("taskCompletionTool", () => {
 	let mockToolDescription: ReturnType<typeof vi.fn>
 	let mockAskFinishSubTaskApproval: ReturnType<typeof vi.fn>
 	let mockGetConfiguration: ReturnType<typeof vi.fn>
+	let mockGetState: ReturnType<typeof vi.fn>
+	let mockShowSystemNotification: ReturnType<typeof vi.fn>
 
 	beforeEach(() => {
 		mockCaptureTaskCompleted.mockReset()
@@ -58,6 +72,10 @@ describe("taskCompletionTool", () => {
 		mockHandleError = vi.fn()
 		mockToolDescription = vi.fn()
 		mockAskFinishSubTaskApproval = vi.fn()
+		mockGetState = vi.fn().mockResolvedValue({ notifyOnTaskComplete: true })
+		mockShowSystemNotification = vi.mocked(showSystemNotification)
+		mockShowSystemNotification.mockReset()
+		mockShowSystemNotification.mockResolvedValue(undefined)
 		mockGetConfiguration = vi.fn(() => ({
 			get: vi.fn((key: string, defaultValue: any) => {
 				if (key === "preventCompletionWithOpenTodos") {
@@ -83,6 +101,11 @@ describe("taskCompletionTool", () => {
 			taskId: "task_1",
 			apiConfiguration: { apiProvider: "test" } as any,
 			api: { getModel: vi.fn().mockReturnValue({ id: "test-model", info: {} }) } as any,
+			providerRef: {
+				deref: vi.fn(() => ({
+					getState: mockGetState,
+				})),
+			} as any,
 		}
 	})
 
@@ -550,6 +573,62 @@ describe("taskCompletionTool", () => {
 				)
 				expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("<user_message>"))
 			})
+		})
+	})
+
+	describe("task completion notification", () => {
+		const block: TaskCompletionToolUse = {
+			type: "tool_use",
+			name: "task_completion",
+			params: { result: "All done" },
+			nativeArgs: { result: "All done" },
+			partial: false,
+		}
+
+		const callbacks = (): TaskCompletionCallbacks => ({
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+			toolDescription: mockToolDescription,
+		})
+
+		it("shows a system notification when notifyOnTaskComplete is enabled", async () => {
+			mockGetState.mockResolvedValue({ notifyOnTaskComplete: true })
+
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks())
+
+			expect(mockShowSystemNotification).toHaveBeenCalledWith(
+				expect.objectContaining({ message: "common:info.task_complete" }),
+			)
+		})
+
+		it("shows a system notification by default when the setting is unset", async () => {
+			mockGetState.mockResolvedValue({})
+
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks())
+
+			expect(mockShowSystemNotification).toHaveBeenCalledWith(
+				expect.objectContaining({ message: "common:info.task_complete" }),
+			)
+		})
+
+		it("does not show a system notification when notifyOnTaskComplete is disabled", async () => {
+			mockGetState.mockResolvedValue({ notifyOnTaskComplete: false })
+
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks())
+
+			expect(mockShowSystemNotification).not.toHaveBeenCalled()
+		})
+
+		it("does not show a system notification when a subtask finishes", async () => {
+			mockGetState.mockResolvedValue({ notifyOnTaskComplete: true })
+			mockTask.parentTaskId = "parent_task_1"
+			mockAskFinishSubTaskApproval.mockResolvedValue(false)
+
+			await taskCompletionTool.handle(mockTask as Task, block, callbacks())
+
+			expect(mockShowSystemNotification).not.toHaveBeenCalled()
 		})
 	})
 })

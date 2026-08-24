@@ -199,6 +199,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		commandAutoReviewProfileId,
 		commandAutoReviewPrompt,
 		subtaskApiConfigProfileId,
+		notifyOnTaskComplete,
 		includeDiagnosticMessages,
 		maxDiagnosticMessages,
 		includeTaskHistoryInEnhance,
@@ -381,6 +382,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					commandAutoReviewProfileId: commandAutoReviewProfileId ?? "default",
 					commandAutoReviewPrompt: commandAutoReviewPrompt ?? "",
 					subtaskApiConfigProfileId: subtaskApiConfigProfileId ?? "default",
+					notifyOnTaskComplete: notifyOnTaskComplete ?? true,
 					alwaysAllowMcp,
 					alwaysAllowModeSwitch,
 					allowedCommands: allowedCommands ?? [],
@@ -811,6 +813,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								allowedMaxRequests={allowedMaxRequests ?? undefined}
 								allowedMaxCost={allowedMaxCost ?? undefined}
 								deniedCommands={deniedCommands}
+								notifyOnTaskComplete={notifyOnTaskComplete}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}

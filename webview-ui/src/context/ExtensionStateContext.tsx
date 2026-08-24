@@ -229,6 +229,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		commandAutoReviewProfileId: "default",
 		commandAutoReviewPrompt: "",
 		subtaskApiConfigProfileId: "default",
+		notifyOnTaskComplete: true,
 		customModes: [],
 		maxOpenTabsContext: 20,
 		maxWorkspaceFiles: 200,

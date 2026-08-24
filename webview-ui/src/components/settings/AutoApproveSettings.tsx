@@ -38,6 +38,7 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	allowedMaxRequests?: number | undefined
 	allowedMaxCost?: number | undefined
 	deniedCommands?: string[]
+	notifyOnTaskComplete?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "alwaysAllowReadOnly"
 		| "alwaysAllowReadOnlyOutsideWorkspace"
@@ -57,6 +58,7 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "allowedMaxRequests"
 		| "allowedMaxCost"
 		| "deniedCommands"
+		| "notifyOnTaskComplete"
 	>
 }
 
@@ -80,6 +82,7 @@ export const AutoApproveSettings = ({
 	allowedMaxRequests,
 	allowedMaxCost,
 	deniedCommands,
+	notifyOnTaskComplete,
 	setCachedStateField,
 	...props
 }: AutoApproveSettingsProps) => {
@@ -177,6 +180,21 @@ export const AutoApproveSettings = ({
 						onMaxRequestsChange={(value) => setCachedStateField("allowedMaxRequests", value)}
 						onMaxCostChange={(value) => setCachedStateField("allowedMaxCost", value)}
 					/>
+
+					<SearchableSetting
+						settingId="auto-approve-task-notification"
+						section="autoApprove"
+						label={t("settings:autoApprove.taskNotification.label")}>
+						<VSCodeCheckbox
+							checked={notifyOnTaskComplete ?? true}
+							onChange={(e: any) => setCachedStateField("notifyOnTaskComplete", e.target.checked)}
+							data-testid="notify-on-task-complete-checkbox">
+							<span className="font-medium">{t("settings:autoApprove.taskNotification.label")}</span>
+						</VSCodeCheckbox>
+						<div className="text-vscode-descriptionForeground text-sm mt-1">
+							{t("settings:autoApprove.taskNotification.description")}
+						</div>
+					</SearchableSetting>
 				</div>
 
 				{/* ADDITIONAL SETTINGS */}

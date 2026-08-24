@@ -306,9 +306,10 @@ export function filterNativeToolsForMode(
 		allowedToolNames.delete("access_mcp_resource")
 	}
 
-	// Subtasks must not delegate further via new_task
+	// Subtasks must not delegate further via new_task or ask the user questions
 	if (settings?.isSubtask) {
 		allowedToolNames.delete("new_task")
+		allowedToolNames.delete("ask_followup_question")
 	}
 
 	// Filter native tools based on allowed tool names and apply alias renames

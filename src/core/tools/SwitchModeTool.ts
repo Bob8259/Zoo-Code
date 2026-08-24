@@ -19,6 +19,19 @@ export class SwitchModeTool extends BaseTool<"switch_mode"> {
 		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
+			// Subtasks must stay in the mode chosen by the parent at delegation time.
+			if (task.parentTaskId) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("switch_mode")
+				task.didToolFailInCurrentTurn = true
+				pushToolResult(
+					formatResponse.toolError(
+						"switch_mode is not available in delegated subtasks. Do not switch modes. Call task_completion and report that you cannot switch mode or execute commands required for this work.",
+					),
+				)
+				return
+			}
+
 			if (!mode_slug) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("switch_mode")

@@ -94,6 +94,7 @@ describe("filterNativeToolsForMode - isSubtask", () => {
 	const nativeTools: OpenAI.Chat.ChatCompletionTool[] = [
 		makeTool("read_file"),
 		makeTool("new_task"),
+		makeTool("ask_followup_question"),
 		makeTool("task_completion"),
 	]
 
@@ -108,6 +109,17 @@ describe("filterNativeToolsForMode - isSubtask", () => {
 		expect(resultNames).toContain("task_completion")
 	})
 
+	it("excludes ask_followup_question when isSubtask is true", () => {
+		const result = filterNativeToolsForMode(nativeTools, "ask", undefined, undefined, undefined, {
+			isSubtask: true,
+		})
+
+		const resultNames = result.map((t) => (t as any).function.name)
+		expect(resultNames).not.toContain("ask_followup_question")
+		expect(resultNames).toContain("read_file")
+		expect(resultNames).toContain("task_completion")
+	})
+
 	it("includes new_task when isSubtask is false or undefined", () => {
 		const result = filterNativeToolsForMode(nativeTools, "ask", undefined, undefined, undefined, {
 			isSubtask: false,
@@ -115,5 +127,14 @@ describe("filterNativeToolsForMode - isSubtask", () => {
 
 		const resultNames = result.map((t) => (t as any).function.name)
 		expect(resultNames).toContain("new_task")
+	})
+
+	it("includes ask_followup_question when isSubtask is false or undefined", () => {
+		const result = filterNativeToolsForMode(nativeTools, "ask", undefined, undefined, undefined, {
+			isSubtask: false,
+		})
+
+		const resultNames = result.map((t) => (t as any).function.name)
+		expect(resultNames).toContain("ask_followup_question")
 	})
 })

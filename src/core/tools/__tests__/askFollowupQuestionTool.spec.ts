@@ -1,14 +1,36 @@
 import { askFollowupQuestionTool } from "../AskFollowupQuestionTool"
 import { ToolUse } from "../../../shared/tools"
 import { NativeToolCallParser } from "../../assistant-message/NativeToolCallParser"
+import { showSystemNotification } from "../../../utils/system-notification"
+
+vi.mock("../../../utils/system-notification", () => ({
+	showSystemNotification: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock("../../../i18n", () => ({
+	t: (key: string, options?: Record<string, string>) =>
+		options?.question ? `${key}:${options.question}` : key,
+}))
+
+vi.mock("../../../shared/package", () => ({
+	Package: {
+		outputChannel: "Qoo Code",
+	},
+}))
 
 describe("askFollowupQuestionTool", () => {
 	let mockCline: any
 	let mockPushToolResult: any
 	let toolResult: any
+	let mockGetState: ReturnType<typeof vi.fn>
+	let mockShowSystemNotification: ReturnType<typeof vi.fn>
 
 	beforeEach(() => {
 		vi.clearAllMocks()
+
+		mockGetState = vi.fn().mockResolvedValue({ notifyOnTaskComplete: true })
+		mockShowSystemNotification = vi.mocked(showSystemNotification)
+		mockShowSystemNotification.mockResolvedValue(undefined)
 
 		mockCline = {
 			ask: vi.fn().mockResolvedValue({ text: "Test response" }),
@@ -16,6 +38,11 @@ describe("askFollowupQuestionTool", () => {
 			sayAndCreateMissingParamError: vi.fn().mockResolvedValue("Missing parameter error"),
 			consecutiveMistakeCount: 0,
 			recordToolError: vi.fn(),
+			providerRef: {
+				deref: vi.fn(() => ({
+					getState: mockGetState,
+				})),
+			},
 		}
 
 		mockPushToolResult = vi.fn((result) => {
@@ -194,6 +221,39 @@ describe("askFollowupQuestionTool", () => {
 		})
 	})
 
+	describe("subtask rejection", () => {
+		it("should reject ask_followup_question when running as a delegated subtask", async () => {
+			const block: ToolUse<"ask_followup_question"> = {
+				type: "tool_use",
+				name: "ask_followup_question",
+				params: {
+					question: "What would you like to do?",
+				},
+				nativeArgs: {
+					question: "What would you like to do?",
+					follow_up: [{ text: "Option 1" }, { text: "Option 2" }],
+				},
+				partial: false,
+			}
+
+			const subtaskCline = { ...mockCline, parentTaskId: "parent-task-id" }
+
+			await askFollowupQuestionTool.handle(subtaskCline as any, block, {
+				askApproval: vi.fn(),
+				handleError: vi.fn(),
+				pushToolResult: mockPushToolResult,
+			})
+
+			expect(subtaskCline.recordToolError).toHaveBeenCalledWith("ask_followup_question")
+			expect(subtaskCline.didToolFailInCurrentTurn).toBe(true)
+			expect(subtaskCline.consecutiveMistakeCount).toBe(1)
+			expect(mockPushToolResult).toHaveBeenCalledWith(
+				expect.stringContaining("ask_followup_question is not available in delegated subtasks"),
+			)
+			expect(subtaskCline.ask).not.toHaveBeenCalled()
+		})
+	})
+
 	describe("handlePartial with native protocol", () => {
 		it("should only send question during partial streaming to avoid raw JSON display", async () => {
 			const block: ToolUse<"ask_followup_question"> = {
@@ -236,6 +296,84 @@ describe("askFollowupQuestionTool", () => {
 			})
 
 			expect(mockCline.ask).toHaveBeenCalledWith("followup", "Choose wisely", true)
+		})
+	})
+
+	describe("system notification", () => {
+		it("shows a system notification before asking the question when enabled", async () => {
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "ask_followup_question",
+				params: {
+					question: "What would you like to do?",
+				},
+				nativeArgs: {
+					question: "What would you like to do?",
+					follow_up: [{ text: "Option 1" }],
+				},
+				partial: false,
+			}
+
+			await askFollowupQuestionTool.handle(mockCline, block as ToolUse<"ask_followup_question">, {
+				askApproval: vi.fn(),
+				handleError: vi.fn(),
+				pushToolResult: mockPushToolResult,
+			})
+
+			expect(mockShowSystemNotification).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "common:info.agent_question:What would you like to do?",
+				}),
+			)
+			expect(mockCline.ask).toHaveBeenCalled()
+		})
+
+		it("does not show a system notification when notifyOnTaskComplete is disabled", async () => {
+			mockGetState.mockResolvedValue({ notifyOnTaskComplete: false })
+
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "ask_followup_question",
+				params: {
+					question: "What would you like to do?",
+				},
+				nativeArgs: {
+					question: "What would you like to do?",
+					follow_up: [{ text: "Option 1" }],
+				},
+				partial: false,
+			}
+
+			await askFollowupQuestionTool.handle(mockCline, block as ToolUse<"ask_followup_question">, {
+				askApproval: vi.fn(),
+				handleError: vi.fn(),
+				pushToolResult: mockPushToolResult,
+			})
+
+			expect(mockShowSystemNotification).not.toHaveBeenCalled()
+		})
+
+		it("does not show a system notification during partial streaming", async () => {
+			const block: ToolUse<"ask_followup_question"> = {
+				type: "tool_use",
+				name: "ask_followup_question",
+				params: {
+					question: "What would you like to do?",
+				},
+				partial: true,
+				nativeArgs: {
+					question: "What would you like to do?",
+					follow_up: [{ text: "Option 1" }],
+				},
+			}
+
+			await askFollowupQuestionTool.handle(mockCline, block, {
+				askApproval: vi.fn(),
+				handleError: vi.fn(),
+				pushToolResult: mockPushToolResult,
+			})
+
+			expect(mockShowSystemNotification).not.toHaveBeenCalled()
 		})
 	})
 

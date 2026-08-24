@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.54.12
+
+- Denied `ask_followup_question` in delegated subtasks; sub agents are guided to complete work directly and return via `task_completion`.
+
+## 3.54.11
+
+- Fixed the task completion notification not appearing on Windows; it now uses a real OS notification instead of an in-editor message, so it is visible when the editor is unfocused.
+
+## 3.54.10
+
+- Added an optional system notification when the current task finishes, enabled by default.
+
+## 3.54.9
+
+- Denied `switch_mode` in delegated subtasks; sub agents are guided to return via `task_completion` instead.
+
 ## 3.54.8
 
 - Fixed message queue button not being visible when the Agent is running a command (`command_output` state).

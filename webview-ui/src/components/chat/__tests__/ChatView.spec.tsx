@@ -818,9 +818,11 @@ describe("ChatView - Message Queueing Tests", () => {
 			],
 		})
 
-		// Wait for state to be updated
+		// Wait for the streaming state to actually be applied. Waiting only for the
+		// textarea to exist races the async state hydration above.
 		await waitFor(() => {
-			expect(getByTestId("chat-textarea")).toBeInTheDocument()
+			const hydrated = getByTestId("chat-textarea").querySelector("input")!
+			expect(hydrated.getAttribute("data-sending-disabled")).toBe("true")
 		})
 
 		// Clear message calls before simulating user input
@@ -1047,6 +1049,211 @@ describe("ChatView - Message Queueing Tests", () => {
 				type: "terminalOperation",
 			}),
 		)
+	})
+
+	it("queues messages when last message is partial say:command_output (batched ask race)", async () => {
+		const { getByTestId } = renderChatView()
+
+		// Simulate React batching where ask:command_output never becomes lastMessage —
+		// clineAsk can remain stuck on "command" while output streams as say:command_output.
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 3000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: Date.now() - 2000,
+					text: "npm test",
+					partial: false,
+				},
+				{
+					type: "say",
+					say: "command_output",
+					ts: Date.now(),
+					text: "running tests...",
+					partial: true,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId("chat-textarea")).toBeInTheDocument()
+		})
+
+		await act(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 50))
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		const chatTextArea = getByTestId("chat-textarea")
+		const input = chatTextArea.querySelector("input")! as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "queue me while command streams" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "queueMessage",
+				text: "queue me while command streams",
+				images: [],
+			})
+		})
+
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "askResponse",
+				askResponse: "messageResponse",
+			}),
+		)
+
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "terminalOperation",
+			}),
+		)
+	})
+
+	it("queues messages while an auto-approved command runs without output", async () => {
+		const { getByTestId } = renderChatView()
+
+		// An auto-approved command that has not printed anything yet leaves
+		// ask:"command" as the last message, so only the execution status tells
+		// us the terminal is still busy.
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: Date.now(),
+					text: "python download_hk_daily_prices.py",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			const input = getByTestId("chat-textarea").querySelector("input")!
+			expect(input.getAttribute("data-sending-disabled")).toBe("false")
+		})
+
+		await act(async () => {
+			window.postMessage(
+				{
+					type: "commandExecutionStatus",
+					text: JSON.stringify({ executionId: "exec-1", status: "started", pid: 21884, command: "python" }),
+				},
+				"*",
+			)
+			await new Promise((resolve) => setTimeout(resolve, 50))
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		const input = getByTestId("chat-textarea").querySelector("input")! as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "queue me while the script downloads" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "queueMessage",
+				text: "queue me while the script downloads",
+				images: [],
+			})
+		})
+
+		// The stale "Run" approval must not consume the message.
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(
+			expect.objectContaining({ askResponse: "yesButtonClicked" }),
+		)
+	})
+
+	it("stops queueing once the running command exits", async () => {
+		const { getByTestId } = renderChatView()
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 3000,
+					text: "Initial task",
+				},
+				{
+					type: "say",
+					say: "api_req_started",
+					ts: Date.now() - 2000,
+					text: JSON.stringify({
+						apiProtocol: "anthropic",
+						cost: 0.05, // Cost present = streaming complete
+						tokensIn: 100,
+						tokensOut: 50,
+					}),
+				},
+				{
+					type: "say",
+					say: "text",
+					ts: Date.now() - 1000,
+					text: "Command finished",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			const input = getByTestId("chat-textarea").querySelector("input")!
+			expect(input.getAttribute("data-sending-disabled")).toBe("false")
+		})
+
+		await act(async () => {
+			window.postMessage(
+				{
+					type: "commandExecutionStatus",
+					text: JSON.stringify({ executionId: "exec-1", status: "started", pid: 42, command: "npm test" }),
+				},
+				"*",
+			)
+			window.postMessage(
+				{
+					type: "commandExecutionStatus",
+					text: JSON.stringify({ executionId: "exec-1", status: "exited", exitCode: 0 }),
+				},
+				"*",
+			)
+			await new Promise((resolve) => setTimeout(resolve, 50))
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		const input = getByTestId("chat-textarea").querySelector("input")! as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "regular message" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith(
+				expect.objectContaining({ type: "askResponse", askResponse: "messageResponse" }),
+			)
+		})
+
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(expect.objectContaining({ type: "queueMessage" }))
 	})
 })
 
