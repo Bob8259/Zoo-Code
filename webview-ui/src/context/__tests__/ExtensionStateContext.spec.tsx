@@ -253,7 +253,7 @@ describe("mergeExtensionState", () => {
 		})
 	})
 
-	describe("clineMessagesSeq protection", () => {
+	describe("message state sequence protection", () => {
 		const baseState: ExtensionState = {
 			version: "",
 			mcpEnabled: false,
@@ -308,6 +308,26 @@ describe("mergeExtensionState", () => {
 
 			// Should keep the newer messages
 			expect(result.clineMessages).toBe(newerMessages)
+			expect(result.clineMessagesSeq).toBe(5)
+		})
+
+		it("rejects stale messageQueue updates during condensation", () => {
+			const queuedMessages = [{ timestamp: 1, id: "queued-1", text: "send after condense" }]
+
+			const prevState: ExtensionState = {
+				...baseState,
+				messageQueue: queuedMessages,
+				clineMessagesSeq: 5,
+			}
+
+			const result = mergeExtensionState(prevState, {
+				messageQueue: [],
+				clineMessages: [],
+				clineMessagesSeq: 3,
+			})
+
+			// A stale condensation snapshot must not hide a message queued during condensation.
+			expect(result.messageQueue).toBe(queuedMessages)
 			expect(result.clineMessagesSeq).toBe(5)
 		})
 

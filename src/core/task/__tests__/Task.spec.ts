@@ -1757,6 +1757,10 @@ describe("Cline", () => {
 
 describe("Queued message processing after condense", () => {
 	function createProvider(): any {
+		if (!TelemetryService.hasInstance()) {
+			TelemetryService.createInstance([])
+		}
+
 		const storageUri = { fsPath: path.join(os.tmpdir(), "test-storage") }
 		const ctx = {
 			globalState: {
@@ -1802,7 +1806,7 @@ describe("Queued message processing after condense", () => {
 		apiKey: "test-api-key",
 	} as any
 
-	it("does not process queued messages after condensing completes", async () => {
+	it("processes queued message after condensing completes", async () => {
 		const provider = createProvider()
 		const task = new Task({
 			provider,
@@ -1818,10 +1822,14 @@ describe("Queued message processing after condense", () => {
 		// Queue a message during condensing
 		task.messageQueueService.addMessage("queued text", ["img1.png"])
 
+		// processQueuedMessages defers submission to the next tick.
+		vi.useFakeTimers()
 		await task.condenseContext()
+		vi.runAllTimers()
+		vi.useRealTimers()
 
-		expect(submitSpy).not.toHaveBeenCalled()
-		expect(task.messageQueueService.isEmpty()).toBe(false)
+		expect(submitSpy).toHaveBeenCalledWith("queued text", ["img1.png"])
+		expect(task.messageQueueService.isEmpty()).toBe(true)
 	})
 
 	it("drains queued message on completion_result ask", async () => {

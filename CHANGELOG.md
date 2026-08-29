@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.54.14
+
+- Fixed queued messages disappearing during chat history condensation; queued messages are now sent after condensation completes.
+
 ## 3.54.13
 
 - Fixed queued messages disappearing when a subtask was active; messages now follow the delegation chain and are delivered after the main task finishes.

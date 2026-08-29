@@ -593,6 +593,39 @@ describe("ClineProvider", () => {
 		await expect(provider.postMessageToWebview(message)).resolves.toBeUndefined()
 	})
 
+	test("reserves state sequence numbers before collecting state", async () => {
+		const firstState = new Promise<ExtensionState>((resolve) => {
+			setTimeout(() => resolve({ version: "first" } as ExtensionState), 0)
+		})
+		const getStateSpy = vi
+			.spyOn(provider as any, "getStateToPostToWebview")
+			.mockReturnValueOnce(firstState)
+			.mockResolvedValueOnce({ version: "second" } as ExtensionState)
+		const postMessageSpy = vi.spyOn(provider, "postMessageToWebview").mockImplementation(async () => undefined)
+
+		const firstPost = provider.postStateToWebviewWithoutTaskHistory()
+		const secondPost = provider.postStateToWebviewWithoutTaskHistory()
+
+		await secondPost
+		await firstPost
+
+		expect(getStateSpy).toHaveBeenCalledTimes(2)
+		expect(postMessageSpy).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({
+				type: "state",
+				state: expect.objectContaining({ version: "second", clineMessagesSeq: 2 }),
+			}),
+		)
+		expect(postMessageSpy).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({
+				type: "state",
+				state: expect.objectContaining({ version: "first", clineMessagesSeq: 1 }),
+			}),
+		)
+	})
+
 	test("postStateToWebview does not force action navigation for non-compliant MDM state", async () => {
 		const mdmService = {
 			requiresCloudAuth: vi.fn().mockReturnValue(true),

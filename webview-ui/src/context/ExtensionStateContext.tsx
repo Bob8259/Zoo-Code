@@ -170,18 +170,24 @@ export const mergeExtensionState = (prevState: ExtensionState, newState: Partial
 	const experiments = { ...prevExperiments, ...(newExperiments ?? {}) }
 	const rest = { ...prevRest, ...newRest }
 
-	// Protect clineMessages from stale state pushes using sequence numbering.
-	// Multiple async event sources (cloud auth, settings, task streaming) can trigger
-	// concurrent state pushes. If a stale push arrives after a newer one, its clineMessages
-	// would overwrite the newer messages. The sequence number prevents this by only applying
-	// clineMessages when the incoming seq is strictly greater than the last applied seq.
-	if (
+	// Protect message state from stale pushes using sequence numbering.
+	// Multiple async event sources (including context condensation and queue updates) can
+	// trigger concurrent state pushes. If a stale push arrives after a newer one, its
+	// snapshots must not overwrite newer chat messages or queued user messages.
+	const isStaleStatePush =
 		newState.clineMessagesSeq !== undefined &&
 		prevState.clineMessagesSeq !== undefined &&
-		newState.clineMessagesSeq <= prevState.clineMessagesSeq &&
-		newState.clineMessages !== undefined
-	) {
-		rest.clineMessages = prevState.clineMessages
+		newState.clineMessagesSeq <= prevState.clineMessagesSeq
+
+	if (isStaleStatePush) {
+		if (newState.clineMessages !== undefined) {
+			rest.clineMessages = prevState.clineMessages
+		}
+
+		if (newState.messageQueue !== undefined) {
+			rest.messageQueue = prevState.messageQueue
+		}
+
 		rest.clineMessagesSeq = prevState.clineMessagesSeq
 	}
 
