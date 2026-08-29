@@ -96,6 +96,60 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 		expect(handleModeSwitch).toHaveBeenCalledWith("code")
 	})
 
+	it("transfers messages queued on the parent to the child", async () => {
+		const queuedMessages = [
+			{
+				timestamp: 1,
+				id: "queued-1",
+				text: "Continue with this after the subtask",
+				images: ["image.png"],
+			},
+		]
+		const childQueue = { addMessages: vi.fn() }
+		const parentTask = {
+			taskId: "parent-1",
+			emit: vi.fn(),
+			queuedMessages,
+			flushPendingToolResultsToHistory: vi.fn().mockResolvedValue(true),
+			retrySaveApiConversationHistory: vi.fn(),
+		} as any
+		const childStart = vi.fn()
+		const updateTaskHistory = vi.fn()
+		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
+		const createTask = vi.fn().mockResolvedValue({ taskId: "child-1", start: childStart, messageQueueService: childQueue })
+		const getTaskWithId = vi.fn().mockResolvedValue({
+			historyItem: {
+				id: "parent-1",
+				task: "Parent",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				childIds: [],
+			},
+		})
+
+		const provider = {
+			emit: vi.fn(),
+			getCurrentTask: vi.fn(() => parentTask),
+			removeClineFromStack,
+			createTask,
+			getTaskWithId,
+			updateTaskHistory,
+			handleModeSwitch: vi.fn().mockResolvedValue(undefined),
+			activateSubtaskProfileIfConfigured: vi.fn().mockResolvedValue(undefined),
+			log: vi.fn(),
+		} as unknown as ClineProvider
+
+		await (ClineProvider.prototype as any).delegateParentAndOpenChild.call(provider, {
+			parentTaskId: "parent-1",
+			message: "Do something",
+			initialTodos: [],
+			mode: "code",
+		})
+
+		expect(childQueue.addMessages).toHaveBeenCalledWith(queuedMessages)
+	})
+
 	it("calls child.start() only after parent metadata is persisted (no race condition)", async () => {
 		const callOrder: string[] = []
 

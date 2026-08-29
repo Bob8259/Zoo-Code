@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "Azikaban",
-	"version": "3.54.12",
+	"version": "3.54.13",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -11,7 +11,7 @@
 	},
 	"engines": {
 		"vscode": "^1.84.0",
-		"node": "20.20.2"
+		"node": ">=20.20.2"
 	},
 	"author": {
 		"name": "Qoo Code"

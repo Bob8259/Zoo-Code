@@ -3217,6 +3217,14 @@ export class ClineProvider
 				`[delegateParentAndOpenChild] Parent mismatch: expected ${parentTaskId}, current ${parent.taskId}`,
 			)
 		}
+
+		// Task instances are disposed during delegation. Keep queued messages with
+		// the delegation chain so they are still available after the parent resumes.
+		const queuedMessages = (parent.queuedMessages ?? []).map((message) => ({
+			...message,
+			images: message.images ? [...message.images] : undefined,
+		}))
+
 		// 2) Flush pending tool results to API history BEFORE disposing the parent.
 		//    This is critical: when tools are called before new_task,
 		//    their tool_result blocks are in userMessageContent but not yet saved to API history.
@@ -3307,6 +3315,10 @@ export class ClineProvider
 			initialStatus: "active",
 			startTask: false,
 		})
+
+		// Carry messages queued before delegation into the child. If this child
+		// delegates again, the same messages will continue through the chain.
+		child.messageQueueService?.addMessages(queuedMessages)
 
 		// Persist the subtask profile on the child history item when configured.
 		if (subtaskProfileName) {
@@ -3486,6 +3498,13 @@ export class ClineProvider
 		//    the historyItem with initialStatus (typically "active"), which would
 		//    overwrite a "completed" status set earlier.
 		const current = this.getCurrentTask()
+		const queuedMessages =
+			current?.taskId === childTaskId
+				? (current.queuedMessages ?? []).map((message) => ({
+						...message,
+						images: message.images ? [...message.images] : undefined,
+					}))
+				: []
 		if (current?.taskId === childTaskId) {
 			await this.removeClineFromStack()
 		}
@@ -3529,6 +3548,10 @@ export class ClineProvider
 		// 7) Reopen the parent from history as the sole active task (restores saved mode)
 		//    IMPORTANT: startTask=false to suppress resume-from-history ask scheduling
 		const parentInstance = await this.createTaskWithHistoryItem(updatedHistory, { startTask: false })
+
+		// Restore messages queued while the child was active. The resumed parent
+		// owns the queue that will be drained when the main task completes.
+		parentInstance?.messageQueueService?.addMessages(queuedMessages)
 
 		// 8) Inject restored histories into the in-memory instance before resuming
 		if (parentInstance) {

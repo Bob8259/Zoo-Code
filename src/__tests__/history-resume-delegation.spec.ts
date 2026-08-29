@@ -65,17 +65,27 @@ describe("History resume delegation - parent metadata transitions", () => {
 
 		const updateTaskHistory = vi.fn().mockResolvedValue([])
 		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
+		const queuedMessages = [
+			{
+				timestamp: 1,
+				id: "queued-1",
+				text: "Send this after the parent resumes",
+				images: ["image.png"],
+			},
+		]
+		const addMessages = vi.fn()
 		const createTaskWithHistoryItem = vi.fn().mockResolvedValue({
 			taskId: "parent-1",
 			skipPrevResponseIdOnce: false,
 			resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+			messageQueueService: { addMessages },
 		})
 
 		const provider = {
 			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
 			getTaskWithId,
 			emit: providerEmit,
-			getCurrentTask: vi.fn(() => ({ taskId: "child-1" })),
+			getCurrentTask: vi.fn(() => ({ taskId: "child-1", queuedMessages })),
 			removeClineFromStack,
 			createTaskWithHistoryItem,
 			updateTaskHistory,
@@ -117,6 +127,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 			}),
 			{ startTask: false },
 		)
+		expect(addMessages).toHaveBeenCalledWith(queuedMessages)
 	})
 
 	it("reopenParentFromDelegation injects subtask_result into both UI and API histories", async () => {

@@ -51,6 +51,25 @@ export class MessageQueueService extends EventEmitter<QueueEvents> {
 		return message
 	}
 
+	/**
+	 * Adds messages that were queued on another task instance during a task
+	 * transition. Preserve their ids and timestamps so edits and FIFO ordering
+	 * continue to work after delegation resumes.
+	 */
+	public addMessages(messages: QueuedMessage[]): void {
+		if (messages.length === 0) {
+			return
+		}
+
+		this._messages.push(
+			...messages.map((message) => ({
+				...message,
+				images: message.images ? [...message.images] : undefined,
+			})),
+		)
+		this.emit("stateChanged", this._messages)
+	}
+
 	public removeMessage(id: string): boolean {
 		const { index, message } = this.findMessage(id)
 

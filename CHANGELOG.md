@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.54.13
+
+- Fixed queued messages disappearing when a subtask was active; messages now follow the delegation chain and are delivered after the main task finishes.
+
 ## 3.54.12
 
 - Denied `ask_followup_question` in delegated subtasks; sub agents are guided to complete work directly and return via `task_completion`.
