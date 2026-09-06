@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.54.15
+
+Local development build.
+
 ## 3.54.14
 
 - Fixed queued messages disappearing during chat history condensation; queued messages are now sent after condensation completes.
