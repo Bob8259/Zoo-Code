@@ -87,6 +87,7 @@
 	},
 	"enqueueMessage": "Mesajı kuyruğa ekle (mevcut görev tamamlandıktan sonra gönderilecek)",
 	"scrollToBottom": "Sohbetin altına kaydır",
+	"scrollToPreviousUserMessage": "Önceki kullanıcı mesajına kaydır",
 	"scrollToLatestCheckpoint": "Önceki checkpoint'e kaydır",
 	"about": "Zoo Code, düzenleyicinizdeki bütün bir yapay zeka geliştirme ekibidir.",
 	"docs": "Daha fazla bilgi için <DocsLink>belgelerimize</DocsLink> göz atın.",

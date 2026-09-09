@@ -94,43 +94,34 @@ export class TaskCompletionTool extends BaseTool<"task_completion"> {
 				}
 			}
 
-			// Check for subtask using parentTaskId (metadata-driven delegation)
+			// Check for subtask using parentTaskId (metadata-driven delegation).
+			// The live task is the source of truth while it is executing. Child history
+			// can be stale during the final message write, so an unavailable status must
+			// not suppress a valid result handoff.
 			if (task.parentTaskId) {
-				// Check if this subtask has already completed and returned to parent
-				// to prevent duplicate tool_results when user revisits from history
 				const delegationProvider = provider as DelegationProvider | undefined
 				if (delegationProvider) {
+					let status: HistoryItem["status"] | undefined
 					try {
 						const { historyItem } = await delegationProvider.getTaskWithId(task.taskId)
-						const status = historyItem?.status
-
-						if (status === "completed") {
-							// Subtask already completed - skip delegation flow entirely
-							// Fall through to normal completion ask flow below (outside this if block)
-							// This shows the user the completion result and waits for acceptance
-							// without injecting another tool_result to the parent
-						} else if (status === "active") {
-							// Normal subtask completion - do delegation
-							await this.delegateToParent(task, result, delegationProvider, pushToolResult)
-							this.emitTaskCompleted(task)
-							return
-						} else {
-							// Unexpected status (undefined or "delegated") - log error and skip delegation
-							// undefined indicates a bug in status persistence during child creation
-							// "delegated" would mean this child has its own grandchild pending (shouldn't reach task_completion)
-							console.error(
-								`[TaskCompletionTool] Unexpected child task status "${status}" for task ${task.taskId}. ` +
-									`Expected "active" or "completed". Skipping delegation to prevent data corruption.`,
-							)
-							// Fall through to normal completion ask flow
-						}
+						status = historyItem?.status
 					} catch (err) {
-						// If we can't get the history, log error and skip delegation
-						console.error(
-							`[TaskCompletionTool] Failed to get history for task ${task.taskId}: ${(err as Error)?.message ?? String(err)}. ` +
-								`Skipping delegation.`,
+						console.warn(
+							`[TaskCompletionTool] Could not read child history for ${task.taskId}; attempting parent handoff: ${(err as Error)?.message ?? String(err)}`,
 						)
-						// Fall through to normal completion ask flow
+					}
+
+					// A delegated child still has an active descendant and must not complete
+					// itself before that descendant returns. A completed child is a history
+					// revisit, so do not return its result a second time.
+					if (status === "delegated") {
+						console.error(
+							`[TaskCompletionTool] Child task ${task.taskId} is delegated to another child; skipping parent handoff.`,
+						)
+					} else if (status !== "completed") {
+						await this.delegateToParent(task, result, delegationProvider, pushToolResult)
+						this.emitTaskCompleted(task)
+						return
 					}
 				}
 			}

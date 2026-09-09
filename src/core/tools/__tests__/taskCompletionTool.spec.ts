@@ -598,6 +598,37 @@ describe("taskCompletionTool", () => {
 			},
 		)
 
+		it("returns a live subtask when its persisted status is temporarily unavailable", async () => {
+			const reopenParentFromDelegation = vi.fn().mockResolvedValue(undefined)
+			mockTask = {
+				...mockTask,
+				parentTaskId: "parent_task_1",
+				apiConversationHistory: [],
+				clineMessages: [],
+			}
+			mockTask.providerRef = {
+				deref: () => ({
+					getTaskWithId: vi.fn().mockResolvedValue({ historyItem: {} }),
+					reopenParentFromDelegation,
+				}),
+			} as any
+
+			await taskCompletionTool.execute({ result: "Subtask finished" }, mockTask as Task, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				toolDescription: mockToolDescription,
+			})
+
+			expect(mockHandleError).not.toHaveBeenCalled()
+			expect(mockTask.ask).not.toHaveBeenCalled()
+			expect(reopenParentFromDelegation).toHaveBeenCalledExactlyOnceWith({
+				parentTaskId: "parent_task_1",
+				childTaskId: "task_1",
+				completionResultSummary: "Subtask finished",
+			})
+		})
+
 		it("does not return an already completed subtask to the parent again", async () => {
 			const reopenParentFromDelegation = vi.fn()
 			mockTask = { ...mockTask, parentTaskId: "parent_task_1" }

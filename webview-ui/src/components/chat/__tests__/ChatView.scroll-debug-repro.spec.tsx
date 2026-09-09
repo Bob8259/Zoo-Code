@@ -228,6 +228,14 @@ const buildMessagesWithMultipleCheckpoints = (baseTs: number): ClineMessage[] =>
 	{ type: "say", say: "text", ts: baseTs + 6, text: "row-6" },
 ]
 
+const buildMessagesWithUserFeedback = (baseTs: number): ClineMessage[] => [
+	{ type: "say", say: "text", ts: baseTs, text: "task" },
+	{ type: "say", say: "text", ts: baseTs + 1, text: "row-1" },
+	{ type: "say", say: "user_feedback", ts: baseTs + 2, text: "first user message" },
+	{ type: "say", say: "text", ts: baseTs + 3, text: "row-3" },
+	{ type: "say", say: "user_feedback", ts: baseTs + 4, text: "second user message" },
+]
+
 const resolveFollowOutput = (isAtBottom: boolean): "auto" | false => {
 	const followOutput = harness.followOutput
 	if (typeof followOutput === "function") {
@@ -359,6 +367,15 @@ const getScrollToCheckpointButton = (): HTMLButtonElement => {
 	const button = document.querySelector("button[aria-label='chat:scrollToLatestCheckpoint']")
 	if (!(button instanceof HTMLButtonElement)) {
 		throw new Error("Expected scroll-to-checkpoint button")
+	}
+
+	return button
+}
+
+const getScrollToPreviousUserMessageButton = (): HTMLButtonElement => {
+	const button = document.querySelector("button[aria-label='chat:scrollToPreviousUserMessage']")
+	if (!(button instanceof HTMLButtonElement)) {
+		throw new Error("Expected scroll-to-previous-user-message button")
 	}
 
 	return button
@@ -551,6 +568,43 @@ describe("ChatView scroll behavior regression coverage", () => {
 		await waitForCallsSettled()
 		expect(harness.scrollCalls).toBe(callsBeforeClick + 2)
 		await expectChevronHidden()
+	})
+
+	it("does not show the previous-user-message button when the chat has no user messages", async () => {
+		await hydrate(2)
+		await waitForCalls(2)
+		await waitForCallsSettled()
+
+		expect(document.querySelector("button[aria-label='chat:scrollToPreviousUserMessage']")).toBeNull()
+	})
+
+	it("scrolls to previous user messages from newest to oldest", async () => {
+		await hydrate(2, buildMessagesWithUserFeedback(Date.now() - 3_000))
+		await waitForCalls(2)
+		await waitForCallsSettled()
+
+		await act(async () => {
+			fireEvent.keyDown(window, { key: "PageUp" })
+		})
+		await advanceTimers(100)
+		await expectChevronVisible()
+
+		const previousUserMessageButton = getScrollToPreviousUserMessageButton()
+
+		await act(async () => {
+			previousUserMessageButton.click()
+		})
+		expect(harness.scrollToIndexArgs.at(-1)).toMatchObject({ index: 3, align: "center", behavior: "smooth" })
+
+		await act(async () => {
+			previousUserMessageButton.click()
+		})
+		expect(harness.scrollToIndexArgs.at(-1)).toMatchObject({ index: 1, align: "center", behavior: "smooth" })
+
+		await act(async () => {
+			previousUserMessageButton.click()
+		})
+		expect(harness.scrollToIndexArgs.at(-1)).toMatchObject({ index: 1, align: "center", behavior: "smooth" })
 	})
 
 	it("shows jump-to-checkpoint button and scrolls to latest checkpoint", async () => {

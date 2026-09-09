@@ -3376,6 +3376,12 @@ export class ClineProvider
 
 		// 1) Load parent from history and current persisted messages
 		const { historyItem } = await this.getTaskWithId(parentTaskId)
+		if (historyItem.completedByChildId === childTaskId && historyItem.awaitingChildId === undefined) {
+			this.log(
+				`[reopenParentFromDelegation] Parent ${parentTaskId} already received completion from child ${childTaskId}; skipping duplicate handoff`,
+			)
+			return
+		}
 
 		let parentClineMessages: ClineMessage[] = []
 		try {

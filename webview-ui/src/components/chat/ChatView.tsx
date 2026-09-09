@@ -1350,12 +1350,26 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		return indices
 	}, [groupedMessages])
 
+	const previousUserMessageIndices = useMemo(() => {
+		const indices: number[] = []
+		for (let i = 0; i < groupedMessages.length; i++) {
+			const message = groupedMessages[i]
+			if (message?.type === "say" && message.say === "user_feedback" && message.text?.trim()) {
+				indices.push(i)
+			}
+		}
+		return indices
+	}, [groupedMessages])
+
 	const hasLatestCheckpoint = checkpointIndices.length > 0
+	const hasPreviousUserMessage = previousUserMessageIndices.length > 0
 	const checkpointJumpCursorRef = useRef<number | null>(null)
+	const previousUserMessageCursorRef = useRef<number | null>(null)
 
 	useEffect(() => {
 		checkpointJumpCursorRef.current = null
-	}, [task?.ts, checkpointIndices.length])
+		previousUserMessageCursorRef.current = null
+	}, [task?.ts, checkpointIndices.length, previousUserMessageIndices.length])
 
 	// Scroll lifecycle is managed by a dedicated hook to keep ChatView focused
 	// on message handling and UI orchestration.
@@ -1490,8 +1504,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		vscode.postMessage({ type: "cancelAutoApproval" })
 	}, [])
 
-	const handleScrollToBottomAndResetCheckpointCursor = useCallback(() => {
+	const handleScrollToBottomAndResetNavigationCursors = useCallback(() => {
 		checkpointJumpCursorRef.current = null
+		previousUserMessageCursorRef.current = null
 		handleScrollToBottomClick()
 	}, [handleScrollToBottomClick])
 
@@ -1512,6 +1527,25 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			behavior: "smooth",
 		})
 	}, [checkpointIndices, enterUserBrowsingHistory])
+
+	const handleScrollToPreviousUserMessage = useCallback(() => {
+		if (previousUserMessageIndices.length === 0) {
+			return
+		}
+
+		const previousCursor = previousUserMessageCursorRef.current
+		const nextCursor =
+			previousCursor === null ? previousUserMessageIndices.length - 1 : Math.max(0, previousCursor - 1)
+		const nextUserMessageIndex = previousUserMessageIndices[nextCursor]
+		previousUserMessageCursorRef.current = nextCursor
+
+		enterUserBrowsingHistory("keyboard-nav-up")
+		virtuosoRef.current?.scrollToIndex({
+			index: nextUserMessageIndex,
+			align: "center",
+			behavior: "smooth",
+		})
+	}, [enterUserBrowsingHistory, previousUserMessageIndices])
 
 	const itemContent = useCallback(
 		(index: number, messageOrGroup: ClineMessage) => {
@@ -1640,7 +1674,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		},
 	}))
 
-	const areButtonsVisible = showScrollToBottom || primaryButtonText || secondaryButtonText
+	const areButtonsVisible = showScrollToBottom || primaryButtonText || secondaryButtonText || hasPreviousUserMessage
 
 	return (
 		<div
@@ -1741,13 +1775,25 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							className={`flex h-9 items-center mb-1 px-[15px] ${
 								showScrollToBottom ? "opacity-100" : enableButtons ? "opacity-100" : "opacity-50"
 							}`}>
+							{hasPreviousUserMessage && (
+								<StandardTooltip content={t("chat:scrollToPreviousUserMessage")}>
+									<Button
+										variant="secondary"
+										size="icon"
+										className="mr-[6px] shrink-0"
+										onClick={handleScrollToPreviousUserMessage}
+										aria-label={t("chat:scrollToPreviousUserMessage")}>
+										<span className="codicon codicon-chevron-up"></span>
+									</Button>
+								</StandardTooltip>
+							)}
 							{showScrollToBottom ? (
 								<>
 									<StandardTooltip content={t("chat:scrollToBottom")}>
 										<Button
 											variant="secondary"
-											className={hasLatestCheckpoint ? "flex-1 mr-[6px]" : "flex-[2]"}
-											onClick={handleScrollToBottomAndResetCheckpointCursor}>
+											className="flex-1"
+											onClick={handleScrollToBottomAndResetNavigationCursors}>
 											<span className="codicon codicon-chevron-down"></span>
 										</Button>
 									</StandardTooltip>

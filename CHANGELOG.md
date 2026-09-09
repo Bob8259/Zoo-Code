@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.54.19
+
+- Prevent unrelated parent and subtask checkpoint operations from blocking each other during Git cleanup.
+
 ## 3.54.18
 
 - Stop checkpoint Git work when tasks finish or switch, and run checkpoint operations one at a time.

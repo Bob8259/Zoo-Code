@@ -87,6 +87,7 @@
 	},
 	"enqueueMessage": "Ajouter le message à la file d'attente (sera envoyé après la fin de la tâche en cours)",
 	"scrollToBottom": "Défiler jusqu'au bas du chat",
+	"scrollToPreviousUserMessage": "Défiler jusqu'au message utilisateur précédent",
 	"scrollToLatestCheckpoint": "Défiler jusqu'au checkpoint précédent",
 	"about": "Zoo Code est une équipe complète de développeurs IA dans votre éditeur.",
 	"docs": "Consultez notre <DocsLink>documentation</DocsLink> pour en savoir plus.",

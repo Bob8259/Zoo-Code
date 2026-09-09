@@ -458,6 +458,43 @@ describe("History resume delegation - parent metadata transitions", () => {
 		expect(parentUpdateCallOrder).toBeLessThan(completedEmitCallOrder)
 	})
 
+	it("reopenParentFromDelegation skips a duplicate child completion after the parent has resumed", async () => {
+		const logSpy = vi.fn()
+		const provider = {
+			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
+			getTaskWithId: vi.fn().mockResolvedValue({
+				historyItem: {
+					id: "parent-duplicate",
+					status: "active",
+					completedByChildId: "child-duplicate",
+					childIds: ["child-duplicate"],
+					ts: 100,
+					task: "Parent",
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+				},
+			}),
+			log: logSpy,
+			getCurrentTask: vi.fn(),
+			removeClineFromStack: vi.fn(),
+			createTaskWithHistoryItem: vi.fn(),
+			updateTaskHistory: vi.fn(),
+			emit: vi.fn(),
+		} as unknown as ClineProvider
+
+		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
+			parentTaskId: "parent-duplicate",
+			childTaskId: "child-duplicate",
+			completionResultSummary: "Repeated result",
+		})
+
+		expect(saveTaskMessages).not.toHaveBeenCalled()
+		expect(saveApiMessages).not.toHaveBeenCalled()
+		expect(provider.createTaskWithHistoryItem).not.toHaveBeenCalled()
+		expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("skipping duplicate handoff"))
+	})
+
 	it("reopenParentFromDelegation continues when overwrite operations fail and still resumes/emits (RPD-06)", async () => {
 		const emitSpy = vi.fn()
 		const parentInstance = {

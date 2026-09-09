@@ -87,6 +87,7 @@
 	},
 	"enqueueMessage": "Aggiungi il messaggio alla coda (sarà inviato dopo che l'attività corrente sarà terminata)",
 	"scrollToBottom": "Scorri fino alla fine della chat",
+	"scrollToPreviousUserMessage": "Scorri al messaggio utente precedente",
 	"scrollToLatestCheckpoint": "Scorri al checkpoint precedente",
 	"about": "Zoo Code è un intero team di sviluppo AI nel tuo editor.",
 	"docs": "Consulta la nostra <DocsLink>documentazione</DocsLink> per saperne di più.",

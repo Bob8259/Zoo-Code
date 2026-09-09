@@ -9,24 +9,28 @@ function deferred() {
 }
 
 describe("CheckpointLifecycle", () => {
-	it("waits for cancelled work to exit before another task starts Git", async () => {
+	it("does not block a subtask while its parent's cancelled Git work exits", async () => {
 		const parent = new CheckpointLifecycle()
 		const child = new CheckpointLifecycle()
-		const started = deferred()
-		const exited = deferred()
+		const parentStarted = deferred()
+		const parentExited = deferred()
+		const childStarted = deferred()
 		const parentWork = parent.run(async () => {
-			started.resolve()
-			await exited.promise
+			parentStarted.resolve()
+			await parentExited.promise
 		})
 		const rejection = expect(parentWork).rejects.toThrow()
-		await started.promise
+		await parentStarted.promise
 		const stopped = parent.dispose()
-		const childCommand = vi.fn().mockResolvedValue("child")
+		const childCommand = vi.fn().mockImplementation(async () => {
+			childStarted.resolve()
+			return "child"
+		})
 		const childWork = child.run(childCommand)
-		await Promise.resolve()
+		await childStarted.promise
 		expect(parent.signal.aborted).toBe(true)
-		expect(childCommand).not.toHaveBeenCalled()
-		exited.resolve()
+		expect(childCommand).toHaveBeenCalledTimes(1)
+		parentExited.resolve()
 		await stopped
 		await rejection
 		expect(await childWork).toBe("child")
@@ -45,7 +49,7 @@ describe("CheckpointLifecycle", () => {
 		expect(command).toHaveBeenCalledTimes(1)
 	})
 
-	it("keeps the shared queue usable after a Git failure", async () => {
+	it("keeps the task queue usable after a Git failure", async () => {
 		const task = new CheckpointLifecycle()
 		await expect(
 			task.run(async () => {

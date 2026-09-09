@@ -1,7 +1,7 @@
-/** Serializes checkpoint operations across task instances in this extension host. */
+/** Serializes checkpoint operations for one task instance. */
 export class CheckpointLifecycle {
-	private static queue: Promise<void> = Promise.resolve()
 	private readonly controller = new AbortController()
+	private queue: Promise<void> = Promise.resolve()
 	private pending: Promise<void> = Promise.resolve()
 
 	get signal(): AbortSignal {
@@ -9,14 +9,14 @@ export class CheckpointLifecycle {
 	}
 
 	run<T>(operation: () => Promise<T>): Promise<T> {
-		const result = CheckpointLifecycle.queue.then(async () => {
+		const result = this.queue.then(async () => {
 			this.signal.throwIfAborted()
 			const value = await operation()
 			this.signal.throwIfAborted()
 			return value
 		})
 		// Keep the queue usable after failures, but do not release it until Git has exited.
-		this.pending = CheckpointLifecycle.queue = result.then(
+		this.pending = this.queue = result.then(
 			() => {},
 			() => {},
 		)

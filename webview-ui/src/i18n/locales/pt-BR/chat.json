@@ -87,6 +87,7 @@
 	},
 	"enqueueMessage": "Adicionar mensagem à fila (será enviada após a conclusão da tarefa atual)",
 	"scrollToBottom": "Rolar para o final do chat",
+	"scrollToPreviousUserMessage": "Rolar para a mensagem anterior do usuário",
 	"scrollToLatestCheckpoint": "Rolar para o checkpoint anterior",
 	"about": "Zoo Code é uma equipe inteira de desenvolvimento de IA em seu editor.",
 	"docs": "Confira nossa <DocsLink>documentação</DocsLink> para saber mais.",
