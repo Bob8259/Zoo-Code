@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.54.18
+
+- Stop checkpoint Git work when tasks finish or switch, and run checkpoint operations one at a time.
+- Preserve checkpoints when resuming tasks and recover interrupted checkpoint initialization.
+- Ignore local build tools, temporary caches, and extension backups.
+
 ## 3.54.17
 
 - Completed subtasks now return their results to the parent automatically without a separate completion approval.
