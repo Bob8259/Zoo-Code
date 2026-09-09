@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.54.20
+
+- Skip checkpoint repositories for delegated subtasks to prevent unnecessary storage growth.
+- Preserve queued messages through task delegation and task completion instead of draining them during active work.
+- Add a chat control for navigating to earlier user messages.
+
 ## 3.54.19
 
 - Prevent unrelated parent and subtask checkpoint operations from blocking each other during Git cleanup.

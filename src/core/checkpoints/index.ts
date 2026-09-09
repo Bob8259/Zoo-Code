@@ -41,7 +41,9 @@ export async function getCheckpointService(
 	task: Task,
 	{ interval = 250, allowInactive = false }: { interval?: number; allowInactive?: boolean } = {},
 ) {
-	if (!task.enableCheckpoints || (!allowInactive && (task.abort || stoppedTasks.has(task)))) {
+	// Subtasks cannot modify the workspace, so creating a per-task shadow Git
+	// repository for them only consumes storage without providing restore value.
+	if (task.parentTaskId || !task.enableCheckpoints || (!allowInactive && (task.abort || stoppedTasks.has(task)))) {
 		return undefined
 	}
 

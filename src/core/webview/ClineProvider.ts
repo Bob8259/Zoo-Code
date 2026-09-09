@@ -1,6 +1,7 @@
 import os from "os"
 import * as path from "path"
 import fs from "fs/promises"
+import { randomUUID } from "crypto"
 import EventEmitter from "events"
 
 import { Anthropic } from "@anthropic-ai/sdk"
@@ -96,7 +97,7 @@ import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
-import type { ClineMessage, TodoItem } from "@roo-code/types"
+import type { ClineMessage, QueuedMessage, TodoItem } from "@roo-code/types"
 import { readApiMessages, saveApiMessages, saveTaskMessages, TaskHistoryStore } from "../task-persistence"
 import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
@@ -124,6 +125,38 @@ interface PendingEditOperation {
 	createdAt: number
 }
 
+type QueueTransitionState = {
+	isQueueTransitioning?: boolean
+	pendingQueuedMessages?: QueuedMessage[]
+}
+
+function cloneQueuedMessages(messages: QueuedMessage[]): QueuedMessage[] {
+	return messages.map((message) => ({
+		...message,
+		images: message.images ? [...message.images] : undefined,
+	}))
+}
+
+function beginQueuedMessageTransition(state: QueueTransitionState, task: Pick<Task, "queuedMessages">): void {
+	if (state.isQueueTransitioning) {
+		return
+	}
+
+	state.isQueueTransitioning = true
+	state.pendingQueuedMessages = cloneQueuedMessages(task.queuedMessages ?? [])
+}
+
+function completeQueuedMessageTransition(state: QueueTransitionState, task: Pick<Task, "messageQueueService">): void {
+	const messages = state.pendingQueuedMessages ?? []
+	if (messages.length > 0 && !task.messageQueueService) {
+		return
+	}
+
+	task.messageQueueService?.addMessages(messages)
+	state.pendingQueuedMessages = []
+	state.isQueueTransitioning = false
+}
+
 export class ClineProvider
 	extends EventEmitter<TaskProviderEvents>
 	implements vscode.WebviewViewProvider, TelemetryPropertiesProvider, TaskProviderLike
@@ -138,6 +171,8 @@ export class ClineProvider
 	private webviewDisposables: vscode.Disposable[] = []
 	private view?: vscode.WebviewView | vscode.WebviewPanel
 	private clineStack: Task[] = []
+	pendingQueuedMessages: QueuedMessage[] = []
+	isQueueTransitioning = false
 	private codeIndexStatusSubscription?: vscode.Disposable
 	private codeIndexManager?: CodeIndexManager
 	private _workspaceTracker?: WorkspaceTracker // workSpaceTracker read-only for access outside this class
@@ -408,6 +443,7 @@ export class ClineProvider
 		// Add this cline instance into the stack that represents the order of
 		// all the called tasks.
 		this.clineStack.push(task)
+		completeQueuedMessageTransition(this, task)
 		task.emit(RooCodeEventName.TaskFocused)
 
 		// Perform special setup provider specific tasks.
@@ -2238,7 +2274,9 @@ export class ClineProvider
 			currentTaskItem: currentTask?.taskId ? this.taskHistoryStore.get(currentTask.taskId) : undefined,
 			clineMessages: currentTask?.clineMessages || [],
 			currentTaskTodos: currentTask?.todoList || [],
-			messageQueue: currentTask?.messageQueueService?.messages,
+			messageQueue: this.isQueueTransitioning
+				? this.pendingQueuedMessages
+				: (currentTask?.messageQueueService.messages ?? this.pendingQueuedMessages),
 			taskHistory: this.taskHistoryStore.getAll().filter((item: HistoryItem) => item.ts && item.task),
 			soundEnabled: soundEnabled ?? false,
 			ttsEnabled: ttsEnabled ?? false,
@@ -2799,6 +2837,56 @@ export class ClineProvider
 		return this.clineStack[this.clineStack.length - 1]
 	}
 
+	public enqueueQueuedMessage(text: string, images?: string[]): void {
+		const task = this.getCurrentTask()
+		if (task && !this.isQueueTransitioning) {
+			task.messageQueueService.addMessage(text, images)
+			return
+		}
+
+		if (!text && !images?.length) {
+			return
+		}
+
+		this.pendingQueuedMessages.push({
+			id: randomUUID(),
+			timestamp: Date.now(),
+			text,
+			images,
+		})
+		void this.postStateToWebviewWithoutTaskHistory()
+	}
+
+	public removeQueuedMessage(id: string): void {
+		const task = this.getCurrentTask()
+		if (task && !this.isQueueTransitioning) {
+			task.messageQueueService.removeMessage(id)
+			return
+		}
+
+		const index = this.pendingQueuedMessages.findIndex((message) => message.id === id)
+		if (index !== -1) {
+			this.pendingQueuedMessages.splice(index, 1)
+			void this.postStateToWebviewWithoutTaskHistory()
+		}
+	}
+
+	public updateQueuedMessage(id: string, text: string, images?: string[]): void {
+		const task = this.getCurrentTask()
+		if (task && !this.isQueueTransitioning) {
+			task.messageQueueService.updateMessage(id, text, images)
+			return
+		}
+
+		const message = this.pendingQueuedMessages.find((pending) => pending.id === id)
+		if (message) {
+			message.timestamp = Date.now()
+			message.text = text
+			message.images = images
+			void this.postStateToWebviewWithoutTaskHistory()
+		}
+	}
+
 	public getRecentTasks(): string[] {
 		if (this.recentTasksCache) {
 			return this.recentTasksCache
@@ -3213,12 +3301,9 @@ export class ClineProvider
 			)
 		}
 
-		// Task instances are disposed during delegation. Keep queued messages with
-		// the delegation chain so they are still available after the parent resumes.
-		const queuedMessages = (parent.queuedMessages ?? []).map((message) => ({
-			...message,
-			images: message.images ? [...message.images] : undefined,
-		}))
+		// Transfer queue ownership before disposing the parent. Messages received
+		// during the task replacement are buffered by the provider.
+		beginQueuedMessageTransition(this, parent)
 
 		// 2) Flush pending tool results to API history BEFORE disposing the parent.
 		//    This is critical: when tools are called before new_task,
@@ -3311,9 +3396,9 @@ export class ClineProvider
 			startTask: false,
 		})
 
-		// Carry messages queued before delegation into the child. If this child
-		// delegates again, the same messages will continue through the chain.
-		child.messageQueueService?.addMessages(queuedMessages)
+		// addClineToStack() normally completes this transfer. Keep the explicit
+		// call for alternate task factories used by integrations and tests.
+		completeQueuedMessageTransition(this, child)
 
 		// Persist the subtask profile on the child history item when configured.
 		if (subtaskProfileName) {
@@ -3499,14 +3584,8 @@ export class ClineProvider
 		//    the historyItem with initialStatus (typically "active"), which would
 		//    overwrite a "completed" status set earlier.
 		const current = this.getCurrentTask()
-		const queuedMessages =
-			current?.taskId === childTaskId
-				? (current.queuedMessages ?? []).map((message) => ({
-						...message,
-						images: message.images ? [...message.images] : undefined,
-					}))
-				: []
 		if (current?.taskId === childTaskId) {
+			beginQueuedMessageTransition(this, current)
 			await this.removeClineFromStack()
 		}
 
@@ -3550,9 +3629,11 @@ export class ClineProvider
 		//    IMPORTANT: startTask=false to suppress resume-from-history ask scheduling
 		const parentInstance = await this.createTaskWithHistoryItem(updatedHistory, { startTask: false })
 
-		// Restore messages queued while the child was active. The resumed parent
-		// owns the queue that will be drained when the main task completes.
-		parentInstance?.messageQueueService?.addMessages(queuedMessages)
+		// addClineToStack() normally completes this transfer. Keep the explicit
+		// call for alternate task factories used by integrations and tests.
+		if (parentInstance) {
+			completeQueuedMessageTransition(this, parentInstance)
+		}
 
 		// 8) Inject restored histories into the in-memory instance before resuming
 		if (parentInstance) {

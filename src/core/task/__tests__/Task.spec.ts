@@ -1806,7 +1806,7 @@ describe("Queued message processing after condense", () => {
 		apiKey: "test-api-key",
 	} as any
 
-	it("processes queued message after condensing completes", async () => {
+	it("keeps queued messages after condensing completes until task completion", async () => {
 		const provider = createProvider()
 		const task = new Task({
 			provider,
@@ -1819,17 +1819,13 @@ describe("Queued message processing after condense", () => {
 		vi.spyOn(task as any, "getSystemPrompt").mockResolvedValue("system")
 		const submitSpy = vi.spyOn(task, "submitUserMessage").mockResolvedValue(undefined)
 
-		// Queue a message during condensing
+		// Queue a message during condensing.
 		task.messageQueueService.addMessage("queued text", ["img1.png"])
 
-		// processQueuedMessages defers submission to the next tick.
-		vi.useFakeTimers()
 		await task.condenseContext()
-		vi.runAllTimers()
-		vi.useRealTimers()
 
-		expect(submitSpy).toHaveBeenCalledWith("queued text", ["img1.png"])
-		expect(task.messageQueueService.isEmpty()).toBe(true)
+		expect(submitSpy).not.toHaveBeenCalled()
+		expect(task.messageQueueService.messages).toMatchObject([{ text: "queued text", images: ["img1.png"] }])
 	})
 
 	it("drains queued message on completion_result ask", async () => {
@@ -1841,10 +1837,10 @@ describe("Queued message processing after condense", () => {
 			startTask: false,
 		})
 
-		// Stub out internal ask dependencies
-		task.addToClineMessages = vi.fn(async () => {})
-		task.saveClineMessages = vi.fn(async () => {})
-		task.updateClineMessage = vi.fn(async () => {})
+		// Stub out internal ask dependencies.
+		;(task as any).addToClineMessages = vi.fn(async () => {})
+		;(task as any).saveClineMessages = vi.fn(async () => true)
+		;(task as any).updateClineMessage = vi.fn(async () => {})
 		;(task as any).checkpointSave = vi.fn(async () => {})
 
 		// Queue a message before completion result ask

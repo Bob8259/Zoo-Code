@@ -3,6 +3,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { RooCodeEventName } from "@roo-code/types"
 import { ClineProvider } from "../core/webview/ClineProvider"
+import { MessageQueueService } from "../core/message-queue/MessageQueueService"
 
 describe("ClineProvider.delegateParentAndOpenChild()", () => {
 	it("persists parent delegation metadata and emits TaskDelegated", async () => {
@@ -96,6 +97,37 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 		expect(handleModeSwitch).toHaveBeenCalledWith("code")
 	})
 
+	describe("queued message transitions", () => {
+		it("moves messages received during task replacement into the next active task", async () => {
+			const provider = Object.create(ClineProvider.prototype) as ClineProvider
+			const departingTask = {
+				messageQueueService: new MessageQueueService(),
+			} as any
+			;(provider as any).clineStack = [departingTask]
+			;(provider as any).pendingQueuedMessages = [{ id: "existing", timestamp: 1, text: "Existing message" }]
+			;(provider as any).isQueueTransitioning = true
+			provider.postStateToWebviewWithoutTaskHistory = vi.fn().mockResolvedValue(undefined)
+
+			provider.enqueueQueuedMessage("Do not lose this", ["image.png"])
+
+			const task = {
+				messageQueueService: new MessageQueueService(),
+				emit: vi.fn(),
+				apiConfiguration: {},
+			} as any
+			provider.getState = vi.fn().mockResolvedValue({ mode: "code" })
+			provider.performPreparationTasks = vi.fn().mockResolvedValue(undefined)
+
+			await provider.addClineToStack(task)
+
+			expect(task.messageQueueService.messages).toMatchObject([
+				{ text: "Existing message" },
+				{ text: "Do not lose this", images: ["image.png"] },
+			])
+			expect((provider as any).pendingQueuedMessages).toEqual([])
+		})
+	})
+
 	it("transfers messages queued on the parent to the child", async () => {
 		const queuedMessages = [
 			{
@@ -116,7 +148,9 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 		const childStart = vi.fn()
 		const updateTaskHistory = vi.fn()
 		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
-		const createTask = vi.fn().mockResolvedValue({ taskId: "child-1", start: childStart, messageQueueService: childQueue })
+		const createTask = vi
+			.fn()
+			.mockResolvedValue({ taskId: "child-1", start: childStart, messageQueueService: childQueue })
 		const getTaskWithId = vi.fn().mockResolvedValue({
 			historyItem: {
 				id: "parent-1",
@@ -344,9 +378,9 @@ describe("ClineProvider.activateSubtaskProfileIfConfigured()", () => {
 		const provider = {
 			getState: vi.fn().mockResolvedValue({ subtaskApiConfigProfileId: "profile-2" }),
 			providerSettingsManager: {
-				listConfig: vi.fn().mockResolvedValue([
-					{ id: "profile-2", name: "fast-model", apiProvider: "anthropic" },
-				]),
+				listConfig: vi
+					.fn()
+					.mockResolvedValue([{ id: "profile-2", name: "fast-model", apiProvider: "anthropic" }]),
 				getProfile: vi.fn().mockResolvedValue({ apiProvider: "anthropic" }),
 			},
 			activateProviderProfile,

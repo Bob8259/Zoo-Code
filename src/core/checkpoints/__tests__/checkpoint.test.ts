@@ -176,6 +176,17 @@ describe("Checkpoint functionality", () => {
 			expect(mockCheckpointService.saveCheckpoint).not.toHaveBeenCalled()
 		})
 
+		it("does not create or save checkpoints for a subtask", async () => {
+			mockTask.parentTaskId = "parent-task-id"
+
+			await expect(getCheckpointService(mockTask)).resolves.toBeUndefined()
+			await expect(checkpointSave(mockTask, true)).resolves.toBeUndefined()
+
+			expect(mockCheckpointService.saveCheckpoint).not.toHaveBeenCalled()
+			const checkpointsModule = await import("../../../services/checkpoints")
+			expect(vi.mocked(checkpointsModule.RepoPerTaskCheckpointService.create)).not.toHaveBeenCalled()
+		})
+
 		it("should preserve checkpoint data through message deletion flow", async () => {
 			// Initialize service
 			mockCheckpointService.isInitialized = true
