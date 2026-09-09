@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.54.17
+
+- Completed subtasks now return their results to the parent automatically without a separate completion approval.
+
+## 3.54.16
+
+- Fixed the **View task** link not appearing while a delegated subtask is still in progress.
+
 ## 3.54.15
 
 Local development build.

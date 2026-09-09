@@ -848,6 +848,15 @@ export const ChatRowContent = ({
 				// incorrectly point to the previous task when a new newTask is awaiting approval
 				const childTaskId =
 					thisNewTaskIndex >= 0 && thisNewTaskIndex < childIds.length ? childIds[thisNewTaskIndex] : undefined
+				const isMostRecentNewTask = thisNewTaskIndex === newTaskMessages.length - 1
+
+				// `childIds` is the durable mapping used for historical subtasks. During an
+				// active delegation it may not yet be reflected in the webview state, while
+				// `awaitingChildId` is set as soon as the child is created. Use that
+				// in-progress child only for the latest delegation, so an older new_task
+				// message cannot link to the current child.
+				const activeChildTaskId = isMostRecentNewTask ? currentTaskItem?.awaitingChildId : undefined
+				const linkedChildTaskId = childTaskId ?? activeChildTaskId
 
 				// Check if the next message is a subtask_result - if so, don't show the button
 				// since the result is displayed right after this message
@@ -870,11 +879,11 @@ export const ChatRowContent = ({
 						<div className="border-l border-muted-foreground/80 ml-2 pl-4 pb-1">
 							<MarkdownBlock markdown={tool.content} />
 							<div>
-								{childTaskId && !isFollowedBySubtaskResult && (
+								{linkedChildTaskId && !isFollowedBySubtaskResult && (
 									<button
 										className="cursor-pointer flex gap-1 items-center mt-2 text-vscode-descriptionForeground hover:text-vscode-descriptionForeground hover:underline font-normal"
 										onClick={() =>
-											vscode.postMessage({ type: "showTaskWithId", text: childTaskId })
+											vscode.postMessage({ type: "showTaskWithId", text: linkedChildTaskId })
 										}>
 										{t("chat:subtasks.goToSubtask")}
 										<ArrowRight className="size-3" />

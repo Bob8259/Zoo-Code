@@ -178,6 +178,7 @@ describe("Nested delegation resume (A → B → C)", () => {
 			getTokenUsage: vi.fn(() => ({})),
 			toolUsage: {},
 			clineMessages: [],
+			apiConversationHistory: [],
 			userMessageContent: [],
 			consecutiveMistakeCount: 0,
 			emitFinalTokenUsageUpdate: vi.fn(),
@@ -191,7 +192,6 @@ describe("Nested delegation resume (A → B → C)", () => {
 			partial: false,
 		} as any
 
-		const askFinishSubTaskApproval = vi.fn(async () => true)
 		const handleError = vi.fn(async (_action: string, err: Error) => {
 			// Fail fast in this test if the tool hits an error path.
 			throw err
@@ -201,7 +201,6 @@ describe("Nested delegation resume (A → B → C)", () => {
 			askApproval: vi.fn(),
 			handleError,
 			pushToolResult: vi.fn(),
-			askFinishSubTaskApproval,
 			toolDescription: () => "desc",
 		} as any)
 
@@ -225,6 +224,7 @@ describe("Nested delegation resume (A → B → C)", () => {
 			getTokenUsage: vi.fn(() => ({})),
 			toolUsage: {},
 			clineMessages: [],
+			apiConversationHistory: [],
 			userMessageContent: [],
 			consecutiveMistakeCount: 0,
 			emitFinalTokenUsageUpdate: vi.fn(),
@@ -242,7 +242,6 @@ describe("Nested delegation resume (A → B → C)", () => {
 			askApproval: vi.fn(),
 			handleError,
 			pushToolResult: vi.fn(),
-			askFinishSubTaskApproval,
 			toolDescription: () => "desc",
 		} as any)
 

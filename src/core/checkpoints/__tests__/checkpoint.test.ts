@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest"
 import { Task } from "../../task/Task"
 import { ClineProvider } from "../../webview/ClineProvider"
-import { checkpointSave, checkpointRestore, checkpointDiff, getCheckpointService } from "../index"
+import {
+	checkpointSave,
+	checkpointRestore,
+	checkpointDiff,
+	getCheckpointService,
+	disposeCheckpointService,
+} from "../index"
 import { MessageManager } from "../../message-manager"
 import * as vscode from "vscode"
 
@@ -68,6 +74,11 @@ describe("Checkpoint functionality", () => {
 		// Create mock checkpoint service
 		mockCheckpointService = {
 			isInitialized: true,
+			isDisposed: false,
+			checkGitInstalled: vi.fn().mockResolvedValue(true),
+			dispose: vi.fn().mockImplementation(async () => {
+				mockCheckpointService.isDisposed = true
+			}),
 			saveCheckpoint: vi.fn().mockResolvedValue({ commit: "test-commit-hash" }),
 			restoreCheckpoint: vi.fn().mockResolvedValue(undefined),
 			getDiff: vi.fn().mockResolvedValue([]),
@@ -90,6 +101,7 @@ describe("Checkpoint functionality", () => {
 		mockTask = {
 			taskId: "test-task-id",
 			enableCheckpoints: true,
+			checkpointTimeout: 30,
 			checkpointService: mockCheckpointService,
 			checkpointServiceInitializing: false,
 			providerRef: {
@@ -406,6 +418,90 @@ describe("Checkpoint functionality", () => {
 	})
 
 	describe("getCheckpointService", () => {
+		it("does not restart background Git after a task is disposed", async () => {
+			await disposeCheckpointService(mockTask)
+			expect(mockCheckpointService.dispose).toHaveBeenCalledOnce()
+			expect(await getCheckpointService(mockTask)).toBeUndefined()
+			await checkpointSave(mockTask)
+			expect(mockCheckpointService.saveCheckpoint).not.toHaveBeenCalled()
+			expect(mockTask.enableCheckpoints).toBe(true)
+		})
+
+		it("registers initialization early and never reattaches it after disposal", async () => {
+			mockTask.checkpointService = undefined
+			let finish!: () => void
+			mockCheckpointService.checkGitInstalled.mockImplementation(
+				() =>
+					new Promise<boolean>((resolve) => {
+						finish = () => resolve(true)
+					}),
+			)
+			const initializing = getCheckpointService(mockTask)
+			expect(mockTask.checkpointService).toBe(mockCheckpointService)
+			await disposeCheckpointService(mockTask)
+			finish()
+			expect(await initializing).toBeUndefined()
+			expect(mockTask.checkpointService).toBeUndefined()
+			expect(mockCheckpointService.initShadowGit).not.toHaveBeenCalled()
+			expect(mockTask.enableCheckpoints).toBe(true)
+		})
+
+		it("does not let an old initialization waiter borrow a reopened service", async () => {
+			const { default: pWaitFor } = await import("p-wait-for")
+			let finish!: () => void
+			vi.mocked(pWaitFor).mockImplementationOnce(
+				() =>
+					new Promise<void>((resolve) => {
+						finish = resolve
+					}),
+			)
+			mockTask.checkpointServiceInitializing = true
+			mockCheckpointService.isInitialized = false
+			const waiting = getCheckpointService(mockTask)
+			await disposeCheckpointService(mockTask)
+			const reopened = { ...mockCheckpointService, isDisposed: false, isInitialized: true }
+			mockTask.checkpointService = reopened
+			finish()
+			expect(await waiting).toBeUndefined()
+			expect(mockTask.checkpointService).toBe(reopened)
+			expect(mockTask.enableCheckpoints).toBe(true)
+		})
+
+		it("temporarily reopens Git for an explicit restore after cancellation", async () => {
+			await disposeCheckpointService(mockTask)
+			mockTask.abort = true
+			mockTask.clineMessages = [{ ts: 10, say: "checkpoint_saved", text: "old-commit" }]
+			mockCheckpointService.isDisposed = false
+			await checkpointRestore(mockTask, { ts: 10, commitHash: "old-commit", mode: "preview" })
+			expect(mockCheckpointService.restoreCheckpoint).toHaveBeenCalledWith("old-commit")
+			expect(mockCheckpointService.dispose).toHaveBeenCalledTimes(2)
+			expect(mockTask.checkpointService).toBeUndefined()
+			expect(mockTask.enableCheckpoints).toBe(true)
+		})
+
+		it("cancels the actual initialization on timeout", async () => {
+			vi.useFakeTimers()
+			try {
+				mockTask.checkpointService = undefined
+				mockTask.checkpointTimeout = 1
+				let finish!: () => void
+				mockCheckpointService.checkGitInstalled.mockImplementation(
+					() =>
+						new Promise<boolean>((resolve) => {
+							finish = () => resolve(true)
+						}),
+				)
+				const initializing = getCheckpointService(mockTask)
+				await vi.advanceTimersByTimeAsync(1000)
+				expect(mockCheckpointService.dispose).toHaveBeenCalled()
+				finish()
+				expect(await initializing).toBeUndefined()
+				expect(mockTask.enableCheckpoints).toBe(false)
+			} finally {
+				vi.useRealTimers()
+			}
+		})
+
 		it("should return existing service if available", async () => {
 			const service = await getCheckpointService(mockTask)
 			expect(service).toBe(mockCheckpointService)
@@ -428,7 +524,7 @@ describe("Checkpoint functionality", () => {
 			mockTask.checkpointService = undefined
 			mockTask.checkpointServiceInitializing = false
 
-			const service = getCheckpointService(mockTask)
+			await getCheckpointService(mockTask)
 
 			const checkpointsModule = await import("../../../services/checkpoints")
 			expect(vi.mocked(checkpointsModule.RepoPerTaskCheckpointService.create)).toHaveBeenCalledWith({

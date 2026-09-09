@@ -1011,6 +1011,10 @@ export class ClineProvider
 		const { apiConfiguration, enableCheckpoints, checkpointTimeout, experiments, cloudUserInfo, taskSyncEnabled } =
 			await this.getState()
 
+		// History constructors start immediately. Stop the old instance's Git first,
+		// including when replacing the same task in-place.
+		if (isRehydratingCurrentTask) await currentTask.abortTask(true)
+
 		const task = new Task({
 			provider: this,
 			apiConfiguration,
@@ -1035,15 +1039,6 @@ export class ClineProvider
 
 			// Properly dispose of the old task to ensure garbage collection
 			const oldTask = this.clineStack[stackIndex]
-
-			// Abort the old task to stop running processes and mark as abandoned
-			try {
-				await oldTask.abortTask(true)
-			} catch (e) {
-				this.log(
-					`[createTaskWithHistoryItem] abortTask() failed for old task ${oldTask.taskId}.${oldTask.instanceId}: ${e.message}`,
-				)
-			}
 
 			// Remove event listeners from the old task
 			const cleanupFunctions = this.taskEventListeners.get(oldTask)

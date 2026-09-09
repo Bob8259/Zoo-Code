@@ -7,7 +7,6 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { Task } from "../task/Task"
 
 import { getWorkspacePath } from "../../utils/path"
-import { checkGitInstalled } from "../../utils/git"
 import { t } from "../../i18n"
 
 import { getApiMetrics } from "../../shared/getApiMetrics"
@@ -17,6 +16,19 @@ import { DIFF_VIEW_URI_SCHEME } from "../../integrations/editor/DiffViewProvider
 import { CheckpointServiceOptions, RepoPerTaskCheckpointService } from "../../services/checkpoints"
 
 const WARNING_THRESHOLD_MS = 5000
+const stoppedTasks = new WeakSet<Task>()
+const pendingDisposals = new WeakMap<Task, Promise<void>>()
+
+export function disposeCheckpointService(task: Task): Promise<void> {
+	stoppedTasks.add(task)
+	const service = task.checkpointService
+	task.checkpointService = undefined
+	task.checkpointServiceInitializing = false
+	const previous = pendingDisposals.get(task)
+	const stopped = Promise.all([previous, service?.dispose()]).then(() => {})
+	pendingDisposals.set(task, stopped)
+	return stopped
+}
 
 function sendCheckpointInitWarn(task: Task, type?: "WAIT_TIMEOUT" | "INIT_TIMEOUT", timeout?: number) {
 	task.providerRef.deref()?.postMessageToWebview({
@@ -25,12 +37,15 @@ function sendCheckpointInitWarn(task: Task, type?: "WAIT_TIMEOUT" | "INIT_TIMEOU
 	})
 }
 
-export async function getCheckpointService(task: Task, { interval = 250 }: { interval?: number } = {}) {
-	if (!task.enableCheckpoints) {
+export async function getCheckpointService(
+	task: Task,
+	{ interval = 250, allowInactive = false }: { interval?: number; allowInactive?: boolean } = {},
+) {
+	if (!task.enableCheckpoints || (!allowInactive && (task.abort || stoppedTasks.has(task)))) {
 		return undefined
 	}
 
-	if (task.checkpointService) {
+	if (task.checkpointService && !task.checkpointService.isDisposed && !task.checkpointServiceInitializing) {
 		return task.checkpointService
 	}
 
@@ -50,6 +65,7 @@ export async function getCheckpointService(task: Task, { interval = 250 }: { int
 	}
 
 	console.log("[Task#getCheckpointService] initializing checkpoints service")
+	let initializingService = task.checkpointService
 
 	try {
 		const workspaceDir = task.cwd || getWorkspacePath()
@@ -92,11 +108,14 @@ export async function getCheckpointService(task: Task, { interval = 250 }: { int
 					console.log(
 						`[Task#getCheckpointService] waiting for service to initialize (${Math.round(elapsed / 1000)}s)`,
 					)
-					return !!task.checkpointService && !!task?.checkpointService?.isInitialized
+					return !task.checkpointServiceInitializing || !!task.checkpointService?.isInitialized
 				},
 				{ interval, timeout: checkpointTimeoutMs },
 			)
-			if (!task?.checkpointService) {
+			if (!task.enableCheckpoints || (!allowInactive && (task.abort || stoppedTasks.has(task)))) return undefined
+			if (task.checkpointService !== initializingService) return undefined
+			if (!task.checkpointService || task.checkpointService.isDisposed) {
+				if (task.abort || stoppedTasks.has(task)) return undefined
 				sendCheckpointInitWarn(task, "INIT_TIMEOUT", task.checkpointTimeout)
 				task.enableCheckpoints = false
 				return undefined
@@ -111,20 +130,42 @@ export async function getCheckpointService(task: Task, { interval = 250 }: { int
 		}
 
 		const service = RepoPerTaskCheckpointService.create(options)
-		task.checkpointServiceInitializing = true
-		await checkGitInstallation(task, service, log, provider)
+		initializingService = service
+		// Register before the first await so disposal also cancels initialization.
 		task.checkpointService = service
+		task.checkpointServiceInitializing = true
+		const timer = setTimeout(() => {
+			if (task.checkpointService !== service || service.isDisposed) return
+			sendCheckpointInitWarn(task, "INIT_TIMEOUT", task.checkpointTimeout)
+			task.enableCheckpoints = false
+			void service.dispose()
+		}, checkpointTimeoutMs)
+		try {
+			await checkGitInstallation(task, service, log, provider)
+		} finally {
+			clearTimeout(timer)
+			if (task.checkpointService === service) task.checkpointServiceInitializing = false
+		}
+		if (service.isDisposed || !task.enableCheckpoints || task.checkpointService !== service) {
+			await service.dispose()
+			if (task.checkpointService === service) task.checkpointService = undefined
+			return undefined
+		}
 		if (task.enableCheckpoints) {
 			sendCheckpointInitWarn(task)
 		}
 		return service
 	} catch (err) {
+		if (task.checkpointService !== initializingService) return undefined
+		if (!allowInactive && (task.abort || stoppedTasks.has(task))) return undefined
 		if (err.name === "TimeoutError" && task.enableCheckpoints) {
 			sendCheckpointInitWarn(task, "INIT_TIMEOUT", task.checkpointTimeout)
 		}
 		log(`[Task#getCheckpointService] ${err.message}`)
 		task.enableCheckpoints = false
 		task.checkpointServiceInitializing = false
+		await task.checkpointService?.dispose()
+		task.checkpointService = undefined
 		return undefined
 	}
 }
@@ -136,7 +177,8 @@ async function checkGitInstallation(
 	provider: any,
 ) {
 	try {
-		const gitInstalled = await checkGitInstalled()
+		const gitInstalled = await service.checkGitInstalled()
+		if (service.isDisposed) return
 
 		if (!gitInstalled) {
 			log("[Task#getCheckpointService] Git is not installed, disabling checkpoints")
@@ -198,10 +240,12 @@ async function checkGitInstallation(
 		try {
 			await service.initShadowGit()
 		} catch (err) {
+			if (service.isDisposed) return
 			log(`[Task#getCheckpointService] initShadowGit -> ${err.message}`)
 			task.enableCheckpoints = false
 		}
 	} catch (err) {
+		if (service.isDisposed) return
 		log(`[Task#getCheckpointService] Unexpected error during Git check: ${err.message}`)
 		console.error("Git check error:", err)
 		task.enableCheckpoints = false
@@ -222,6 +266,7 @@ export async function checkpointSave(task: Task, force = false, suppressMessage 
 	return service
 		.saveCheckpoint(`Task: ${task.taskId}, Time: ${Date.now()}`, { allowEmpty: force, suppressMessage })
 		.catch((err) => {
+			if (service.isDisposed) return
 			console.error("[Task#checkpointSave] caught unexpected error, disabling checkpoints", err)
 			task.enableCheckpoints = false
 		})
@@ -234,16 +279,32 @@ export type CheckpointRestoreOptions = {
 	operation?: "delete" | "edit" // Optional to maintain backward compatibility
 }
 
-export async function checkpointRestore(
+async function withCheckpointService<T>(task: Task, operation: (service: RepoPerTaskCheckpointService) => Promise<T>) {
+	const inactive = task.abort || stoppedTasks.has(task)
+	if (inactive) {
+		const provider = task.providerRef.deref()
+		if (provider?.getCurrentTask && provider.getCurrentTask() !== task) return
+		await pendingDisposals.get(task)
+	}
+	const service = await getCheckpointService(task, { allowInactive: true })
+	if (!service) return
+	try {
+		return await operation(service)
+	} finally {
+		// Explicit history/restore actions may temporarily reopen a cancelled task's Git.
+		if (inactive) await disposeCheckpointService(task)
+	}
+}
+
+export async function checkpointRestore(task: Task, options: CheckpointRestoreOptions) {
+	return withCheckpointService(task, (service) => restoreWithService(task, service, options))
+}
+
+async function restoreWithService(
 	task: Task,
+	service: RepoPerTaskCheckpointService,
 	{ ts, commitHash, mode, operation = "delete" }: CheckpointRestoreOptions,
 ) {
-	const service = await getCheckpointService(task)
-
-	if (!service) {
-		return
-	}
-
 	const index = task.clineMessages.findIndex((m) => m.ts === ts)
 
 	if (index === -1) {
@@ -296,6 +357,7 @@ export async function checkpointRestore(
 		// `Task` instance.
 		provider?.cancelTask()
 	} catch (err) {
+		if (service.isDisposed) return
 		provider?.log("[checkpointRestore] disabling checkpoints for this task")
 		task.enableCheckpoints = false
 	}
@@ -314,13 +376,15 @@ export type CheckpointDiffOptions = {
 	mode: "from-init" | "checkpoint" | "to-current" | "full"
 }
 
-export async function checkpointDiff(task: Task, { ts, previousCommitHash, commitHash, mode }: CheckpointDiffOptions) {
-	const service = await getCheckpointService(task)
+export async function checkpointDiff(task: Task, options: CheckpointDiffOptions) {
+	return withCheckpointService(task, (service) => diffWithService(task, service, options))
+}
 
-	if (!service) {
-		return
-	}
-
+async function diffWithService(
+	task: Task,
+	service: RepoPerTaskCheckpointService,
+	{ ts, previousCommitHash, commitHash, mode }: CheckpointDiffOptions,
+) {
 	TelemetryService.instance.captureCheckpointDiffed(task.taskId)
 
 	let fromHash: string | undefined
@@ -385,6 +449,7 @@ export async function checkpointDiff(task: Task, { ts, previousCommitHash, commi
 			]),
 		)
 	} catch (err) {
+		if (service.isDisposed) return
 		const provider = task.providerRef.deref()
 		provider?.log("[checkpointDiff] disabling checkpoints for this task")
 		task.enableCheckpoints = false

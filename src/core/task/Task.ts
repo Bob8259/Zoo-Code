@@ -124,6 +124,7 @@ import {
 	checkpointSave,
 	checkpointRestore,
 	checkpointDiff,
+	disposeCheckpointService,
 } from "../checkpoints"
 import { processUserContentMentions } from "../mentions/processUserContentMentions"
 import { getMessagesSinceLastSummary, summarizeConversation, getEffectiveApiHistory } from "../condense"
@@ -2263,6 +2264,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		try {
 			this.dispose() // Call the centralized dispose method
+			await disposeCheckpointService(this)
 		} catch (error) {
 			console.error(`Error during task ${this.taskId}.${this.instanceId} disposal:`, error)
 			// Don't rethrow - we want abort to always succeed
@@ -2278,6 +2280,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public dispose(): void {
 		console.log(`[Task#dispose] disposing task ${this.taskId}.${this.instanceId}`)
+		void disposeCheckpointService(this).catch((error) => {
+			console.error("Error stopping checkpoint Git:", error)
+		})
 
 		// Cancel any in-progress HTTP request
 		try {

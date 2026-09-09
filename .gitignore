@@ -16,6 +16,10 @@ mock/
 bin/
 *.vsix
 
+# Local build tools, caches, and extension backups
+/.local-build-tmp/
+/.local-build-tools/
+
 # Local prompts and rules
 /local-prompts
 AGENTS.local.md

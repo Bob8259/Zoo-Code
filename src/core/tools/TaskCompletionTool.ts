@@ -19,7 +19,6 @@ interface TaskCompletionParams {
 }
 
 export interface TaskCompletionCallbacks extends ToolCallbacks {
-	askFinishSubTaskApproval: () => Promise<boolean>
 	toolDescription: () => string
 }
 
@@ -40,7 +39,7 @@ export class TaskCompletionTool extends BaseTool<"task_completion"> {
 
 	async execute(params: TaskCompletionParams, task: Task, callbacks: TaskCompletionCallbacks): Promise<void> {
 		const { result } = params
-		const { handleError, pushToolResult, askFinishSubTaskApproval } = callbacks
+		const { handleError, pushToolResult } = callbacks
 
 		// Prevent task_completion if any tool failed in the current turn
 		if (task.didToolFailInCurrentTurn) {
@@ -112,17 +111,9 @@ export class TaskCompletionTool extends BaseTool<"task_completion"> {
 							// without injecting another tool_result to the parent
 						} else if (status === "active") {
 							// Normal subtask completion - do delegation
-							const delegation = await this.delegateToParent(
-								task,
-								result,
-								delegationProvider,
-								askFinishSubTaskApproval,
-								pushToolResult,
-							)
-							if (delegation === "delegated") {
-								this.emitTaskCompleted(task)
-							}
-							if (delegation !== "continue") return
+							await this.delegateToParent(task, result, delegationProvider, pushToolResult)
+							this.emitTaskCompleted(task)
+							return
 						} else {
 							// Unexpected status (undefined or "delegated") - log error and skip delegation
 							// undefined indicates a bug in status persistence during child creation
@@ -162,26 +153,14 @@ export class TaskCompletionTool extends BaseTool<"task_completion"> {
 	}
 
 	/**
-	 * Handles the common delegation flow when a subtask completes.
-	 * Returns:
-	 * - "delegated" when completion was approved and parent resumed
-	 * - "denied" when user denied finishing the subtask
-	 * - "continue" when caller should fall through to normal completion ask flow
+	 * Returns a completed subtask's result to its parent without another approval.
 	 */
 	private async delegateToParent(
 		task: Task,
 		result: string,
 		provider: DelegationProvider,
-		askFinishSubTaskApproval: () => Promise<boolean>,
 		pushToolResult: (result: string) => void,
-	): Promise<"delegated" | "denied" | "continue"> {
-		const didApprove = await askFinishSubTaskApproval()
-
-		if (!didApprove) {
-			pushToolResult(formatResponse.toolDenied())
-			return "denied"
-		}
-
+	): Promise<void> {
 		pushToolResult("")
 
 		const completionResultSummary = buildSubtaskCompletionSummary(task, result)
@@ -191,8 +170,6 @@ export class TaskCompletionTool extends BaseTool<"task_completion"> {
 			childTaskId: task.taskId,
 			completionResultSummary,
 		})
-
-		return "delegated"
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"task_completion">): Promise<void> {

@@ -1159,6 +1159,42 @@ describe("ClineProvider - Sticky Mode", () => {
 	})
 
 	describe("Task initialization timing edge cases", () => {
+		it("waits for old checkpoint Git to exit before constructing a replacement for the same task", async () => {
+			let stopped!: () => void
+			let abortStarted!: () => void
+			const stopping = new Promise<void>((resolve) => {
+				stopped = resolve
+			})
+			const started = new Promise<void>((resolve) => {
+				abortStarted = resolve
+			})
+			const oldTask = {
+				taskId: "same-task",
+				abortTask: vi.fn(() => {
+					abortStarted()
+					return stopping
+				}),
+			}
+			;(provider as any).clineStack = [oldTask]
+			vi.spyOn(provider as any, "performPreparationTasks").mockResolvedValue(undefined)
+			vi.mocked(Task).mockClear()
+			const reopening = provider.createTaskWithHistoryItem({
+				id: "same-task",
+				number: 1,
+				ts: Date.now(),
+				task: "Resume",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+			})
+			await started
+			expect(Task).not.toHaveBeenCalled()
+			stopped()
+			await reopening
+			expect(oldTask.abortTask).toHaveBeenCalledOnce()
+			expect(Task).toHaveBeenCalledOnce()
+		})
+
 		it("should handle mode restoration during slow task initialization", async () => {
 			await provider.resolveWebviewView(mockWebviewView)
 

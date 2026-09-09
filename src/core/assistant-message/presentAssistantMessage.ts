@@ -528,15 +528,6 @@ export async function presentAssistantMessage(cline: Task) {
 				return true
 			}
 
-			const askFinishSubTaskApproval = async () => {
-				// Ask the user to approve this task has completed, and he has
-				// reviewed it, and we can declare task is finished and return
-				// control to the parent task to continue running the rest of
-				// the sub-tasks.
-				const toolMessage = JSON.stringify({ tool: "finishTask" })
-				return await askApproval("tool", toolMessage)
-			}
-
 			const handleError = async (action: string, error: Error) => {
 				// Silently ignore AskIgnoredError - this is an internal control flow
 				// signal, not an actual error. It occurs when a newer ask supersedes an older one.
@@ -817,14 +808,9 @@ export async function presentAssistantMessage(cline: Task) {
 						askApproval,
 						handleError,
 						pushToolResult,
-						askFinishSubTaskApproval,
 						toolDescription,
 					}
-					await taskCompletionTool.handle(
-						cline,
-						block as ToolUse<"task_completion">,
-						completionCallbacks,
-					)
+					await taskCompletionTool.handle(cline, block as ToolUse<"task_completion">, completionCallbacks)
 					break
 				}
 				case "run_slash_command":

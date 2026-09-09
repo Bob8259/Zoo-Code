@@ -15,6 +15,7 @@ import { t } from "../../i18n"
 
 import { CheckpointDiff, CheckpointResult, CheckpointEventMap } from "./types"
 import { getExcludePatterns } from "./excludes"
+import { CheckpointLifecycle } from "./CheckpointLifecycle"
 
 /**
  * Creates a SimpleGit instance with sanitized environment variables to prevent
@@ -24,7 +25,7 @@ import { getExcludePatterns } from "./excludes"
  * @param baseDir - The directory where git operations should be executed
  * @returns A SimpleGit instance with sanitized environment
  */
-function createSanitizedGit(baseDir: string): SimpleGit {
+function createSanitizedGit(baseDir: string, signal?: AbortSignal): SimpleGit {
 	// Create a clean environment by explicitly unsetting git-related environment variables
 	// that could interfere with checkpoint operations
 	const sanitizedEnv: Record<string, string> = {}
@@ -61,7 +62,11 @@ function createSanitizedGit(baseDir: string): SimpleGit {
 
 	const options: Partial<SimpleGitOptions> = {
 		baseDir,
-		config: [],
+		// Checkpoints must not start detached maintenance or user hooks.
+		config: ["gc.auto=0", "maintenance.auto=false", "core.hooksPath=", "core.fsmonitor=false"],
+		maxConcurrentProcesses: 1,
+		abort: signal,
+		completion: { onClose: true, onExit: false },
 	}
 
 	// Create git instance and set the sanitized environment
@@ -77,6 +82,7 @@ function createSanitizedGit(baseDir: string): SimpleGit {
 }
 
 export abstract class ShadowCheckpointService extends EventEmitter {
+	private readonly lifecycle = new CheckpointLifecycle()
 	public readonly taskId: string
 	public readonly checkpointsDir: string
 	public readonly workspaceDir: string
@@ -98,11 +104,66 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 	}
 
 	public get isInitialized() {
-		return !!this.git
+		return !!this.git && !this.isDisposed
+	}
+
+	public get isDisposed() {
+		return this.lifecycle.signal.aborted
+	}
+
+	/** Stop owned Git work while retaining the repository for history/resume. */
+	public dispose(): Promise<void> {
+		const stopped = this.lifecycle.dispose()
+		this.removeAllListeners()
+		return stopped
+	}
+
+	public checkGitInstalled(): Promise<boolean> {
+		return this.lifecycle.run(async () => {
+			try {
+				await createSanitizedGit(os.tmpdir(), this.lifecycle.signal).version()
+				return true
+			} catch (error) {
+				this.lifecycle.signal.throwIfAborted()
+				return false
+			}
+		})
 	}
 
 	public getCheckpoints(): string[] {
 		return this._checkpoints.slice()
+	}
+
+	private async getLockFiles(): Promise<string[]> {
+		const refs = await fs.readdir(path.join(this.dotGitDir, "refs"), { recursive: true }).catch(() => [])
+		return [
+			"index.lock",
+			"HEAD.lock",
+			"config.lock",
+			"packed-refs.lock",
+			...refs.filter((name) => name.endsWith(".lock")).map((name) => path.join("refs", name)),
+		].map((name) => path.join(this.dotGitDir, name))
+	}
+
+	private runGitOperation<T>(operation: () => Promise<T>): Promise<T> {
+		return this.lifecycle.run(async () => {
+			const existingLocks = new Set<string>()
+			for (const file of await this.getLockFiles()) {
+				if (await fileExistsAtPath(file)) existingLocks.add(file)
+			}
+			try {
+				this.lifecycle.signal.throwIfAborted()
+				return await operation()
+			} finally {
+				if (this.isDisposed) {
+					// Git has closed. Remove only new lock files from this operation in
+					// the private shadow repo, before allowing another task to use Git.
+					for (const file of await this.getLockFiles()) {
+						if (!existingLocks.has(file)) await fs.unlink(file).catch(() => {})
+					}
+				}
+			}
+		})
 	}
 
 	constructor(taskId: string, checkpointsDir: string, workspaceDir: string, log: (message: string) => void) {
@@ -127,6 +188,12 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 	}
 
 	public async initShadowGit(onInit?: () => Promise<void>) {
+		const result = await this.runGitOperation(() => this.initializeShadowGit())
+		await onInit?.()
+		return result
+	}
+
+	private async initializeShadowGit() {
 		if (this.git) {
 			throw new Error("Shadow git repo already initialized")
 		}
@@ -146,7 +213,8 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		}
 
 		await fs.mkdir(this.checkpointsDir, { recursive: true })
-		const git = createSanitizedGit(this.checkpointsDir)
+		this.lifecycle.signal.throwIfAborted()
+		const git = createSanitizedGit(this.checkpointsDir, this.lifecycle.signal)
 		const gitVersion = await git.version()
 		this.log(`[${this.constructor.name}#create] git = ${gitVersion}`)
 
@@ -156,23 +224,28 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		if (await fileExistsAtPath(this.dotGitDir)) {
 			this.log(`[${this.constructor.name}#initShadowGit] shadow git repo already exists at ${this.dotGitDir}`)
 			const worktree = await this.getShadowGitConfigWorktree(git)
+			// Cancellation may have interrupted the first snapshot after git init.
+			this.baseHash = await git.revparse(["--verify", "HEAD"]).catch(() => undefined)
+			this.lifecycle.signal.throwIfAborted()
 
-			if (!worktree) {
+			if (!worktree && this.baseHash) {
 				throw new Error("Checkpoints require core.worktree to be set in the shadow git config")
 			}
 
-			const worktreeTrimmed = worktree.trim()
+			const worktreeTrimmed = worktree?.trim()
 
-			if (!arePathsEqual(worktreeTrimmed, this.workspaceDir)) {
+			if (worktreeTrimmed && !arePathsEqual(worktreeTrimmed, this.workspaceDir)) {
 				throw new Error(
 					`Checkpoints can only be used in the original workspace: ${worktreeTrimmed} !== ${this.workspaceDir}`,
 				)
 			}
 
 			await this.writeExcludeFile()
-			this.baseHash = await git.revparse(["HEAD"])
 		} else {
 			this.log(`[${this.constructor.name}#initShadowGit] creating shadow git repo at ${this.checkpointsDir}`)
+		}
+		if (!this.baseHash) {
+			// Re-running init also repairs a cancellation partway through git init itself.
 			await git.init({ "--template": "" })
 			await git.addConfig("core.worktree", this.workspaceDir) // Sets the working tree to the current workspace.
 			await git.addConfig("commit.gpgSign", "false") // Disable commit signing for shadow repo.
@@ -193,8 +266,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 
 		this.git = git
 
-		await onInit?.()
-
+		this.lifecycle.signal.throwIfAborted()
 		this.emit("initialize", {
 			type: "initialize",
 			workspaceDir: this.workspaceDir,
@@ -221,6 +293,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		try {
 			await git.add([".", "--ignore-errors"])
 		} catch (error) {
+			this.lifecycle.signal.throwIfAborted()
 			this.log(
 				`[${this.constructor.name}#stageAll] failed to add files to git: ${error instanceof Error ? error.message : String(error)}`,
 			)
@@ -296,6 +369,13 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		message: string,
 		options?: { allowEmpty?: boolean; suppressMessage?: boolean },
 	): Promise<CheckpointResult | undefined> {
+		return this.runGitOperation(() => this.saveCheckpointOperation(message, options))
+	}
+
+	private async saveCheckpointOperation(
+		message: string,
+		options?: { allowEmpty?: boolean; suppressMessage?: boolean },
+	): Promise<CheckpointResult | undefined> {
 		try {
 			this.log(
 				`[${this.constructor.name}#saveCheckpoint] starting checkpoint save (allowEmpty: ${options?.allowEmpty ?? false})`,
@@ -336,12 +416,16 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		} catch (e) {
 			const error = e instanceof Error ? e : new Error(String(e))
 			this.log(`[${this.constructor.name}#saveCheckpoint] failed to create checkpoint: ${error.message}`)
-			this.emit("error", { type: "error", error })
+			if (!this.isDisposed) this.emit("error", { type: "error", error })
 			throw error
 		}
 	}
 
 	public async restoreCheckpoint(commitHash: string) {
+		return this.runGitOperation(() => this.restoreCheckpointOperation(commitHash))
+	}
+
+	private async restoreCheckpointOperation(commitHash: string) {
 		try {
 			this.log(`[${this.constructor.name}#restoreCheckpoint] starting checkpoint restore`)
 
@@ -366,12 +450,16 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		} catch (e) {
 			const error = e instanceof Error ? e : new Error(String(e))
 			this.log(`[${this.constructor.name}#restoreCheckpoint] failed to restore checkpoint: ${error.message}`)
-			this.emit("error", { type: "error", error })
+			if (!this.isDisposed) this.emit("error", { type: "error", error })
 			throw error
 		}
 	}
 
 	public async getDiff({ from, to }: { from?: string; to?: string }): Promise<CheckpointDiff[]> {
+		return this.runGitOperation(() => this.getDiffOperation({ from, to }))
+	}
+
+	private async getDiffOperation({ from, to }: { from?: string; to?: string }): Promise<CheckpointDiff[]> {
 		if (!this.git) {
 			throw new Error("Shadow git repo not initialized")
 		}
@@ -458,8 +546,11 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 	}) {
 		const workspaceRepoDir = this.workspaceRepoDir({ globalStorageDir, workspaceDir })
 		const branchName = `roo-${taskId}`
-		const git = createSanitizedGit(workspaceRepoDir)
-		const success = await this.deleteBranch(git, branchName)
+		const lifecycle = new CheckpointLifecycle()
+		const success = await lifecycle.run(() => {
+			const git = createSanitizedGit(workspaceRepoDir, lifecycle.signal)
+			return this.deleteBranch(git, branchName)
+		})
 
 		if (success) {
 			console.log(`[${this.name}#deleteTask.${taskId}] deleted branch ${branchName}`)

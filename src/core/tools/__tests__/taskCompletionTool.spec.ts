@@ -60,7 +60,6 @@ describe("taskCompletionTool", () => {
 	let mockAskApproval: ReturnType<typeof vi.fn>
 	let mockHandleError: ReturnType<typeof vi.fn>
 	let mockToolDescription: ReturnType<typeof vi.fn>
-	let mockAskFinishSubTaskApproval: ReturnType<typeof vi.fn>
 	let mockGetConfiguration: ReturnType<typeof vi.fn>
 	let mockGetState: ReturnType<typeof vi.fn>
 	let mockShowSystemNotification: ReturnType<typeof vi.fn>
@@ -71,7 +70,6 @@ describe("taskCompletionTool", () => {
 		mockAskApproval = vi.fn()
 		mockHandleError = vi.fn()
 		mockToolDescription = vi.fn()
-		mockAskFinishSubTaskApproval = vi.fn()
 		mockGetState = vi.fn().mockResolvedValue({ notifyOnTaskComplete: true })
 		mockShowSystemNotification = vi.mocked(showSystemNotification)
 		mockShowSystemNotification.mockReset()
@@ -125,7 +123,6 @@ describe("taskCompletionTool", () => {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
-				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
 			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
@@ -150,7 +147,6 @@ describe("taskCompletionTool", () => {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
-				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
 			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
@@ -179,7 +175,6 @@ describe("taskCompletionTool", () => {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
-				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
 			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
@@ -218,7 +213,6 @@ describe("taskCompletionTool", () => {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
-				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
 			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
@@ -260,7 +254,6 @@ describe("taskCompletionTool", () => {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
-				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
 			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
@@ -303,7 +296,6 @@ describe("taskCompletionTool", () => {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
-				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
 			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
@@ -345,7 +337,6 @@ describe("taskCompletionTool", () => {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
-				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
 			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
@@ -388,7 +379,6 @@ describe("taskCompletionTool", () => {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
-				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
 			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
@@ -431,7 +421,6 @@ describe("taskCompletionTool", () => {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
-				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 				toolDescription: mockToolDescription,
 			}
 			await taskCompletionTool.handle(mockTask as Task, block, callbacks)
@@ -461,7 +450,6 @@ describe("taskCompletionTool", () => {
 					askApproval: mockAskApproval,
 					handleError: mockHandleError,
 					pushToolResult: mockPushToolResult,
-					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 					toolDescription: mockToolDescription,
 				}
 
@@ -495,7 +483,6 @@ describe("taskCompletionTool", () => {
 					askApproval: mockAskApproval,
 					handleError: mockHandleError,
 					pushToolResult: mockPushToolResult,
-					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 					toolDescription: mockToolDescription,
 				}
 
@@ -522,7 +509,6 @@ describe("taskCompletionTool", () => {
 					askApproval: mockAskApproval,
 					handleError: mockHandleError,
 					pushToolResult: mockPushToolResult,
-					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 					toolDescription: mockToolDescription,
 				}
 
@@ -557,7 +543,6 @@ describe("taskCompletionTool", () => {
 					askApproval: mockAskApproval,
 					handleError: mockHandleError,
 					pushToolResult: mockPushToolResult,
-					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 					toolDescription: mockToolDescription,
 				}
 
@@ -576,6 +561,66 @@ describe("taskCompletionTool", () => {
 		})
 	})
 
+	describe("subtask return to parent", () => {
+		it.each([false, true])(
+			"returns automatically with subtask auto-approval set to %s",
+			async (alwaysAllowSubtasks) => {
+				const reopenParentFromDelegation = vi.fn().mockResolvedValue(undefined)
+				mockTask = { ...mockTask, parentTaskId: "parent_task_1" }
+				mockTask.apiConversationHistory = []
+				mockTask.clineMessages = []
+				mockTask.providerRef = {
+					deref: () => ({
+						getState: vi
+							.fn()
+							.mockResolvedValue({ alwaysAllowSubtasks, autoApprovalEnabled: alwaysAllowSubtasks }),
+						getTaskWithId: vi.fn().mockResolvedValue({ historyItem: { status: "active" } }),
+						reopenParentFromDelegation,
+					}),
+				} as any
+
+				await taskCompletionTool.execute({ result: "Subtask finished" }, mockTask as Task, {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					toolDescription: mockToolDescription,
+				})
+
+				expect(mockHandleError).not.toHaveBeenCalled()
+				expect(mockAskApproval).not.toHaveBeenCalled()
+				expect(mockTask.ask).not.toHaveBeenCalled()
+				expect(reopenParentFromDelegation).toHaveBeenCalledExactlyOnceWith({
+					parentTaskId: "parent_task_1",
+					childTaskId: "task_1",
+					completionResultSummary: "Subtask finished",
+				})
+				expect(mockTask.emit).toHaveBeenCalledWith(RooCodeEventName.TaskCompleted, "task_1", {}, {})
+			},
+		)
+
+		it("does not return an already completed subtask to the parent again", async () => {
+			const reopenParentFromDelegation = vi.fn()
+			mockTask = { ...mockTask, parentTaskId: "parent_task_1" }
+			mockTask.providerRef = {
+				deref: () => ({
+					getTaskWithId: vi.fn().mockResolvedValue({ historyItem: { status: "completed" } }),
+					reopenParentFromDelegation,
+				}),
+			} as any
+
+			await taskCompletionTool.execute({ result: "Subtask finished" }, mockTask as Task, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				toolDescription: mockToolDescription,
+			})
+
+			expect(mockHandleError).not.toHaveBeenCalled()
+			expect(reopenParentFromDelegation).not.toHaveBeenCalled()
+			expect(mockTask.ask).toHaveBeenCalledWith("completion_result", "", false)
+		})
+	})
+
 	describe("task completion notification", () => {
 		const block: TaskCompletionToolUse = {
 			type: "tool_use",
@@ -589,7 +634,6 @@ describe("taskCompletionTool", () => {
 			askApproval: mockAskApproval,
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
-			askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
 			toolDescription: mockToolDescription,
 		})
 
@@ -623,8 +667,7 @@ describe("taskCompletionTool", () => {
 
 		it("does not show a system notification when a subtask finishes", async () => {
 			mockGetState.mockResolvedValue({ notifyOnTaskComplete: true })
-			mockTask.parentTaskId = "parent_task_1"
-			mockAskFinishSubTaskApproval.mockResolvedValue(false)
+			mockTask = { ...mockTask, parentTaskId: "parent_task_1" }
 
 			await taskCompletionTool.handle(mockTask as Task, block, callbacks())
 

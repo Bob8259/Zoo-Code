@@ -79,6 +79,32 @@ describe("ChatRow - subtask links", () => {
 	})
 
 	describe("newTask tool", () => {
+		it("should display 'Go to subtask' link for an unfinished subtask", () => {
+			const message = {
+				ts: Date.now(),
+				type: "ask" as const,
+				ask: "tool" as const,
+				text: JSON.stringify({
+					tool: "newTask",
+					mode: "code",
+					content: "Implement feature X",
+				}),
+			}
+
+			// The active child ID is available immediately, before childIds reaches the webview state.
+			renderChatRow(message, { awaitingChildId: "in-progress-child" })
+
+			const goToSubtaskButton = screen.getByText("Go to subtask")
+			expect(goToSubtaskButton).toBeInTheDocument()
+
+			fireEvent.click(goToSubtaskButton)
+
+			expect(mockPostMessage).toHaveBeenCalledWith({
+				type: "showTaskWithId",
+				text: "in-progress-child",
+			})
+		})
+
 		it("should display 'Go to subtask' link when currentTaskItem has childIds", () => {
 			const message = {
 				ts: Date.now(),

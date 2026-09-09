@@ -69,7 +69,79 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 		})
 
 		afterEach(async () => {
+			await service.dispose()
 			vitest.restoreAllMocks()
+		})
+
+		describe("task lifecycle", () => {
+			it("cleans only locks created by cancelled work in the shadow repository", async () => {
+				const existingLock = path.join(service.checkpointsDir, ".git", "config.lock")
+				const ownedLock = path.join(service.checkpointsDir, ".git", "index.lock")
+				await fs.writeFile(existingLock, "pre-existing lock")
+				const running = (service as any).runGitOperation(async () => {
+					await fs.writeFile(ownedLock, "interrupted Git")
+					void service.dispose()
+				})
+				await expect(running).rejects.toThrow()
+				expect(await fileExistsAtPath(ownedLock)).toBe(false)
+				expect(await fs.readFile(existingLock, "utf8")).toBe("pre-existing lock")
+				await fs.unlink(existingLock)
+			})
+
+			it("stops an active Git command and rejects queued saves", async () => {
+				let started!: () => void
+				const spawned = new Promise<void>((resolve) => {
+					started = resolve
+				})
+				const git = (service as any).git as SimpleGit
+				git.outputHandler(() => started())
+				// Git waits for stdin here, so this proves cancellation of a real process.
+				const running = (service as any).runGitOperation(() => git.raw(["hash-object", "--stdin"]))
+				const rejected = expect(running).rejects.toThrow()
+				await spawned
+				const queued = service.saveCheckpoint("Must not run")
+				const queuedRejected = expect(queued).rejects.toThrow()
+				await service.dispose()
+				await rejected
+				await queuedRejected
+				expect(service.isInitialized).toBe(false)
+			})
+
+			it("reopens a finished task without losing its checkpoints or changing workspace files", async () => {
+				await fs.writeFile(testFile, "Saved checkpoint")
+				const checkpoint = await service.saveCheckpoint("Saved checkpoint")
+				await service.dispose()
+				await fs.writeFile(testFile, "Current work")
+				const resumed = new klass(taskId, service.checkpointsDir, service.workspaceDir, () => {})
+				try {
+					const result = await resumed.initShadowGit()
+					expect(result.created).toBe(false)
+					expect(resumed.baseHash).toBe(checkpoint?.commit)
+					expect(await fs.readFile(testFile, "utf8")).toBe("Current work")
+					await resumed.restoreCheckpoint(checkpoint!.commit)
+					expect(await fs.readFile(testFile, "utf8")).toBe("Saved checkpoint")
+					await fs.writeFile(testFile, "Resumed changes")
+					expect((await resumed.saveCheckpoint("Resume"))?.commit).toBeTruthy()
+				} finally {
+					await resumed.dispose()
+				}
+			})
+
+			it.each([false, true])(
+				"recovers initialization before the first commit (git init finished: %s)",
+				async (initialized) => {
+					const incompleteDir = path.join(service.checkpointsDir, "..", "incomplete")
+					await fs.mkdir(path.join(incompleteDir, ".git"), { recursive: true })
+					if (initialized) await simpleGit(incompleteDir).init()
+					const resumed = new klass("incomplete", incompleteDir, service.workspaceDir, () => {})
+					try {
+						expect((await resumed.initShadowGit()).created).toBe(true)
+						expect(resumed.baseHash).toBeTruthy()
+					} finally {
+						await resumed.dispose()
+					}
+				},
+			)
 		})
 
 		afterAll(async () => {
