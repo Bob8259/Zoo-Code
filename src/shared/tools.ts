@@ -95,7 +95,7 @@ export type NativeToolArgs = {
 	read_command_output: { artifact_id: string; search?: string; offset?: number; limit?: number }
 	task_completion: { result: string }
 	execute_command: { command: string; cwd?: string; timeout?: number | null }
-	apply_diff: { path: string; diff: string }
+	apply_diff: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
 	edit: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
 	search_and_replace: { file_path: string; old_string: string; new_string: string; replace_all?: boolean }
 	search_replace: { file_path: string; old_string: string; new_string: string }

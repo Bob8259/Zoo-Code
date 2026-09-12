@@ -339,7 +339,9 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.path}']`
 					case "apply_diff":
 						// Native-only: tool args are structured (no XML payloads).
-						return block.params?.path ? `[${block.name} for '${block.params.path}']` : `[${block.name}]`
+						return block.params?.file_path
+							? `[${block.name} for '${block.params.file_path}']`
+							: `[${block.name}]`
 					case "search_files":
 						return `[${block.name} for '${block.params.regex}'${
 							block.params.file_pattern ? ` in '${block.params.file_pattern}'` : ""

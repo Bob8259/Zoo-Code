@@ -483,10 +483,16 @@ export class NativeToolCallParser {
 				break
 
 			case "apply_diff":
-				if (partialArgs.path !== undefined || partialArgs.diff !== undefined) {
+				if (
+					partialArgs.file_path !== undefined ||
+					partialArgs.old_string !== undefined ||
+					partialArgs.new_string !== undefined
+				) {
 					nativeArgs = {
-						path: partialArgs.path,
-						diff: partialArgs.diff,
+						file_path: partialArgs.file_path,
+						old_string: partialArgs.old_string,
+						new_string: partialArgs.new_string,
+						replace_all: this.coerceOptionalBoolean(partialArgs.replace_all),
 					}
 				}
 				break
@@ -794,10 +800,16 @@ export class NativeToolCallParser {
 					break
 
 				case "apply_diff":
-					if (args.path !== undefined && args.diff !== undefined) {
+					if (
+						args.file_path !== undefined &&
+						args.old_string !== undefined &&
+						args.new_string !== undefined
+					) {
 						nativeArgs = {
-							path: args.path,
-							diff: args.diff,
+							file_path: args.file_path,
+							old_string: args.old_string,
+							new_string: args.new_string,
+							replace_all: this.coerceOptionalBoolean(args.replace_all),
 						} as NativeArgsFor<TName>
 					}
 					break

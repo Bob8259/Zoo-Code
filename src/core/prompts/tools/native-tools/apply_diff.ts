@@ -1,23 +1,15 @@
 import type OpenAI from "openai"
 
-const APPLY_DIFF_DESCRIPTION = `Surgically modify a file using search/replace blocks.
+const APPLY_DIFF_DESCRIPTION = `Edit an existing file by replacing an exact string.
 
-CRITICAL REQUIREMENTS:
-1. Ensure the text in the SEARCH block matches the literal file content exactly (whitespace, indentation, line endings).
-2. Strip out all line number prefixes (e.g. remove ':130 | ') from SEARCH blocks.
-3. Replace any hidden non-breaking spaces with standard spaces or tabs for indentation.
-4. Provide multiple search/replace blocks in the 'diff' parameter for multiple changes. Use 'read_file' first if unsure.`
+Usage requirements:
+1. Read the file first so old_string matches the current contents.
+2. Match old_string exactly, including whitespace, indentation, and punctuation.
+3. Include enough surrounding context in old_string to make it unique.
+4. Use replace_all only when every occurrence should be changed.
+5. For multiple unrelated changes, make separate apply_diff calls.`
 
-const DIFF_PARAMETER_DESCRIPTION = `One or more search/replace blocks defining the changes. The ':start_line:' prefix followed by the 1-based line number (without brackets) is required. Format:
-<<<<<<< SEARCH
-:start_line:10
--------
-const x = 1;
-=======
-const x = 2;
->>>>>>> REPLACE`
-
-export const apply_diff = {
+const apply_diff = {
 	type: "function",
 	function: {
 		name: "apply_diff",
@@ -25,17 +17,31 @@ export const apply_diff = {
 		parameters: {
 			type: "object",
 			properties: {
-				path: {
+				file_path: {
 					type: "string",
-					description: "The path of the file to modify, relative to the current workspace directory.",
+					description: "The path of the file to edit, relative to the current workspace directory.",
 				},
-				diff: {
+				old_string: {
 					type: "string",
-					description: DIFF_PARAMETER_DESCRIPTION,
+					description:
+						"The exact text to find and replace. It must match the file contents exactly, including whitespace and indentation.",
+				},
+				new_string: {
+					type: "string",
+					description: "The replacement text. It must be different from old_string.",
+				},
+				replace_all: {
+					type: "boolean",
+					description:
+						"When true, replace every occurrence of old_string. When false (default), old_string must be unique.",
+					default: false,
 				},
 			},
-			required: ["path", "diff"],
+			required: ["file_path", "old_string", "new_string"],
 			additionalProperties: false,
 		},
 	},
 } satisfies OpenAI.Chat.ChatCompletionTool
+
+export { apply_diff }
+export default apply_diff

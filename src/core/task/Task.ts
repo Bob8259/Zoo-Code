@@ -1737,8 +1737,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			contextCondense,
 		)
 
-		// Queued messages are delivered only after task completion. Draining them
-		// here can race with delegation and discard them when this task is disposed.
+		// Manual condensation temporarily blocks user input. Resume the first queued
+		// message after the summary is persisted so the active task can continue.
+		this.processQueuedMessagesAfterCondense()
 	}
 
 	async say(
@@ -4732,11 +4733,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Queued messages are retained until the task enters its completion-result
-	 * flow, which is the only safe point to submit them without racing task
-	 * disposal or subtask delegation.
+	 * Sends one queued user message after manual condensation completes.
+	 * Dequeue inside the deferred callback so a task transition can transfer
+	 * ownership of the message before this task is disposed.
 	 */
-	public processQueuedMessages(): void {
-		// Intentionally a no-op. See Task.ask("completion_result") for queue draining.
+	private processQueuedMessagesAfterCondense(): void {
+		if (this.abort || this.abandoned) {
+			return
+		}
+
+		setTimeout(() => {
+			if (this.abort || this.abandoned) {
+				return
+			}
+
+			const queued = this.messageQueueService.dequeueMessage()
+			if (!queued) {
+				return
+			}
+
+			void this.submitUserMessage(queued.text, queued.images).catch((error) => {
+				console.error(`[Task#${this.taskId}] Failed to submit queued message:`, error)
+			})
+		}, 0)
 	}
+
+	/**
+	 * Queued messages are otherwise consumed by the completion-result ask. Keep
+	 * this legacy hook inert for tool-edit callers so they cannot start a new
+	 * conversational turn in the middle of an active task.
+	 */
+	public processQueuedMessages(): void {}
 }

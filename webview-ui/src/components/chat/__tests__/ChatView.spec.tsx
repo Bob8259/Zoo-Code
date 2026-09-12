@@ -859,6 +859,55 @@ describe("ChatView - Message Queueing Tests", () => {
 		)
 	})
 
+	it("sends mistake-limit feedback directly even when queued messages exist", async () => {
+		const { getByTestId, getByText } = renderChatView()
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 1000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "mistake_limit_reached",
+					ts: Date.now(),
+					text: "Zoo is having trouble completing the task.",
+					partial: false,
+				},
+			],
+			messageQueue: [{ id: "queued-message", text: "Earlier queued message", images: [] }],
+		})
+
+		await waitFor(() => {
+			expect(getByText("chat:proceedAnyways.title")).toBeInTheDocument()
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+		const input = getByTestId("chat-textarea").querySelector("input")! as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "Try a simpler approach." } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "askResponse",
+				askResponse: "messageResponse",
+				text: "Try a simpler approach.",
+				images: [],
+			})
+		})
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "queueMessage",
+			}),
+		)
+	})
+
 	it("sends messages normally when API request is complete (cost present)", async () => {
 		const { getByTestId } = renderChatView()
 

@@ -1806,7 +1806,7 @@ describe("Queued message processing after condense", () => {
 		apiKey: "test-api-key",
 	} as any
 
-	it("keeps queued messages after condensing completes until task completion", async () => {
+	it("processes queued messages after condensing completes", async () => {
 		const provider = createProvider()
 		const task = new Task({
 			provider,
@@ -1823,9 +1823,31 @@ describe("Queued message processing after condense", () => {
 		task.messageQueueService.addMessage("queued text", ["img1.png"])
 
 		await task.condenseContext()
+		await new Promise<void>((resolve) => setTimeout(resolve, 0))
+
+		expect(submitSpy).toHaveBeenCalledWith("queued text", ["img1.png"])
+		expect(task.messageQueueService.isEmpty()).toBe(true)
+	})
+
+	it("does not submit queued messages when the task is abandoned during condensing", async () => {
+		const provider = createProvider()
+		const task = new Task({
+			provider,
+			apiConfiguration: apiConfig,
+			task: "initial task",
+			startTask: false,
+		})
+
+		vi.spyOn(task as any, "getSystemPrompt").mockResolvedValue("system")
+		const submitSpy = vi.spyOn(task, "submitUserMessage").mockResolvedValue(undefined)
+		task.messageQueueService.addMessage("queued text")
+
+		await task.condenseContext()
+		task.abandoned = true
+		await new Promise<void>((resolve) => setTimeout(resolve, 0))
 
 		expect(submitSpy).not.toHaveBeenCalled()
-		expect(task.messageQueueService.messages).toMatchObject([{ text: "queued text", images: ["img1.png"] }])
+		expect(task.messageQueueService.messages).toMatchObject([{ text: "queued text" }])
 	})
 
 	it("drains queued message on completion_result ask", async () => {

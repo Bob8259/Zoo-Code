@@ -2714,15 +2714,11 @@ items:
                 </principle>
 
                 <principle priority="high">
-                  <name>Escape Conflict Markers</name>
+                  <name>Choose the Appropriate Editing Tool</name>
                   <description>
-                    When using apply_diff or search_and_replace tools, always escape merge
-                    conflict markers with backslashes to prevent parsing errors.
+                    Use apply_patch for multi-block or multi-file conflict resolutions.
+                    Use apply_diff with file_path, old_string, and new_string for one exact literal replacement.
                   </description>
-                  <example><![CDATA[
-                    Correct: \<<<<<<< HEAD
-                    Wrong: <<<<<<< HEAD
-                  ]]></example>
                 </principle>
 
                 <principle priority="medium">
@@ -2810,16 +2806,14 @@ items:
                 </pitfall>
 
                 <pitfall>
-                  <description>Not escaping conflict markers in diffs</description>
+                  <description>Using the wrong editing tool for a conflict</description>
                   <why_problematic>
-                    Unescaped conflict markers (<<<<<<, =======, >>>>>>) in SEARCH
-                    or REPLACE sections will be interpreted as actual diff syntax,
-                    causing the apply_diff tool to fail or produce incorrect results
+                    apply_diff performs one exact literal replacement and does not parse
+                    marker-based SEARCH/REPLACE blocks or combine multiple edits.
                   </why_problematic>
                   <correct_approach>
-                    Always escape conflict markers with a backslash (\) when they
-                    appear in the content you're searching for or replacing.
-                    Example: \<<<<<<< HEAD instead of <<<<<<< HEAD
+                    Use apply_patch for multi-block or multi-file conflict resolutions.
+                    Use apply_diff only with file_path, old_string, and new_string for one exact replacement.
                   </correct_approach>
                 </pitfall>
               </common_pitfalls>
@@ -2835,7 +2829,7 @@ items:
                   <item>Run git blame on conflicting sections</item>
                   <item>Read commit messages for intent</item>
                   <item>Consider if changes can be combined</item>
-                  <item>Escape conflict markers in diffs</item>
+                  <item>Choose apply_patch for multi-block or multi-file resolutions</item>
                 </category>
                 
                 <category name="after_resolution">
@@ -2863,7 +2857,7 @@ items:
                 </priority>
                 
                 <priority level="3">
-                  <tool>apply_diff or search_and_replace</tool>
+                  <tool>apply_patch</tool>
                   <when>To resolve conflicts by replacing conflicted sections</when>
                   <why>Precise editing of specific conflict blocks</why>
                 </priority>
@@ -2942,35 +2936,19 @@ items:
 
                 <tool name="apply_diff">
                   <best_practices>
-                    <practice>Always escape conflict markers with backslash</practice>
-                    <practice>Include enough context to ensure unique matches</practice>
-                    <practice>Use :start_line: for precision</practice>
-                    <practice>Combine multiple resolutions in one diff when possible</practice>
+                    <practice>Read the file first so old_string matches the current contents</practice>
+                    <practice>Provide file_path, old_string, and new_string for one exact literal replacement</practice>
+                    <practice>Use replace_all only when every occurrence should change</practice>
+                    <practice>Make separate apply_diff calls for unrelated changes</practice>
                   </best_practices>
-                  
+
                   <example><![CDATA[
             <apply_diff>
-            <path>src/feature.ts</path>
-            <diff>
-            <<<<<<< SEARCH
-            :start_line:45
-            -------
-            \<<<<<<< HEAD
-            function oldImplementation() {
-              return "old";
+            {
+              "file_path": "src/feature.ts",
+              "old_string": "function oldImplementation() {\n  return \"old\";\n}",
+              "new_string": "function mergedImplementation() {\n  return \"merged\";\n}"
             }
-            \=======
-            function newImplementation() {
-              return "new";
-            }
-            \>>>>>>> feature-branch
-            =======
-            function mergedImplementation() {
-              // Combining both approaches
-              return "merged";
-            }
-            >>>>>>> REPLACE
-            </diff>
             </apply_diff>
                   ]]></example>
                 </tool>
@@ -3238,63 +3216,14 @@ items:
                 <step number="6">
                   <description>Resolve the conflicts</description>
                   <tool_use><![CDATA[
-            <apply_diff>
-            <path>src/data/processor.ts</path>
-            <diff>
-            <<<<<<< SEARCH
-            :start_line:48
-            -------
-            \<<<<<<< HEAD
-              async processData(data: DataInput): Promise<ProcessedData> {
-                // Refactored to use async/await
-                const result = await this.transform(data);
-                return result;
-              }
-            \=======
-              processData(data: any[]): ProcessedData {
-                const listener = this.createListener();
-                this.listeners.set(data.id, listener);
-                
-                return this.transform(data);
-              }
-            \>>>>>>> abc123 (Fix memory leak in data processor)
-            =======
-              async processData(data: DataInput): Promise<ProcessedData> {
-                // Create and track listener for cleanup (memory leak fix)
-                const listener = this.createListener();
-                this.listeners.set(data.id, listener);
-                
-                // Refactored to use async/await
-                const result = await this.transform(data);
-                return result;
-              }
-            >>>>>>> REPLACE
-
-            <<<<<<< SEARCH
-            :start_line:63
-            -------
-              cleanup() {
-            \<<<<<<< HEAD
-                // TODO: Implement cleanup
-            \=======
-                // Fix: Clear all listeners to prevent memory leak
-                this.listeners.forEach(listener => {
-                  listener.removeAllListeners();
-                });
-                this.listeners.clear();
-            \>>>>>>> abc123 (Fix memory leak in data processor)
-              }
-            =======
-              cleanup() {
-                // Fix: Clear all listeners to prevent memory leak
-                this.listeners.forEach(listener => {
-                  listener.removeAllListeners();
-                });
-                this.listeners.clear();
-              }
-            >>>>>>> REPLACE
-            </diff>
-            </apply_diff>
+            <apply_patch>
+            *** Begin Patch
+            *** Update File: src/data/processor.ts
+            @@
+            -the exact conflicted block from the file
+            +the resolved block combining both changes
+            *** End Patch
+            </apply_patch>
                   ]]></tool_use>
                   <explanation>
                     Combined both changes: kept the async/await refactor from main
@@ -3312,12 +3241,14 @@ items:
                   ]]></tool_use>
                   <!-- Similar process for test file -->
                   <tool_use><![CDATA[
-            <apply_diff>
-            <path>src/data/processor.test.ts</path>
-            <diff>
-            <!-- Test resolution would go here -->
-            </diff>
-            </apply_diff>
+            <apply_patch>
+            *** Begin Patch
+            *** Update File: src/data/processor.test.ts
+            @@
+            -the exact conflicted test block from the file
+            +the resolved test block combining both changes
+            *** End Patch
+            </apply_patch>
                   ]]></tool_use>
                 </step>
 

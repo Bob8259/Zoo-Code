@@ -15,17 +15,22 @@ import type { ToolUse } from "../../shared/tools"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
-interface EditParams {
+export interface StructuredEditParams {
 	file_path: string
 	old_string: string
 	new_string: string
 	replace_all?: boolean
 }
 
-export class EditTool extends BaseTool<"edit"> {
-	readonly name = "edit" as const
+export class StructuredEditTool<TName extends "edit" | "apply_diff"> extends BaseTool<TName> {
+	readonly name: TName
 
-	async execute(params: EditParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+	constructor(toolName: TName) {
+		super()
+		this.name = toolName
+	}
+
+	async execute(params: StructuredEditParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { file_path: relPath, old_string: oldString, new_string: newString, replace_all: replaceAll } = params
 		const { askApproval, handleError, pushToolResult } = callbacks
 
@@ -33,29 +38,29 @@ export class EditTool extends BaseTool<"edit"> {
 			// Validate required parameters
 			if (!relPath) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("edit")
-				pushToolResult(await task.sayAndCreateMissingParamError("edit", "file_path"))
+				task.recordToolError(this.name)
+				pushToolResult(await task.sayAndCreateMissingParamError(this.name, "file_path"))
 				return
 			}
 
 			if (!oldString) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("edit")
-				pushToolResult(await task.sayAndCreateMissingParamError("edit", "old_string"))
+				task.recordToolError(this.name)
+				pushToolResult(await task.sayAndCreateMissingParamError(this.name, "old_string"))
 				return
 			}
 
 			if (newString === undefined) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("edit")
-				pushToolResult(await task.sayAndCreateMissingParamError("edit", "new_string"))
+				task.recordToolError(this.name)
+				pushToolResult(await task.sayAndCreateMissingParamError(this.name, "new_string"))
 				return
 			}
 
 			// Check old_string !== new_string
 			if (oldString === newString) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("edit")
+				task.recordToolError(this.name)
 				pushToolResult(
 					formatResponse.toolError(
 						"'old_string' and 'new_string' are identical. No changes needed. If you want to make a change, ensure 'old_string' and 'new_string' are different.",
@@ -80,8 +85,8 @@ export class EditTool extends BaseTool<"edit"> {
 			const fileExists = await fileExistsAtPath(absolutePath)
 			if (!fileExists) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("edit")
-				const errorMessage = `File not found: ${relPath}. Cannot perform edit on a non-existent file.`
+				task.recordToolError(this.name)
+				const errorMessage = `File not found: ${relPath}. Cannot perform ${this.name} on a non-existent file.`
 				await task.say("error", errorMessage)
 				pushToolResult(formatResponse.toolError(errorMessage))
 				return
@@ -94,7 +99,7 @@ export class EditTool extends BaseTool<"edit"> {
 				fileContent = fileContent.replace(/\r\n/g, "\n")
 			} catch (error) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("edit")
+				task.recordToolError(this.name)
 				const errorMessage = `Failed to read file '${relPath}'. Please verify file permissions and try again.`
 				await task.say("error", errorMessage)
 				pushToolResult(formatResponse.toolError(errorMessage))
@@ -110,7 +115,7 @@ export class EditTool extends BaseTool<"edit"> {
 
 			if (matchCount === 0) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("edit", "no_match")
+				task.recordToolError(this.name, "no_match")
 				pushToolResult(
 					formatResponse.toolError(
 						`No match found for 'old_string' in ${relPath}. Make sure the text to find appears exactly in the file, including whitespace and indentation.`,
@@ -122,7 +127,7 @@ export class EditTool extends BaseTool<"edit"> {
 			// Uniqueness check when replace_all is not enabled
 			if (!replaceAll && matchCount > 1) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("edit")
+				task.recordToolError(this.name)
 				pushToolResult(
 					formatResponse.toolError(
 						`Found ${matchCount} matches of 'old_string' in the file. Use 'replace_all: true' to replace all occurrences, or provide more context in 'old_string' to make it unique.`,
@@ -230,20 +235,20 @@ export class EditTool extends BaseTool<"edit"> {
 			pushToolResult(message)
 
 			// Record successful tool usage and cleanup
-			task.recordToolUsage("edit")
+			task.recordToolUsage(this.name)
 			await task.diffViewProvider.reset()
 			this.resetPartialState()
 
 			// Process any queued messages after file edit completes
 			task.processQueuedMessages()
 		} catch (error) {
-			await handleError("edit", error as Error)
+			await handleError(this.name, error as Error)
 			await task.diffViewProvider.reset()
 			this.resetPartialState()
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"edit">): Promise<void> {
+	override async handlePartial(task: Task, block: ToolUse<TName>): Promise<void> {
 		const relPath: string | undefined = block.params.file_path
 
 		// Wait for path to stabilize before showing UI (prevents truncated paths)
@@ -273,6 +278,12 @@ export class EditTool extends BaseTool<"edit"> {
  */
 function escapeRegExp(input: string): string {
 	return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
+export class EditTool extends StructuredEditTool<"edit"> {
+	constructor() {
+		super("edit")
+	}
 }
 
 export const editTool = new EditTool()

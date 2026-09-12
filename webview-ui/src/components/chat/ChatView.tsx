@@ -606,6 +606,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		setSendingDisabled(true)
 		setSelectedImages([])
 		setClineAsk(undefined)
+		clineAskRef.current = undefined
 		setEnableButtons(false)
 		// Do not reset mode here as it should persist.
 		// setPrimaryButtonText(undefined)
@@ -667,6 +668,21 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					return
 				}
 
+				// The mistake-limit prompt explicitly requests user feedback. It must take
+				// precedence over any stale queue state so the task can continue. Use the
+				// latest message as a fallback while the local ask state catches up.
+				const isMistakeLimitAskActive =
+					clineAskRef.current === "mistake_limit_reached" ||
+					(!sendingDisabled &&
+						lastMessage?.type === "ask" &&
+						lastMessage.ask === "mistake_limit_reached")
+				if (isMistakeLimitAskActive) {
+					userRespondedRef.current = true
+					vscode.postMessage({ type: "askResponse", askResponse: "messageResponse", text, images })
+					handleChatReset()
+					return
+				}
+
 				// Queue message if:
 				// - Task is busy (sendingDisabled)
 				// - API request in progress (isStreaming)
@@ -708,7 +724,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "completion_result": // If this happens then the user has feedback for the completion result.
 						case "resume_task":
 						case "resume_completed_task":
-						case "mistake_limit_reached":
 							vscode.postMessage({
 								type: "askResponse",
 								askResponse: "messageResponse",
@@ -736,6 +751,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			currentTaskItem?.id,
 			handleCondenseContext,
 			isCommandActive,
+			lastMessage,
 		], // messagesRef and clineAskRef are stable
 	)
 

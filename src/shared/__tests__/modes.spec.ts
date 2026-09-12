@@ -101,7 +101,7 @@ describe("isToolAllowedForMode", () => {
 
 			expect(
 				isToolAllowedForMode("apply_diff", "markdown-editor", customModes, undefined, {
-					path: "test.js",
+					file_path: "test.js",
 				}),
 			).toBe(true)
 
@@ -123,8 +123,9 @@ describe("isToolAllowedForMode", () => {
 
 			// Test apply_diff
 			const diffResult = isToolAllowedForMode("apply_diff", "markdown-editor", customModes, undefined, {
-				path: "test.md",
-				diff: "- old\n+ new",
+				file_path: "test.md",
+				old_string: "old",
+				new_string: "new",
 			})
 			expect(diffResult).toBe(true)
 
@@ -138,8 +139,9 @@ describe("isToolAllowedForMode", () => {
 
 			expect(() =>
 				isToolAllowedForMode("apply_diff", "markdown-editor", customModes, undefined, {
-					path: "test.js",
-					diff: "- old\n+ new",
+					file_path: "test.js",
+					old_string: "old",
+					new_string: "new",
 				}),
 			).toThrow(FileRestrictionError)
 		})
@@ -171,14 +173,16 @@ describe("isToolAllowedForMode", () => {
 			// Test apply_diff with non-matching file
 			expect(() =>
 				isToolAllowedForMode("apply_diff", "docs-editor", customModesWithDescription, undefined, {
-					path: "test.js",
-					diff: "- old\n+ new",
+					file_path: "test.js",
+					old_string: "old",
+					new_string: "new",
 				}),
 			).toThrow(FileRestrictionError)
 			expect(() =>
 				isToolAllowedForMode("apply_diff", "docs-editor", customModesWithDescription, undefined, {
-					path: "test.js",
-					diff: "- old\n+ new",
+					file_path: "test.js",
+					old_string: "old",
+					new_string: "new",
 				}),
 			).toThrow(/Documentation files only/)
 
@@ -217,8 +221,9 @@ describe("isToolAllowedForMode", () => {
 			// Should allow applying diffs to markdown files
 			expect(
 				isToolAllowedForMode("apply_diff", "architect", [], undefined, {
-					path: "readme.md",
-					diff: "- old\n+ new",
+					file_path: "readme.md",
+					old_string: "old",
+					new_string: "new",
 				}),
 			).toBe(true)
 
@@ -242,27 +247,30 @@ describe("isToolAllowedForMode", () => {
 		})
 
 		it("applies restrictions to apply_diff", () => {
-			// Native-only: file restrictions for apply_diff are enforced against the top-level `path`.
+			// Native-only: file restrictions for apply_diff are enforced against `file_path`.
 
 			// Should allow markdown files in architect mode
 			expect(
 				isToolAllowedForMode("apply_diff", "architect", [], undefined, {
-					path: "test.md",
-					diff: "- old content\n+ new content",
+					file_path: "test.md",
+					old_string: "old content",
+					new_string: "new content",
 				}),
 			).toBe(true)
 
 			// Non-markdown file should throw
 			expect(() =>
 				isToolAllowedForMode("apply_diff", "architect", [], undefined, {
-					path: "test.py",
-					diff: "- old content\n+ new content",
+					file_path: "test.py",
+					old_string: "old content",
+					new_string: "new content",
 				}),
 			).toThrow(FileRestrictionError)
 			expect(() =>
 				isToolAllowedForMode("apply_diff", "architect", [], undefined, {
-					path: "test.py",
-					diff: "- old content\n+ new content",
+					file_path: "test.py",
+					old_string: "old content",
+					new_string: "new content",
 				}),
 			).toThrow(/Markdown files only/)
 		})
